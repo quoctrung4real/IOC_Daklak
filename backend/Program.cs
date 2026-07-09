@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +39,8 @@ string productsPath = Path.Combine(dataDir, "san-pham-tieu-bieu.json");
 string orgChartPath = Path.Combine(dataDir, "so-do-to-chuc.json");
 string structPath = Path.Combine(dataDir, "co-cau-to-chuc.json");
 string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");
+string usersPath = Path.Combine(dataDir, "users.json");
+string commentsPath = Path.Combine(dataDir, "comments.json");
 
 // Ensure default files exist
 if (!File.Exists(configPath)) File.WriteAllText(configPath, "{}");
@@ -48,6 +52,8 @@ if (!File.Exists(productsPath)) File.WriteAllText(productsPath, "{\"title\":\"\"
 if (!File.Exists(orgChartPath)) File.WriteAllText(orgChartPath, "{\"title\":\"\",\"content\":\"\"}");
 if (!File.Exists(structPath)) File.WriteAllText(structPath, "{\"title\":\"\",\"content\":\"\"}");
 if (!File.Exists(baoLuPath)) File.WriteAllText(baoLuPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(usersPath)) File.WriteAllText(usersPath, "[]");
+if (!File.Exists(commentsPath)) File.WriteAllText(commentsPath, "[]");
 
 // API: Get Config
 app.MapGet("/api/config", async (HttpContext context) =>
@@ -240,4 +246,119 @@ app.MapPost("/api/upload", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, url = fileUrl });
 });
 
+
+// --- USERS & AUTH API ---
+app.MapGet("/api/users", async (HttpContext context) =>
+{
+    var usersJson = await File.ReadAllTextAsync(usersPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(usersJson);
+});
+
+app.MapPost("/api/register", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var newUser = JsonSerializer.Deserialize<User>(body);
+    
+    var usersJson = await File.ReadAllTextAsync(usersPath);
+    var usersList = JsonSerializer.Deserialize<List<User>>(usersJson) ?? new List<User>();
+    
+    if (usersList.Any(u => u.Username == newUser.Username)) {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Tên đăng nhập đã tồn tại." });
+        return;
+    }
+    
+    newUser.Id = Guid.NewGuid().ToString();
+    newUser.RegisterDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    usersList.Add(newUser);
+    
+    await File.WriteAllTextAsync(usersPath, JsonSerializer.Serialize(usersList, new JsonSerializerOptions { WriteIndented = true }));
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Đăng ký thành công.", user = new { newUser.Username } });
+});
+
+app.MapPost("/api/login", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var loginReq = JsonSerializer.Deserialize<User>(body);
+    
+    var usersJson = await File.ReadAllTextAsync(usersPath);
+    var usersList = JsonSerializer.Deserialize<List<User>>(usersJson) ?? new List<User>();
+    
+    var user = usersList.FirstOrDefault(u => u.Username == loginReq.Username && u.Password == loginReq.Password);
+    if (user == null) {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Sai tên đăng nhập hoặc mật khẩu." });
+        return;
+    }
+    
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Đăng nhập thành công.", user = new { user.Username } });
+});
+
+// --- COMMENTS API ---
+app.MapGet("/api/comments", async (HttpContext context, string pageId) =>
+{
+    var commentsJson = await File.ReadAllTextAsync(commentsPath);
+    var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();
+    
+    var pageComments = commentsList.Where(c => c.PageId == pageId).ToList();
+    
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(JsonSerializer.Serialize(pageComments));
+});
+
+app.MapPost("/api/comments", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var newComment = JsonSerializer.Deserialize<Comment>(body);
+    
+    var commentsJson = await File.ReadAllTextAsync(commentsPath);
+    var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();
+    
+    newComment.Id = Guid.NewGuid().ToString();
+    newComment.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    newComment.Likes = 0;
+    
+    commentsList.Add(newComment);
+    
+    await File.WriteAllTextAsync(commentsPath, JsonSerializer.Serialize(commentsList, new JsonSerializerOptions { WriteIndented = true }));
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Đã gửi bình luận.", comment = newComment });
+});
+
+app.MapPost("/api/comments/{id}/like", async (HttpContext context, string id) =>
+{
+    var commentsJson = await File.ReadAllTextAsync(commentsPath);
+    var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();
+    
+    var comment = commentsList.FirstOrDefault(c => c.Id == id);
+    if (comment != null) {
+        comment.Likes += 1;
+        await File.WriteAllTextAsync(commentsPath, JsonSerializer.Serialize(commentsList, new JsonSerializerOptions { WriteIndented = true }));
+        await context.Response.WriteAsJsonAsync(new { success = true, likes = comment.Likes });
+    } else {
+        context.Response.StatusCode = 404;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Không tìm thấy bình luận." });
+    }
+});
+
 app.Run();
+
+public class User {
+    public string Id { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public string RegisterDate { get; set; }
+}
+
+public class Comment {
+    public string Id { get; set; }
+    public string PageId { get; set; }
+    public string Username { get; set; }
+    public string Content { get; set; }
+    public int Likes { get; set; }
+    public string CreatedAt { get; set; }
+}
+

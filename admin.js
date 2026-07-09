@@ -71,6 +71,38 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    window.editors = {};
+    const quillOptions = {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+                ['clean']
+            ]
+        }
+    };
+    ['about', 'support', 'history', 'products', 'orgchart', 'struct', 'baolu'].forEach(key => {
+        const editor = new Quill('#' + key + 'Content', quillOptions);
+        
+        // Loại bỏ nền xám (background) và màu chữ khi paste từ web khác vào
+        editor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+            delta.ops.forEach(function(op) {
+                if (op.attributes) {
+                    delete op.attributes.background;
+                    delete op.attributes.color;
+                }
+            });
+            return delta;
+        });
+        
+        window.editors[key] = editor;
+    });
+
     loadConfig();
     loadAbout();
     loadSupport();
@@ -102,7 +134,7 @@ document.getElementById('about-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const aboutData = {
         title: document.getElementById('aboutTitle').value,
-        content: document.getElementById('aboutContent').value
+        content: window.editors['about'].root.innerHTML
     };
 
     try {
@@ -140,7 +172,7 @@ document.getElementById('support-form').addEventListener('submit', async (e) => 
     e.preventDefault();
     const supportData = {
         title: document.getElementById('supportTitle').value,
-        content: document.getElementById('supportContent').value
+        content: window.editors['support'].root.innerHTML
     };
 
     try {
@@ -178,7 +210,7 @@ document.getElementById('history-form').addEventListener('submit', async (e) => 
     e.preventDefault();
     const historyData = {
         title: document.getElementById('historyTitle').value,
-        content: document.getElementById('historyContent').value
+        content: window.editors['history'].root.innerHTML
     };
 
     try {
@@ -216,7 +248,7 @@ document.getElementById('products-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     const productsData = {
         title: document.getElementById('productsTitle').value,
-        content: document.getElementById('productsContent').value
+        content: window.editors['products'].root.innerHTML
     };
 
     try {
@@ -254,7 +286,7 @@ document.getElementById('orgchart-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     const orgchartData = {
         title: document.getElementById('orgchartTitle').value,
-        content: document.getElementById('orgchartContent').value
+        content: window.editors['orgchart'].root.innerHTML
     };
 
     try {
@@ -279,7 +311,7 @@ async function loadStruct() {
             const structData = await response.json();
             if(structData) {
                 if(structData.title) document.getElementById('structTitle').value = structData.title;
-                if(structData.content) document.getElementById('structContent').value = structData.content;
+                if(structData.content) window.editors['struct'].root.innerHTML = structData.content;
             }
         }
     } catch (e) {
@@ -292,7 +324,7 @@ document.getElementById('struct-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const structDataPayload = {
         title: document.getElementById('structTitle').value,
-        content: document.getElementById('structContent').value
+        content: window.editors['struct'].root.innerHTML
     };
 
     try {
@@ -317,7 +349,7 @@ async function loadBaoLu() {
             const baoluData = await response.json();
             if(baoluData) {
                 if(baoluData.title) document.getElementById('baoluTitle').value = baoluData.title;
-                if(baoluData.content) document.getElementById('baoluContent').value = baoluData.content;
+                if(baoluData.content) window.editors['baolu'].root.innerHTML = baoluData.content;
             }
         }
     } catch (e) {
@@ -330,7 +362,7 @@ document.getElementById('baolu-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const baoluDataPayload = {
         title: document.getElementById('baoluTitle').value,
-        content: document.getElementById('baoluContent').value
+        content: window.editors['baolu'].root.innerHTML
     };
 
     try {
