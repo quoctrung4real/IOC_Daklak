@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function fetchComments() {
         try {
-            const res = await fetch(`http://localhost:5000/api/comments?pageId=${PAGE_ID}`);
+            const res = await fetch(`http://localhost:5000/api/binh-luan?pageId=${PAGE_ID}`);
             allComments = await res.json();
             renderComments();
         } catch (err) {
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5000/api/comments/${id}/like`, { method: 'POST' });
+                    const res = await fetch(`http://localhost:5000/api/binh-luan/${id}/like`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
                         e.currentTarget.querySelector('.like-count').textContent = data.likes;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser) return;
         
         try {
-            const res = await fetch('http://localhost:5000/api/comments', {
+            const res = await fetch('http://localhost:5000/api/binh-luan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

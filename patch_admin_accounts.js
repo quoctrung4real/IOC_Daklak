@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-// 1. Update admin.html
-let html = fs.readFileSync('admin.html', 'utf8');
+// 1. Update quan-tri.html
+let html = fs.readFileSync('quan-tri.html', 'utf8');
 
 const newAccountsHtml = `
         <!-- Quản lý Tài Khoản -->
@@ -42,17 +42,17 @@ const oldAccountsEnd = html.indexOf('</div>\n</div>\n\n<script src="https://cdn.
 
 if (oldAccountsStart !== -1 && oldAccountsEnd !== -1) {
     html = html.substring(0, oldAccountsStart) + newAccountsHtml + html.substring(oldAccountsEnd);
-    fs.writeFileSync('admin.html', html);
-    console.log("Patched admin.html accounts tab");
+    fs.writeFileSync('quan-tri.html', html);
+    console.log("Patched quan-tri.html accounts tab");
 }
 
-// 2. Update admin.js loadUsers function
-let js = fs.readFileSync('admin.js', 'utf8');
+// 2. Update quan-tri.js loadUsers function
+let js = fs.readFileSync('quan-tri.js', 'utf8');
 
 const newLoadUsersFn = `
     async function loadUsers() {
         try {
-            const res = await fetch('http://localhost:5000/api/users');
+            const res = await fetch('http://localhost:5000/api/nguoi-dung');
             const users = await res.json();
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
@@ -103,13 +103,13 @@ const newLoadUsersFn = `
     }
 `;
 
-// Extract old loadUsersFn from admin.js
+// Extract old loadUsersFn from quan-tri.js
 const oldLoadUsersStart = js.indexOf('async function loadUsers() {');
 const oldLoadUsersEnd = js.indexOf('        } catch (err) {', oldLoadUsersStart);
 if (oldLoadUsersStart !== -1 && oldLoadUsersEnd !== -1) {
     const endBlock = js.indexOf('}', oldLoadUsersEnd + 25) + 1;
     
     js = js.substring(0, oldLoadUsersStart) + newLoadUsersFn.trim() + js.substring(endBlock);
-    fs.writeFileSync('admin.js', js);
-    console.log("Patched admin.js loadUsers");
+    fs.writeFileSync('quan-tri.js', js);
+    console.log("Patched quan-tri.js loadUsers");
 }

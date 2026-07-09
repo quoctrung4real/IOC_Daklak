@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const files = [
-    'homepage.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
+    'trang-chu.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
     'lich-su-hinh-thanh.html', 'san-pham-tieu-bieu.html', 'so-do-to-chuc.html',
     'co-cau-to-chuc.html', 'cap-nhat-bao-lu.html'
 ];
@@ -77,9 +77,9 @@ files.forEach(file => {
         html = html.replace('</body>', authModalHtml + '\n</body>');
     }
 
-    // Insert auth.js script before </body>
-    if (!html.includes('auth.js')) {
-        html = html.replace('</body>', '<script src="auth.js"></script>\n</body>');
+    // Insert xac-thuc.js script before </body>
+    if (!html.includes('xac-thuc.js')) {
+        html = html.replace('</body>', '<script src="xac-thuc.js"></script>\n</body>');
     }
 
     // Remove old FontAwesome if using missing script, but it already has FontAwesome
@@ -89,8 +89,8 @@ files.forEach(file => {
 
 console.log("Injected into HTML files");
 
-// 2. Add CSS to styles.css
-let css = fs.existsSync('styles.css') ? fs.readFileSync('styles.css', 'utf8') : '';
+// 2. Add CSS to giao-dien.css
+let css = fs.existsSync('giao-dien.css') ? fs.readFileSync('giao-dien.css', 'utf8') : '';
 const authCss = `
 /* ===== AUTH & USER MENU ===== */
 .user-dropdown-container {
@@ -255,6 +255,6 @@ const authCss = `
 `;
 
 if (!css.includes('.auth-modal')) {
-    fs.writeFileSync('styles.css', css + '\n' + authCss);
-    console.log("Appended CSS to styles.css");
+    fs.writeFileSync('giao-dien.css', css + '\n' + authCss);
+    console.log("Appended CSS to giao-dien.css");
 }

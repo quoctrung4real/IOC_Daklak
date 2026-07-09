@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     async function loadUsers() {
         try {
-            const res = await fetch('http://localhost:5000/api/users');
+            const res = await fetch('http://localhost:5000/api/nguoi-dung');
             const users = await res.json();
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';

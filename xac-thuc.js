@@ -2,12 +2,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Inject auth CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'auth.css';
+    link.href = 'xac-thuc.css';
     document.head.appendChild(link);
 
     // Inject auth HTML
     try {
-        const res = await fetch('auth.html');
+        const res = await fetch('xac-thuc.html');
         if (res.ok) {
             const html = await res.text();
             const wrapper = document.createElement('div');

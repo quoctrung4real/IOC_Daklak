@@ -1,5 +1,5 @@
 const fs = require('fs');
-let html = fs.readFileSync('admin.html', 'utf8');
+let html = fs.readFileSync('quan-tri.html', 'utf8');
 
 // Add Sidebar Menu Item
 const accountMenuHtml = `
@@ -41,5 +41,5 @@ if (!html.includes('id="accounts-tab"')) {
     html = html.replace('    </div>\n</div>\n\n<script src="https://cdn.quilljs.com/', accountTabHtml + '\n    </div>\n</div>\n\n<script src="https://cdn.quilljs.com/');
 }
 
-fs.writeFileSync('admin.html', html);
-console.log("Patched admin.html");
+fs.writeFileSync('quan-tri.html', html);
+console.log("Patched quan-tri.html");

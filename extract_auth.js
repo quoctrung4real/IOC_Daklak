@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// 1. Create auth.html
+// 1. Create xac-thuc.html
 const authHtmlContent = `
 <!-- ===== AUTH MODAL ===== -->
 <div class="auth-modal" id="authModal">
@@ -49,27 +49,27 @@ const authHtmlContent = `
     </div>
 </div>
 `;
-fs.writeFileSync('auth.html', authHtmlContent.trim());
+fs.writeFileSync('xac-thuc.html', authHtmlContent.trim());
 
-// 2. Extract CSS from styles.css to auth.css
-let styles = fs.readFileSync('styles.css', 'utf8');
+// 2. Extract CSS from giao-dien.css to xac-thuc.css
+let styles = fs.readFileSync('giao-dien.css', 'utf8');
 const startDropdown = styles.indexOf('.user-dropdown-container {');
 const endDropdownAndModal = styles.indexOf('.comments-section {'); // The start of the next block
 
 if (startDropdown !== -1 && endDropdownAndModal !== -1) {
     const authCss = styles.substring(startDropdown, endDropdownAndModal);
-    fs.writeFileSync('auth.css', authCss.trim());
+    fs.writeFileSync('xac-thuc.css', authCss.trim());
     
-    // Remove from styles.css
+    // Remove from giao-dien.css
     styles = styles.substring(0, startDropdown) + styles.substring(endDropdownAndModal);
-    fs.writeFileSync('styles.css', styles);
+    fs.writeFileSync('giao-dien.css', styles);
 } else {
     console.log("Could not extract CSS cleanly, indices not found.");
 }
 
 // 3. Remove auth HTML from all files
 const files = [
-    'homepage.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
+    'trang-chu.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
     'lich-su-hinh-thanh.html', 'san-pham-tieu-bieu.html', 'so-do-to-chuc.html',
     'co-cau-to-chuc.html', 'cap-nhat-bao-lu.html'
 ];
@@ -96,8 +96,8 @@ files.forEach(file => {
     fs.writeFileSync(file, html);
 });
 
-// 4. Update auth.js to load auth.html and auth.css asynchronously
-let authJs = fs.readFileSync('auth.js', 'utf8');
+// 4. Update xac-thuc.js to load xac-thuc.html and xac-thuc.css asynchronously
+let authJs = fs.readFileSync('xac-thuc.js', 'utf8');
 const domLoadedString = "document.addEventListener('DOMContentLoaded', () => {";
 const domLoadedStart = authJs.indexOf(domLoadedString);
 
@@ -106,12 +106,12 @@ if (domLoadedStart !== -1) {
     // Inject auth CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'auth.css';
+    link.href = 'xac-thuc.css';
     document.head.appendChild(link);
 
     // Inject auth HTML
     try {
-        const res = await fetch('auth.html');
+        const res = await fetch('xac-thuc.html');
         if (res.ok) {
             const html = await res.text();
             const wrapper = document.createElement('div');
@@ -122,7 +122,7 @@ if (domLoadedStart !== -1) {
 
 `;
     authJs = authJs.replace(domLoadedString, injectedCode);
-    fs.writeFileSync('auth.js', authJs);
+    fs.writeFileSync('xac-thuc.js', authJs);
 }
 
 console.log("Refactoring complete");

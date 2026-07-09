@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const files = [
-    'homepage.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
+    'trang-chu.html', 'chuc-nang-nhiem-vu.html', 'dau-moi-ho-tro.html',
     'lich-su-hinh-thanh.html', 'san-pham-tieu-bieu.html', 'so-do-to-chuc.html',
     'co-cau-to-chuc.html', 'cap-nhat-bao-lu.html'
 ];

@@ -1,11 +1,11 @@
 const fs = require('fs');
-let js = fs.readFileSync('admin.js', 'utf8');
+let js = fs.readFileSync('quan-tri.js', 'utf8');
 
 // Insert a function to load users
 const loadUsersFn = `
     async function loadUsers() {
         try {
-            const res = await fetch('http://localhost:5000/api/users');
+            const res = await fetch('http://localhost:5000/api/nguoi-dung');
             const users = await res.json();
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
@@ -50,5 +50,5 @@ if (!js.includes('loadUsers()')) {
     js = js.replace("document.getElementById(tabId).classList.add('active');", "document.getElementById(tabId).classList.add('active');" + updateTabLogic);
 }
 
-fs.writeFileSync('admin.js', js);
-console.log("Patched admin.js");
+fs.writeFileSync('quan-tri.js', js);
+console.log("Patched quan-tri.js");
