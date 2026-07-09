@@ -1,0 +1,243 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Enable CORS so the frontend can call the API if running on a different port (e.g. Live Server)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+
+app.UseCors();
+// Serve static files (uploaded images) from wwwroot
+app.UseStaticFiles(); 
+
+// Ensure data folder exists
+string dataDir = Path.Combine(builder.Environment.ContentRootPath, "data");
+Directory.CreateDirectory(dataDir);
+string configPath = Path.Combine(dataDir, "config.json");
+string newsPath = Path.Combine(dataDir, "news.json");
+string aboutPath = Path.Combine(dataDir, "chuc-nang-nhiem-vu.json");
+string supportPath = Path.Combine(dataDir, "dau-moi-ho-tro.json");
+string historyPath = Path.Combine(dataDir, "lich-su-hinh-thanh.json");
+string productsPath = Path.Combine(dataDir, "san-pham-tieu-bieu.json");
+string orgChartPath = Path.Combine(dataDir, "so-do-to-chuc.json");
+string structPath = Path.Combine(dataDir, "co-cau-to-chuc.json");
+string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");
+
+// Ensure default files exist
+if (!File.Exists(configPath)) File.WriteAllText(configPath, "{}");
+if (!File.Exists(newsPath)) File.WriteAllText(newsPath, "[]");
+if (!File.Exists(aboutPath)) File.WriteAllText(aboutPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(supportPath)) File.WriteAllText(supportPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(historyPath)) File.WriteAllText(historyPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(productsPath)) File.WriteAllText(productsPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(orgChartPath)) File.WriteAllText(orgChartPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(structPath)) File.WriteAllText(structPath, "{\"title\":\"\",\"content\":\"\"}");
+if (!File.Exists(baoLuPath)) File.WriteAllText(baoLuPath, "{\"title\":\"\",\"content\":\"\"}");
+
+// API: Get Config
+app.MapGet("/api/config", async (HttpContext context) =>
+{
+    var configJson = await File.ReadAllTextAsync(configPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(configJson);
+});
+
+// API: Update Config
+app.MapPost("/api/config", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(configPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Cấu hình đã được lưu." });
+});
+
+// API: Get About
+app.MapGet("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
+{
+    var aboutJson = await File.ReadAllTextAsync(aboutPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(aboutJson);
+});
+
+// API: Update About
+app.MapPost("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(aboutPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang giới thiệu đã được lưu." });
+});
+
+// API: Get Support
+app.MapGet("/api/dau-moi-ho-tro", async (HttpContext context) =>
+{
+    var supportJson = await File.ReadAllTextAsync(supportPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(supportJson);
+});
+
+// API: Update Support
+app.MapPost("/api/dau-moi-ho-tro", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(supportPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang hỗ trợ đã được lưu." });
+});
+
+// API: Get History
+app.MapGet("/api/lich-su-hinh-thanh", async (HttpContext context) =>
+{
+    var historyJson = await File.ReadAllTextAsync(historyPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(historyJson);
+});
+
+// API: Update History
+app.MapPost("/api/lich-su-hinh-thanh", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(historyPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang lịch sử đã được lưu." });
+});
+
+// API: Get Products
+app.MapGet("/api/san-pham-tieu-bieu", async (HttpContext context) =>
+{
+    var productsJson = await File.ReadAllTextAsync(productsPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(productsJson);
+});
+
+// API: Update Products
+app.MapPost("/api/san-pham-tieu-bieu", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(productsPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang sản phẩm tiêu biểu đã được lưu." });
+});
+
+// API: Get Org Chart
+app.MapGet("/api/so-do-to-chuc", async (HttpContext context) =>
+{
+    var orgChartJson = await File.ReadAllTextAsync(orgChartPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(orgChartJson);
+});
+
+// API: Update Org Chart
+app.MapPost("/api/so-do-to-chuc", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(orgChartPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang sơ đồ tổ chức đã được lưu." });
+});
+
+// API: Get Struct
+app.MapGet("/api/co-cau-to-chuc", async (HttpContext context) =>
+{
+    var structJson = await File.ReadAllTextAsync(structPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(structJson);
+});
+
+// API: Update Struct
+app.MapPost("/api/co-cau-to-chuc", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(structPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang cơ cấu tổ chức đã được lưu." });
+});
+
+// API: Get Bao Lu
+app.MapGet("/api/cap-nhat-bao-lu", async (HttpContext context) =>
+{
+    var baoLuJson = await File.ReadAllTextAsync(baoLuPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(baoLuJson);
+});
+
+// API: Update Bao Lu
+app.MapPost("/api/cap-nhat-bao-lu", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    await File.WriteAllTextAsync(baoLuPath, body);
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang cập nhật bão lũ đã được lưu." });
+});
+
+
+// API: Get News
+app.MapGet("/api/news", async (HttpContext context) =>
+{
+    var newsJson = await File.ReadAllTextAsync(newsPath);
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(newsJson);
+});
+
+// API: Add News
+app.MapPost("/api/news", async (HttpContext context) =>
+{
+    using var reader = new StreamReader(context.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    
+    // Parse existing news
+    var newsJson = await File.ReadAllTextAsync(newsPath);
+    var newsList = JsonSerializer.Deserialize<JsonElement[]>(newsJson) ?? Array.Empty<JsonElement>();
+    
+    // Create new array with the new item at the beginning
+    var newItem = JsonSerializer.Deserialize<JsonElement>(body);
+    var updatedList = new JsonElement[newsList.Length + 1];
+    updatedList[0] = newItem;
+    Array.Copy(newsList, 0, updatedList, 1, newsList.Length);
+    
+    await File.WriteAllTextAsync(newsPath, JsonSerializer.Serialize(updatedList, new JsonSerializerOptions { WriteIndented = true }));
+    await context.Response.WriteAsJsonAsync(new { success = true, message = "Đăng tin thành công." });
+});
+
+// API: Upload Image
+app.MapPost("/api/upload", async (HttpContext context) =>
+{
+    if (!context.Request.HasFormContentType || !context.Request.Form.Files.Any())
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsJsonAsync(new { success = false, message = "Không tìm thấy file." });
+        return;
+    }
+
+    var file = context.Request.Form.Files[0];
+    var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
+    Directory.CreateDirectory(uploadsDir);
+
+    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+    var filePath = Path.Combine(uploadsDir, fileName);
+
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    var fileUrl = $"/uploads/{fileName}";
+    await context.Response.WriteAsJsonAsync(new { success = true, url = fileUrl });
+});
+
+app.Run();
