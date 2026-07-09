@@ -30,8 +30,8 @@ app.UseStaticFiles();
 // Ensure data folder exists
 string dataDir = Path.Combine(builder.Environment.ContentRootPath, "data");
 Directory.CreateDirectory(dataDir);
-string configPath = Path.Combine(dataDir, "config.json");
-string newsPath = Path.Combine(dataDir, "news.json");
+string configPath = Path.Combine(dataDir, "cau-hinh.json");
+string newsPath = Path.Combine(dataDir, "tin-tuc.json");
 string aboutPath = Path.Combine(dataDir, "chuc-nang-nhiem-vu.json");
 string supportPath = Path.Combine(dataDir, "dau-moi-ho-tro.json");
 string historyPath = Path.Combine(dataDir, "lich-su-hinh-thanh.json");
@@ -39,8 +39,8 @@ string productsPath = Path.Combine(dataDir, "san-pham-tieu-bieu.json");
 string orgChartPath = Path.Combine(dataDir, "so-do-to-chuc.json");
 string structPath = Path.Combine(dataDir, "co-cau-to-chuc.json");
 string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");
-string usersPath = Path.Combine(dataDir, "users.json");
-string commentsPath = Path.Combine(dataDir, "comments.json");
+string usersPath = Path.Combine(dataDir, "nguoi-dung.json");
+string commentsPath = Path.Combine(dataDir, "danh-sach-binh-luan.json");
 
 // Ensure default files exist
 if (!File.Exists(configPath)) File.WriteAllText(configPath, "{}");
@@ -56,7 +56,7 @@ if (!File.Exists(usersPath)) File.WriteAllText(usersPath, "[]");
 if (!File.Exists(commentsPath)) File.WriteAllText(commentsPath, "[]");
 
 // API: Get Config
-app.MapGet("/api/config", async (HttpContext context) =>
+app.MapGet("/api/cau-hinh", async (HttpContext context) =>
 {
     var configJson = await File.ReadAllTextAsync(configPath);
     context.Response.ContentType = "application/json";
@@ -64,7 +64,7 @@ app.MapGet("/api/config", async (HttpContext context) =>
 });
 
 // API: Update Config
-app.MapPost("/api/config", async (HttpContext context) =>
+app.MapPost("/api/cau-hinh", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
     var body = await reader.ReadToEndAsync();
@@ -193,7 +193,7 @@ app.MapPost("/api/cap-nhat-bao-lu", async (HttpContext context) =>
 
 
 // API: Get News
-app.MapGet("/api/news", async (HttpContext context) =>
+app.MapGet("/api/tin-tuc", async (HttpContext context) =>
 {
     var newsJson = await File.ReadAllTextAsync(newsPath);
     context.Response.ContentType = "application/json";
@@ -201,7 +201,7 @@ app.MapGet("/api/news", async (HttpContext context) =>
 });
 
 // API: Add News
-app.MapPost("/api/news", async (HttpContext context) =>
+app.MapPost("/api/tin-tuc", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
     var body = await reader.ReadToEndAsync();
@@ -248,7 +248,7 @@ app.MapPost("/api/upload", async (HttpContext context) =>
 
 
 // --- USERS & AUTH API ---
-app.MapGet("/api/users", async (HttpContext context) =>
+app.MapGet("/api/nguoi-dung", async (HttpContext context) =>
 {
     var usersJson = await File.ReadAllTextAsync(usersPath);
     context.Response.ContentType = "application/json";
@@ -298,7 +298,7 @@ app.MapPost("/api/login", async (HttpContext context) =>
 });
 
 // --- COMMENTS API ---
-app.MapGet("/api/comments", async (HttpContext context, string pageId) =>
+app.MapGet("/api/binh-luan", async (HttpContext context, string pageId) =>
 {
     var commentsJson = await File.ReadAllTextAsync(commentsPath);
     var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();
@@ -309,7 +309,7 @@ app.MapGet("/api/comments", async (HttpContext context, string pageId) =>
     await context.Response.WriteAsync(JsonSerializer.Serialize(pageComments));
 });
 
-app.MapPost("/api/comments", async (HttpContext context) =>
+app.MapPost("/api/binh-luan", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
     var body = await reader.ReadToEndAsync();
@@ -328,7 +328,7 @@ app.MapPost("/api/comments", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Đã gửi bình luận.", comment = newComment });
 });
 
-app.MapPost("/api/comments/{id}/like", async (HttpContext context, string id) =>
+app.MapPost("/api/binh-luan/{id}/like", async (HttpContext context, string id) =>
 {
     var commentsJson = await File.ReadAllTextAsync(commentsPath);
     var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();

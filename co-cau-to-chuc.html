@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 
 <body>
@@ -56,7 +56,7 @@
                     </a>
                     <ul class="nav-list">
                         <li class="nav-item">
-                            <a href="homepage.html">Trang chủ</a>
+                            <a href="trang-chu.html">Trang chủ</a>
                         </li>
                         <li class="nav-item has-dropdown">
                             <a href="#">Giới thiệu <i class="fa-solid fa-angle-down"></i></a>
@@ -129,17 +129,6 @@
                         </li>
                     </ul>
                     
-                    <div class="user-dropdown-container">
-                        <button class="user-btn" id="userBtn" title="Tài khoản">
-                            <i class="fa-solid fa-user"></i>
-                        </button>
-                        <ul class="user-dropdown-menu" id="userDropdownMenu">
-                            <li class="user-info-item">Xin chào, <b id="displayUsername">Guest</b></li>
-                            <li><hr></li>
-                            <li><a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
-                        </ul>
-                    </div>
-
                     <button class="search-btn" id="searchBtn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -169,6 +158,16 @@
                                 </svg>
                             </button>
                         </form>
+                    </div>
+                    <div class="user-dropdown-container" id="userDropdownContainer" style="margin-left: 20px; margin-right: 0;">
+                        <button class="user-btn" id="userBtn" title="Tài khoản" style="display: flex; align-items: center;">
+                            <i class="fa-solid fa-user"></i> <span id="userBtnText" style="font-family: 'Inter', sans-serif; font-size: 14px; margin-left: 8px; font-weight: 500;">Đăng nhập</span>
+                        </button>
+                        <ul class="user-dropdown-menu" id="userDropdownMenu">
+                            <li class="user-info-item">Xin chào, <b id="displayUsername">Guest</b></li>
+                            <li><hr></li>
+                            <li><a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
+                        </ul>
                     </div>
                 </nav>
             </div>
@@ -319,48 +318,11 @@
         <i class="fa-solid fa-arrow-up"></i>
     </button>
 
-    <script src="homepage.js"></script>
+    <script src="trang-chu.js"></script>
 
-<!-- ===== AUTH MODAL ===== -->
-<div class="auth-modal" id="authModal">
-    <div class="auth-modal-content">
-        <span class="auth-close" id="authClose">&times;</span>
-        <div class="auth-tabs">
-            <button class="auth-tab active" id="tabLogin">Đăng nhập</button>
-            <button class="auth-tab" id="tabRegister">Đăng ký</button>
-        </div>
-        
-        <!-- Login Form -->
-        <form id="loginForm" class="auth-form active">
-            <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input type="text" id="loginUsername" required placeholder="Nhập tên đăng nhập...">
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" id="loginPassword" required placeholder="Nhập mật khẩu...">
-            </div>
-            <p class="auth-error" id="loginError"></p>
-            <button type="submit" class="auth-submit-btn">Đăng nhập</button>
-        </form>
 
-        <!-- Register Form -->
-        <form id="registerForm" class="auth-form">
-            <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input type="text" id="registerUsername" required minlength="3" placeholder="Nhập tên đăng nhập...">
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" id="registerPassword" required minlength="6" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)...">
-            </div>
-            <p class="auth-error" id="registerError"></p>
-            <button type="submit" class="auth-submit-btn">Đăng ký</button>
-        </form>
-    </div>
-</div>
 
-<script src="auth.js"></script>
+<script src="xac-thuc.js"></script>
 </body>
 
 </html>

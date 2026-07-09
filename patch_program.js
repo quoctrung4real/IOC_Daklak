@@ -4,7 +4,7 @@ let code = fs.readFileSync('backend/Program.cs', 'utf8');
 // Insert paths
 code = code.replace(
     'string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");',
-    'string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");\nstring usersPath = Path.Combine(dataDir, "users.json");\nstring commentsPath = Path.Combine(dataDir, "comments.json");'
+    'string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");\nstring usersPath = Path.Combine(dataDir, "users.json");\nstring commentsPath = Path.Combine(dataDir, "binh-luan.json");'
 );
 
 code = code.replace(
@@ -15,7 +15,7 @@ code = code.replace(
 // Append APIs and Models at the end before app.Run()
 const authAndCommentsAPI = `
 // --- USERS & AUTH API ---
-app.MapGet("/api/users", async (HttpContext context) =>
+app.MapGet("/api/nguoi-dung", async (HttpContext context) =>
 {
     var usersJson = await File.ReadAllTextAsync(usersPath);
     context.Response.ContentType = "application/json";
@@ -65,7 +65,7 @@ app.MapPost("/api/login", async (HttpContext context) =>
 });
 
 // --- COMMENTS API ---
-app.MapGet("/api/comments", async (HttpContext context, string pageId) =>
+app.MapGet("/api/binh-luan", async (HttpContext context, string pageId) =>
 {
     var commentsJson = await File.ReadAllTextAsync(commentsPath);
     var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();
@@ -76,7 +76,7 @@ app.MapGet("/api/comments", async (HttpContext context, string pageId) =>
     await context.Response.WriteAsync(JsonSerializer.Serialize(pageComments));
 });
 
-app.MapPost("/api/comments", async (HttpContext context) =>
+app.MapPost("/api/binh-luan", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
     var body = await reader.ReadToEndAsync();
@@ -95,7 +95,7 @@ app.MapPost("/api/comments", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Đã gửi bình luận.", comment = newComment });
 });
 
-app.MapPost("/api/comments/{id}/like", async (HttpContext context, string id) =>
+app.MapPost("/api/binh-luan/{id}/like", async (HttpContext context, string id) =>
 {
     var commentsJson = await File.ReadAllTextAsync(commentsPath);
     var commentsList = JsonSerializer.Deserialize<List<Comment>>(commentsJson) ?? new List<Comment>();

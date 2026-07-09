@@ -36,8 +36,8 @@ if (!html.includes('id="commentsSection"')) {
     html = html.replace('            </div>\n        </div>\n    </section>', '            </div>\n' + commentsHtml + '\n        </div>\n    </section>');
 }
 
-if (!html.includes('comments.js')) {
-    html = html.replace('<script src="auth.js"></script>', '<script src="comments.js"></script>\n<script src="auth.js"></script>');
+if (!html.includes('binh-luan.js')) {
+    html = html.replace('<script src="xac-thuc.js"></script>', '<script src="binh-luan.js"></script>\n<script src="xac-thuc.js"></script>');
 }
 
 fs.writeFileSync('chuc-nang-nhiem-vu.html', html);

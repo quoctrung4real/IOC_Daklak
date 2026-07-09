@@ -1,14 +1,14 @@
 const fs = require('fs');
 
 // Patch HTML
-let html = fs.readFileSync('admin.html', 'utf8');
+let html = fs.readFileSync('quan-tri.html', 'utf8');
 html = html.replace('</head>', '    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">\n</head>');
-html = html.replace('<script src="admin.js"></script>', '<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>\n<script src="admin.js"></script>');
+html = html.replace('<script src="quan-tri.js"></script>', '<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>\n<script src="quan-tri.js"></script>');
 html = html.replace(/<textarea id="(.*?Content)" style="min-height: 300px;" required placeholder="Nhập nội dung vào đây\.\.\."><\/textarea>/g, '<div id="$1" style="height: 300px; background: #fff; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;"></div>');
-fs.writeFileSync('admin.html', html);
+fs.writeFileSync('quan-tri.html', html);
 
 // Patch JS
-let js = fs.readFileSync('admin.js', 'utf8');
+let js = fs.readFileSync('quan-tri.js', 'utf8');
 const keys = ['about', 'support', 'history', 'products', 'orgchart', 'struct', 'baolu'];
 
 keys.forEach(key => {
@@ -43,5 +43,5 @@ const initCode = `
 `;
 
 js = js.replace("document.addEventListener('DOMContentLoaded', () => {", "document.addEventListener('DOMContentLoaded', () => {" + initCode);
-fs.writeFileSync('admin.js', js);
+fs.writeFileSync('quan-tri.js', js);
 console.log("Patched successfully!");
