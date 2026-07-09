@@ -1,4 +1,22 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Inject auth CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'auth.css';
+    document.head.appendChild(link);
+
+    // Inject auth HTML
+    try {
+        const res = await fetch('auth.html');
+        if (res.ok) {
+            const html = await res.text();
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            document.body.appendChild(wrapper);
+        }
+    } catch(e) { console.error("Error loading auth UI:", e); }
+
+
     const userBtn = document.getElementById('userBtn');
     const userDropdownMenu = document.getElementById('userDropdownMenu');
     const authModal = document.getElementById('authModal');
@@ -9,9 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const displayUsername = document.getElementById('displayUsername');
     const logoutBtn = document.getElementById('logoutBtn');
+    const userBtnText = document.getElementById('userBtnText');
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     
     // Check if user is logged in
     let currentUser = localStorage.getItem('currentUser');
+    
+    function updateAuthUI() {
+        if (currentUser) {
+            userBtnText.textContent = currentUser;
+        } else {
+            userBtnText.textContent = 'Đăng nhập';
+        }
+    }
+    updateAuthUI();
     
     userBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -70,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 localStorage.setItem('currentUser', data.user.Username);
                 currentUser = data.user.Username;
+                updateAuthUI();
                 authModal.classList.remove('show');
                 loginForm.reset();
                 // trigger an event so other scripts know user logged in
@@ -101,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 localStorage.setItem('currentUser', data.user.Username);
                 currentUser = data.user.Username;
+                updateAuthUI();
                 authModal.classList.remove('show');
                 registerForm.reset();
                 window.dispatchEvent(new Event('userLoginStateChanged'));
@@ -118,7 +149,16 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         localStorage.removeItem('currentUser');
         currentUser = null;
+        updateAuthUI();
         userDropdownMenu.classList.remove('show');
         window.dispatchEvent(new Event('userLoginStateChanged'));
     });
+
+    // Handle Forgot Password
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Tính năng khôi phục mật khẩu đang được bảo trì. Vui lòng liên hệ quản trị viên.');
+        });
+    }
 });
