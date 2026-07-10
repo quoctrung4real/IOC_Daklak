@@ -99,7 +99,7 @@ function renderUsers(users) {
     });
 }
 
-// Search users
+// Tìm kiếm người dùng
 document.getElementById('searchAccountInput')?.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     const filtered = allUsers.filter(u => 
@@ -151,7 +151,7 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
     }
 });
 
-// Init
+// Khởi tạo
 document.addEventListener('DOMContentLoaded', () => {
     window.editors = {};
     const quillOptions = {
@@ -462,7 +462,7 @@ document.getElementById('baolu-form').addEventListener('submit', async (e) => {
 });
 
 
-// --- User Management Logic ---
+// --- Xử lý Quản lý người dùng ---
 let isEditingUser = false;
 let editingUsername = '';
 

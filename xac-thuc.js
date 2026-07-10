@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Inject auth CSS
+    // Chèn CSS phần xác thực
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'xac-thuc.css';
     document.head.appendChild(link);
 
-    // Inject auth HTML directly (avoid fetch issues with file:// protocol)
+    // Chèn trực tiếp HTML phần xác thực (tránh lỗi fetch do dùng file://)
     const authHtml = `
 <!-- ===== AUTH MODAL ===== -->
 <div class="auth-modal" id="authModal">
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userBtnText = document.getElementById('userBtnText');
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
     
-    // Check if user is logged in
+    // Kiểm tra xem người dùng đã đăng nhập chưa
     let currentUser = localStorage.getItem('currentUser');
     let currentFullName = localStorage.getItem('currentFullName');
     
@@ -94,29 +94,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     userBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (currentUser) {
-            // Toggle dropdown
+            // Bật/tắt menu tài khoản
             userDropdownMenu.classList.toggle('show');
             const isValidFullName = currentFullName && currentFullName !== 'undefined' && currentFullName !== 'null';
             displayUsername.textContent = isValidFullName ? currentFullName : currentUser;
         } else {
-            // Show modal
+            // Hiển thị popup đăng nhập
             authModal.classList.add('show');
         }
     });
 
-    // Close dropdown if clicked outside
+    // Đóng menu tài khoản nếu click ra ngoài
     document.addEventListener('click', (e) => {
         if (!userBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
             userDropdownMenu.classList.remove('show');
         }
     });
 
-    // Modal Close
+    // Xử lý đóng popup
     authClose.addEventListener('click', () => {
         authModal.classList.remove('show');
     });
 
-    // Tabs switching
+    // Chuyển tab Đăng nhập / Đăng ký
     tabLogin.addEventListener('click', () => {
         tabLogin.classList.add('active');
         tabRegister.classList.remove('active');
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loginForm.classList.remove('active');
     });
 
-    // Handle Login
+    // Xử lý sự kiện Đăng nhập
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value;
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateAuthUI();
                 authModal.classList.remove('show');
                 loginForm.reset();
-                // trigger an event so other scripts know user logged in
+                // Gửi sự kiện để các script khác biết người dùng đã đăng nhập
                 window.dispatchEvent(new Event('userLoginStateChanged'));
             } else {
                 errorEl.textContent = data.message;
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Handle Register
+    // Xử lý sự kiện Đăng ký
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('registerUsername').value;
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Handle Logout
+    // Xử lý sự kiện Đăng xuất
     logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('currentUser');
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.dispatchEvent(new Event('userLoginStateChanged'));
     });
 
-    // Handle Forgot Password
+    // Xử lý sự kiện Quên mật khẩu
     if (forgotPasswordLink) {
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();

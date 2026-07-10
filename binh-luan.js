@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('userLoginStateChanged', checkLoginState);
     checkLoginState();
     
-    // Auth Prompt Links
+    // Liên kết hiển thị đăng nhập
     if (promptLoginBtn) {
         promptLoginBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commentsList.appendChild(div);
         });
         
-        // Attach like event
+        // Thêm sự kiện thích
         document.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const currentUser = localStorage.getItem('currentUser');
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await res.json();
                     if (data.success) {
                         e.currentTarget.querySelector('.like-count').textContent = data.likes;
-                        // update local cache
+                        // Cập nhật bộ đệm cục bộ
                         const idx = allComments.findIndex(x => x.Id === id);
                         if(idx > -1) allComments[idx].Likes = data.likes;
                     }

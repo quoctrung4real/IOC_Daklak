@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enable CORS so the frontend can call the API if running on a different port (e.g. Live Server)
+// Bật CORS để frontend có thể gọi API nếu chạy ở port khác
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -24,10 +24,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
-// Serve static files (uploaded images) from wwwroot
+// Cung cấp các tệp tĩnh (hình ảnh tải lên) từ thư mục wwwroot
 app.UseStaticFiles(); 
 
-// Ensure data folder exists
+// Đảm bảo thư mục dữ liệu tồn tại
 string dataDir = Path.Combine(builder.Environment.ContentRootPath, "data");
 Directory.CreateDirectory(dataDir);
 string configPath = Path.Combine(dataDir, "cau-hinh.json");
@@ -42,7 +42,7 @@ string baoLuPath = Path.Combine(dataDir, "cap-nhat-bao-lu.json");
 string usersPath = Path.Combine(dataDir, "nguoi-dung.json");
 string commentsPath = Path.Combine(dataDir, "danh-sach-binh-luan.json");
 
-// Ensure default files exist
+// Đảm bảo các tệp dữ liệu mặc định tồn tại
 if (!File.Exists(configPath)) File.WriteAllText(configPath, "{}");
 if (!File.Exists(newsPath)) File.WriteAllText(newsPath, "[]");
 if (!File.Exists(aboutPath)) File.WriteAllText(aboutPath, "{\"title\":\"\",\"content\":\"\"}");
@@ -55,7 +55,7 @@ if (!File.Exists(baoLuPath)) File.WriteAllText(baoLuPath, "{\"title\":\"\",\"con
 if (!File.Exists(usersPath)) File.WriteAllText(usersPath, "[]");
 if (!File.Exists(commentsPath)) File.WriteAllText(commentsPath, "[]");
 
-// API: Get Config
+// API: Lấy cấu hình
 app.MapGet("/api/cau-hinh", async (HttpContext context) =>
 {
     var configJson = await File.ReadAllTextAsync(configPath);
@@ -63,7 +63,7 @@ app.MapGet("/api/cau-hinh", async (HttpContext context) =>
     await context.Response.WriteAsync(configJson);
 });
 
-// API: Update Config
+// API: Cập nhật cấu hình
 app.MapPost("/api/cau-hinh", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -72,7 +72,7 @@ app.MapPost("/api/cau-hinh", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Cấu hình đã được lưu." });
 });
 
-// API: Get About
+// API: Lấy thông tin giới thiệu
 app.MapGet("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
 {
     var aboutJson = await File.ReadAllTextAsync(aboutPath);
@@ -80,7 +80,7 @@ app.MapGet("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
     await context.Response.WriteAsync(aboutJson);
 });
 
-// API: Update About
+// API: Cập nhật thông tin giới thiệu
 app.MapPost("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -89,7 +89,7 @@ app.MapPost("/api/chuc-nang-nhiem-vu", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang giới thiệu đã được lưu." });
 });
 
-// API: Get Support
+// API: Lấy thông tin hỗ trợ
 app.MapGet("/api/dau-moi-ho-tro", async (HttpContext context) =>
 {
     var supportJson = await File.ReadAllTextAsync(supportPath);
@@ -97,7 +97,7 @@ app.MapGet("/api/dau-moi-ho-tro", async (HttpContext context) =>
     await context.Response.WriteAsync(supportJson);
 });
 
-// API: Update Support
+// API: Cập nhật thông tin hỗ trợ
 app.MapPost("/api/dau-moi-ho-tro", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -106,7 +106,7 @@ app.MapPost("/api/dau-moi-ho-tro", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang hỗ trợ đã được lưu." });
 });
 
-// API: Get History
+// API: Lấy lịch sử hình thành
 app.MapGet("/api/lich-su-hinh-thanh", async (HttpContext context) =>
 {
     var historyJson = await File.ReadAllTextAsync(historyPath);
@@ -114,7 +114,7 @@ app.MapGet("/api/lich-su-hinh-thanh", async (HttpContext context) =>
     await context.Response.WriteAsync(historyJson);
 });
 
-// API: Update History
+// API: Cập nhật lịch sử hình thành
 app.MapPost("/api/lich-su-hinh-thanh", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -123,7 +123,7 @@ app.MapPost("/api/lich-su-hinh-thanh", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang lịch sử đã được lưu." });
 });
 
-// API: Get Products
+// API: Lấy sản phẩm tiêu biểu
 app.MapGet("/api/san-pham-tieu-bieu", async (HttpContext context) =>
 {
     var productsJson = await File.ReadAllTextAsync(productsPath);
@@ -131,7 +131,7 @@ app.MapGet("/api/san-pham-tieu-bieu", async (HttpContext context) =>
     await context.Response.WriteAsync(productsJson);
 });
 
-// API: Update Products
+// API: Cập nhật sản phẩm tiêu biểu
 app.MapPost("/api/san-pham-tieu-bieu", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -140,7 +140,7 @@ app.MapPost("/api/san-pham-tieu-bieu", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang sản phẩm tiêu biểu đã được lưu." });
 });
 
-// API: Get Org Chart
+// API: Lấy sơ đồ tổ chức
 app.MapGet("/api/so-do-to-chuc", async (HttpContext context) =>
 {
     var orgChartJson = await File.ReadAllTextAsync(orgChartPath);
@@ -148,7 +148,7 @@ app.MapGet("/api/so-do-to-chuc", async (HttpContext context) =>
     await context.Response.WriteAsync(orgChartJson);
 });
 
-// API: Update Org Chart
+// API: Cập nhật sơ đồ tổ chức
 app.MapPost("/api/so-do-to-chuc", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -157,7 +157,7 @@ app.MapPost("/api/so-do-to-chuc", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang sơ đồ tổ chức đã được lưu." });
 });
 
-// API: Get Struct
+// API: Lấy cơ cấu tổ chức
 app.MapGet("/api/co-cau-to-chuc", async (HttpContext context) =>
 {
     var structJson = await File.ReadAllTextAsync(structPath);
@@ -165,7 +165,7 @@ app.MapGet("/api/co-cau-to-chuc", async (HttpContext context) =>
     await context.Response.WriteAsync(structJson);
 });
 
-// API: Update Struct
+// API: Cập nhật cơ cấu tổ chức
 app.MapPost("/api/co-cau-to-chuc", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -174,7 +174,7 @@ app.MapPost("/api/co-cau-to-chuc", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Trang cơ cấu tổ chức đã được lưu." });
 });
 
-// API: Get Bao Lu
+// API: Lấy thông tin bão lũ
 app.MapGet("/api/cap-nhat-bao-lu", async (HttpContext context) =>
 {
     var baoLuJson = await File.ReadAllTextAsync(baoLuPath);
@@ -182,7 +182,7 @@ app.MapGet("/api/cap-nhat-bao-lu", async (HttpContext context) =>
     await context.Response.WriteAsync(baoLuJson);
 });
 
-// API: Update Bao Lu
+// API: Cập nhật thông tin bão lũ
 app.MapPost("/api/cap-nhat-bao-lu", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -192,7 +192,7 @@ app.MapPost("/api/cap-nhat-bao-lu", async (HttpContext context) =>
 });
 
 
-// API: Get News
+// API: Lấy danh sách tin tức
 app.MapGet("/api/tin-tuc", async (HttpContext context) =>
 {
     var newsJson = await File.ReadAllTextAsync(newsPath);
@@ -200,17 +200,17 @@ app.MapGet("/api/tin-tuc", async (HttpContext context) =>
     await context.Response.WriteAsync(newsJson);
 });
 
-// API: Add News
+// API: Thêm tin tức mới
 app.MapPost("/api/tin-tuc", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
     var body = await reader.ReadToEndAsync();
     
-    // Parse existing news
+    // Phân tích danh sách tin tức hiện tại
     var newsJson = await File.ReadAllTextAsync(newsPath);
     var newsList = JsonSerializer.Deserialize<JsonElement[]>(newsJson) ?? Array.Empty<JsonElement>();
     
-    // Create new array with the new item at the beginning
+    // Tạo mảng mới với tin tức mới đưa lên đầu
     var newItem = JsonSerializer.Deserialize<JsonElement>(body);
     var updatedList = new JsonElement[newsList.Length + 1];
     updatedList[0] = newItem;
@@ -220,7 +220,7 @@ app.MapPost("/api/tin-tuc", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Đăng tin thành công." });
 });
 
-// API: Upload Image
+// API: Tải lên hình ảnh
 app.MapPost("/api/upload", async (HttpContext context) =>
 {
     if (!context.Request.HasFormContentType || !context.Request.Form.Files.Any())
@@ -247,12 +247,12 @@ app.MapPost("/api/upload", async (HttpContext context) =>
 });
 
 
-// --- USERS & AUTH API ---
+// --- API NGƯỜI DÙNG & XÁC THỰC ---
 app.MapGet("/api/nguoi-dung", async (HttpContext context) =>
 {
     var usersJson = await File.ReadAllTextAsync(usersPath);
     var usersList = JsonSerializer.Deserialize<List<User>>(usersJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>();
-    // Exclude passwords for safety before returning
+    // Ẩn mật khẩu để đảm bảo an toàn trước khi trả về
     var safeList = usersList.Select(u => new { u.Id, u.Username, u.FullName, u.Email, u.DateOfBirth, u.AvatarUrl, u.RegisterDate, u.IsActive }).ToList();
     await context.Response.WriteAsJsonAsync(safeList);
 });
@@ -271,7 +271,7 @@ app.MapGet("/api/nguoi-dung/{username}", async (HttpContext context, string user
         return;
     }
     
-    // Do not return password
+    // Không trả về mật khẩu
     await context.Response.WriteAsJsonAsync(new { 
         success = true, 
         user = new { 
@@ -304,10 +304,10 @@ app.MapPut("/api/nguoi-dung/{username}", async (HttpContext context, string user
     
     var user = usersList[userIndex];
     
-    // Verify old password if they want to change password
+    // Xác minh mật khẩu cũ nếu muốn đổi mật khẩu
     if (!string.IsNullOrEmpty(updateReq.Password)) {
-        // Here we just update the password for simplicity.
-        // In a real app we'd verify the old password.
+        // Ở đây chúng ta tạm thời cập nhật mật khẩu trực tiếp cho đơn giản.
+        // Trong ứng dụng thực tế cần xác minh mật khẩu cũ.
         user.Password = updateReq.Password;
     }
     
@@ -371,7 +371,7 @@ app.MapPost("/api/login", async (HttpContext context) =>
     await context.Response.WriteAsJsonAsync(new { success = true, message = "Đăng nhập thành công.", user = new { user.Username, user.FullName } });
 });
 
-// --- COMMENTS API ---
+// --- API BÌNH LUẬN ---
 app.MapGet("/api/binh-luan", async (HttpContext context, string pageId) =>
 {
     var commentsJson = await File.ReadAllTextAsync(commentsPath);
@@ -419,7 +419,7 @@ app.MapPost("/api/binh-luan/{id}/like", async (HttpContext context, string id) =
 });
 
 
-// --- ADMIN API ---
+// --- API QUẢN TRỊ VIÊN ---
 app.MapPost("/api/admin/nguoi-dung", async (HttpContext context) =>
 {
     using var reader = new StreamReader(context.Request.Body);
@@ -437,7 +437,7 @@ app.MapPost("/api/admin/nguoi-dung", async (HttpContext context) =>
     
     newUser.Id = Guid.NewGuid().ToString();
     newUser.RegisterDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-    if (string.IsNullOrEmpty(newUser.Password)) newUser.Password = "123456"; // default password
+    if (string.IsNullOrEmpty(newUser.Password)) newUser.Password = "123456"; // mật khẩu mặc định
     usersList.Add(newUser);
     
     var jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -465,7 +465,7 @@ app.MapPut("/api/admin/nguoi-dung/{username}", async (HttpContext context, strin
     if (!string.IsNullOrEmpty(updateReq.Password)) user.Password = updateReq.Password;
     if (updateReq.FullName != null) user.FullName = updateReq.FullName;
     if (updateReq.Email != null) user.Email = updateReq.Email;
-    user.IsActive = updateReq.IsActive; // Always update IsActive based on admin request
+    user.IsActive = updateReq.IsActive; // Luôn cập nhật trạng thái hoạt động dựa trên yêu cầu của admin
     
     usersList[userIndex] = user;
     
@@ -486,7 +486,7 @@ app.MapDelete("/api/admin/nguoi-dung/{username}", async (HttpContext context, st
         return;
     }
     
-    // Prevent deleting admin
+    // Ngăn việc xóa tài khoản admin gốc
     if (username.ToLower() == "admin") {
         context.Response.StatusCode = 403;
         await context.Response.WriteAsJsonAsync(new { success = false, message = "Không thể xóa tài khoản admin gốc." });

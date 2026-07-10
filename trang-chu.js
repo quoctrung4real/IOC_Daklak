@@ -1,4 +1,4 @@
-// ===== SCROLL TO TOP =====
+// ===== CUỘN LÊN ĐẦU TRANG =====
 const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 window.addEventListener('scroll', () => {
@@ -16,7 +16,7 @@ if (scrollTopBtn) {
     });
 }
 
-// ===== STICKY HEADER LOGO =====
+// ===== LOGO HEADER CỐ ĐỊNH =====
 const header = document.getElementById('header');
 window.addEventListener('scroll', () => {
     if (header) {
@@ -28,7 +28,7 @@ window.addEventListener('scroll', () => {
     }
 }, { passive: true });
 
-// ===== SEARCH TOGGLE =====
+// ===== BẬT/TẮT TÌM KIẾM =====
 const searchBtn = document.getElementById('searchBtn');
 const searchForm = document.getElementById('searchForm');
 const closeSearch = document.getElementById('closeSearch');
@@ -41,7 +41,7 @@ if (searchBtn && searchForm) {
         if (input) setTimeout(() => input.focus(), 50);
     });
 
-    // Close on clicking outside
+    // Đóng khi click ra ngoài
     document.addEventListener('click', (e) => {
         if (searchForm.classList.contains('active')) {
             if (!searchForm.contains(e.target) && !searchBtn.contains(e.target)) {
@@ -57,7 +57,7 @@ if (closeSearch && searchForm) {
     });
 }
 
-// ===== MOBILE MENU =====
+// ===== MENU ĐIỆN THOẠI =====
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 
 if (mobileMenuBtn) {
@@ -66,18 +66,18 @@ if (mobileMenuBtn) {
     });
 }
 
-// ===== DOCUMENT TABS =====
+// ===== CHUYỂN TAB TÀI LIỆU =====
 const docTabs = document.querySelectorAll('.doc-tab');
 
 docTabs.forEach(tab => {
     tab.addEventListener('click', () => {
         const tabIndex = tab.dataset.tab;
 
-        // Remove active from all tabs
+        // Xóa trạng thái active của tất cả các tab
         docTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
-        // Show/hide tab content
+        // Hiển thị/ẩn nội dung tab
         document.querySelectorAll('.documents-table').forEach(table => {
             table.classList.add('hidden');
         });
@@ -89,7 +89,7 @@ docTabs.forEach(tab => {
     });
 });
 
-// ===== INTERSECTION OBSERVER FOR ANIMATIONS =====
+// ===== OBSERVER ĐỂ CHẠY ANIMATION KHI CUỘN =====
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -104,13 +104,13 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe animated elements
+// Theo dõi các phần tử có hiệu ứng animation
 document.querySelectorAll('.solution-card, .partner-card, .news-card, .sidebar-banner').forEach(el => {
     el.style.animationPlayState = 'paused';
     observer.observe(el);
 });
 
-// Sidebar Accordion Logic
+// Xử lý đóng mở Accordion (Sidebar)
 const accordionHeaders = document.querySelectorAll('.accordion-header');
 accordionHeaders.forEach(header => {
     header.addEventListener('click', () => {
@@ -119,7 +119,7 @@ accordionHeaders.forEach(header => {
     });
 });
 
-// ===== API INTEGRATION (C# BACKEND) =====
+// ===== TÍCH HỢP API (C# BACKEND) =====
 const API_BASE = 'http://localhost:5000/api';
 
 async function loadDynamicConfig() {
@@ -160,9 +160,9 @@ async function loadDynamicNews() {
         
         const ul = document.getElementById('dynamic-news-list');
         if (ul && newsList && newsList.length > 0) {
-            // Keep the first 3 items (or replace them entirely, let's prepend to the list)
+            // Giữ 3 mục đầu (hoặc thay thế toàn bộ, thêm vào đầu danh sách)
             let html = '';
-            // Only show latest 3 for layout consistency
+            // Chỉ hiển thị 3 tin mới nhất để giữ nguyên bố cục
             const displayList = newsList.slice(0, 3);
             displayList.forEach(item => {
                 html += `
@@ -174,8 +174,8 @@ async function loadDynamicNews() {
                     </li>
                 `;
             });
-            // You can replace innerHTML or just prepend
-            // Here we replace the existing list with the dynamic list if there's any dynamic news
+            // Có thể thay thế nội dung (innerHTML) hoặc chèn lên đầu
+            // Ở đây thay thế danh sách hiện tại bằng danh sách động nếu có tin mới
             ul.innerHTML = html;
         }
     } catch (e) {
@@ -183,7 +183,7 @@ async function loadDynamicNews() {
     }
 }
 
-// Initialize on page load
+// Khởi tạo khi tải trang
 document.addEventListener('DOMContentLoaded', () => {
     loadDynamicConfig();
     loadDynamicNews();
@@ -200,7 +200,7 @@ async function loadSupportContent() {
     const titleEl = document.getElementById('dynamic-support-title');
     const contentEl = document.getElementById('dynamic-support-content');
     
-    // Only fetch if we are on the support page
+    // Chỉ tải nếu đang ở trang Hỗ trợ
     if (!titleEl && !contentEl) return;
 
     try {
@@ -221,7 +221,7 @@ async function loadHistoryContent() {
     const titleEl = document.getElementById('dynamic-history-title');
     const contentEl = document.getElementById('dynamic-history-content');
     
-    // Only fetch if we are on the history page
+    // Chỉ tải nếu đang ở trang Lịch sử
     if (!titleEl && !contentEl) return;
 
     try {
@@ -242,7 +242,7 @@ async function loadAboutContent() {
     const titleEl = document.getElementById('dynamic-about-title');
     const contentEl = document.getElementById('dynamic-about-content');
     
-    // Only fetch if we are on the about page
+    // Chỉ tải nếu đang ở trang Giới thiệu
     if (!titleEl && !contentEl) return;
 
     try {
@@ -263,7 +263,7 @@ async function loadProductsContent() {
     const titleEl = document.getElementById('dynamic-products-title');
     const contentEl = document.getElementById('dynamic-products-content');
     
-    // Only fetch if we are on the products page
+    // Chỉ tải nếu đang ở trang Sản phẩm
     if (!titleEl && !contentEl) return;
 
     try {
@@ -284,7 +284,7 @@ async function loadOrgChartContent() {
     const titleEl = document.getElementById('dynamic-orgchart-title');
     const contentEl = document.getElementById('dynamic-orgchart-content');
     
-    // Only fetch if we are on the orgchart page
+    // Chỉ tải nếu đang ở trang Sơ đồ tổ chức
     if (!titleEl && !contentEl) return;
 
     try {
@@ -305,7 +305,7 @@ async function loadStructContent() {
     const titleEl = document.getElementById('dynamic-struct-title');
     const contentEl = document.getElementById('dynamic-struct-content');
     
-    // Only fetch if we are on the struct page
+    // Chỉ tải nếu đang ở trang Cơ cấu tổ chức
     if (!titleEl && !contentEl) return;
 
     try {
@@ -326,7 +326,7 @@ async function loadBaoLuContent() {
     const titleEl = document.getElementById('dynamic-baolu-title');
     const contentEl = document.getElementById('dynamic-baolu-content');
     
-    // Only fetch if we are on the baolu page
+    // Chỉ tải nếu đang ở trang Bão lũ
     if (!titleEl && !contentEl) return;
 
     try {

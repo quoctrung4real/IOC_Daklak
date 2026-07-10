@@ -8,23 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentUser = localStorage.getItem('currentUser');
 
     if (!currentUser) {
-        // User not logged in
+        // Chưa đăng nhập
         profileContent.style.display = 'none';
         loginPrompt.style.display = 'block';
     } else {
-        // User logged in
+        // Đã đăng nhập
         profileContent.style.display = 'flex';
         loginPrompt.style.display = 'none';
         loadUserProfile(currentUser);
     }
 
-    // Avatar upload preview
+    // Xem trước hình ảnh tải lên
     document.getElementById('avatarUpload').addEventListener('change', handleAvatarSelection);
     
-    // Remove avatar
+    // Xóa hình ảnh
     document.getElementById('removeAvatarBtn').addEventListener('click', handleAvatarRemoval);
     
-    // Form submission
+    // Xử lý gửi biểu mẫu
     document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
 });
 
@@ -36,16 +36,16 @@ async function loadUserProfile(username) {
         if (data.success && data.user) {
             const user = data.user;
             
-            // Populate basic info
+            // Điền thông tin cơ bản
             document.getElementById('username').value = user.username || username;
             document.getElementById('sidebarUsername').textContent = user.fullName || user.username || username;
             document.getElementById('fullName').value = user.fullName || '';
             document.getElementById('email').value = user.email || '';
             document.getElementById('dob').value = user.dateOfBirth || '';
             
-            // Populate avatar
+            // Hiển thị ảnh đại diện
             if (user.avatarUrl) {
-                // If it's a relative path starting with /, prefix with API host
+                // Nếu là đường dẫn tương đối, thêm tên miền API
                 if (user.avatarUrl.startsWith('/')) {
                     document.getElementById('avatarPreview').src = `http://localhost:5000${user.avatarUrl}`;
                 } else {
@@ -68,13 +68,13 @@ async function loadUserProfile(username) {
 function handleAvatarSelection(e) {
     const file = e.target.files[0];
     if (file) {
-        // Check file type
+        // Kiểm tra định dạng tệp
         if (!file.type.startsWith('image/')) {
             alert('Vui lòng chọn file hình ảnh hợp lệ.');
             return;
         }
         
-        // Show preview
+        // Hiển thị xem trước
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('avatarPreview').src = e.target.result;
@@ -88,9 +88,9 @@ function handleAvatarRemoval() {
     if (confirm('Bạn có chắc chắn muốn xóa ảnh đại diện hiện tại?')) {
         const username = document.getElementById('username').value;
         document.getElementById('avatarPreview').src = `https://ui-avatars.com/api/?name=${username}&background=random&size=150`;
-        document.getElementById('avatarUpload').value = ''; // clear input
+        document.getElementById('avatarUpload').value = ''; // Xóa dữ liệu đầu vào
         isAvatarChanged = true;
-        currentAvatarUrl = null; // Mark for removal
+        currentAvatarUrl = null; // Đánh dấu để xóa
     }
 }
 
@@ -98,7 +98,7 @@ async function uploadAvatar() {
     const fileInput = document.getElementById('avatarUpload');
     const file = fileInput.files[0];
     
-    if (!file) return currentAvatarUrl; // If no new file but changed, might be removal
+    if (!file) return currentAvatarUrl; // Nếu không có file mới nhưng bị thay đổi, có thể là do bị xóa
     
     const formData = new FormData();
     formData.append('file', file);
@@ -134,13 +134,13 @@ async function handleProfileUpdate(e) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     const saveBtn = document.getElementById('saveProfileBtn');
     
-    // Validate password
+    // Xác thực mật khẩu
     if (newPassword && newPassword !== confirmPassword) {
         alert('Mật khẩu mới và xác nhận mật khẩu không khớp!');
         return;
     }
     
-    // Disable button to prevent double submit
+    // Vô hiệu hóa nút để tránh gửi trùng lặp
     const originalBtnText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
     saveBtn.disabled = true;
@@ -148,15 +148,15 @@ async function handleProfileUpdate(e) {
     try {
         let avatarUrlToSave = currentAvatarUrl;
         
-        // Upload new avatar if changed and not just removed
+        // Tải lên ảnh mới nếu có thay đổi và không phải bị xóa
         const fileInput = document.getElementById('avatarUpload');
         if (isAvatarChanged && fileInput.files.length > 0) {
             avatarUrlToSave = await uploadAvatar();
         } else if (isAvatarChanged && currentAvatarUrl === null) {
-            avatarUrlToSave = null; // explicitly set to null
+            avatarUrlToSave = null; // Đặt giá trị null rõ ràng
         }
         
-        // Prepare update payload
+        // Chuẩn bị dữ liệu cập nhật
         const payload = {
             fullName: fullName || null,
             email: email || null,
@@ -168,7 +168,7 @@ async function handleProfileUpdate(e) {
             payload.password = newPassword;
         }
         
-        // Call API
+        // Gọi API
         const res = await fetch(`${API_BASE}/nguoi-dung/${username}`, {
             method: 'PUT',
             headers: {
@@ -182,11 +182,11 @@ async function handleProfileUpdate(e) {
         if (data.success) {
             alert('Cập nhật hồ sơ thành công!');
             
-            // Clear password fields
+            // Làm trống các trường mật khẩu
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
             
-            // Reset flags
+            // Đặt lại các cờ trạng thái
             isAvatarChanged = false;
             if (data.user) {
                 currentAvatarUrl = data.user.avatarUrl;
