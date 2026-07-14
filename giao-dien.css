@@ -66,10 +66,17 @@ img {
 
 /* ===== HEADER ===== */
 .header {
-    position: sticky;
-    top: -85px;
-    /* Hides the top logo area, leaves main-nav sticky */
+    position: relative;
     z-index: 1000;
+}
+.nav-wrapper {
+    background-color: rgb(73, 127, 191);
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .header-banner {
@@ -102,7 +109,7 @@ img {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 16px 0 8px;
+    padding: 50px 0;
 }
 
 .logo {
@@ -129,7 +136,7 @@ img {
     z-index: 1;
     display: flex;
     align-items: center;
-    padding-bottom: 12px;
+    
 }
 
 .nav-list {
@@ -148,12 +155,30 @@ img {
     margin-right: 0;
 }
 
-.header.is-sticky .nav-small-logo {
+.is-sticky .nav-small-logo {
     width: 50px;
     opacity: 1;
     margin-right: 15px;
 }
 
+body.is-sticky .nav-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
 .nav-item>a {
     display: flex;
     align-items: center;
@@ -242,8 +267,7 @@ img {
 .search-form {
     position: absolute;
     right: 0;
-    top: calc(50% - 6px);
-    /* Adjusted for nav bottom padding */
+    top: 50%;
     transform: translateY(-50%);
     opacity: 0;
     visibility: hidden;
@@ -1796,7 +1820,7 @@ img {
     color: white;
     text-transform: uppercase;
     position: relative;
-    padding-bottom: 12px;
+    
     display: inline-block;
 }
 

@@ -21,9 +21,9 @@ const header = document.getElementById('header');
 window.addEventListener('scroll', () => {
     if (header) {
         if (window.scrollY >= 85) {
-            header.classList.add('is-sticky');
+            document.body.classList.add('is-sticky');
         } else {
-            header.classList.remove('is-sticky');
+            document.body.classList.remove('is-sticky');
         }
     }
 }, { passive: true });
@@ -122,15 +122,12 @@ accordionHeaders.forEach(header => {
 // ===== TÍCH HỢP API (C# BACKEND) =====
 const API_BASE = 'http://localhost:5000/api';
 
-async function loadDynamicConfig() {
+async function loadConfig() {
     try {
-        const response = await fetch(`${API_BASE}/config`);
+        const response = await fetch(`${API_BASE}/cau-hinh`);
         if (!response.ok) return;
         const config = await response.json();
-        
-        if (config.bodyBgColor) {
-            document.body.style.backgroundColor = config.bodyBgColor;
-        }
+
         if (config.bannerUrl) {
             const banner = document.querySelector('.header-banner-bg');
             if (banner) {
@@ -139,6 +136,78 @@ async function loadDynamicConfig() {
                 banner.style.backgroundPosition = 'center';
             }
         }
+        
+        if (config.logoUrl) {
+            const logoEl = document.querySelector('.header-content .logo .logo-icon');
+            if (logoEl) {
+                logoEl.innerHTML = `<img src="${config.logoUrl}" style="max-height: 60px; object-fit: contain;">`;
+            }
+        }
+        
+        if (config.headerTextMain) {
+            const titleEl = document.querySelector('.header-content .logo-title');
+            if (titleEl) {
+                titleEl.innerText = config.headerTextMain;
+                if (config.headerFontMain) titleEl.style.fontFamily = config.headerFontMain;
+            }
+        }
+        
+        if (config.headerTextSub) {
+            const subtitleEl = document.querySelector('.header-content .logo-subtitle');
+            if (subtitleEl) {
+                subtitleEl.innerText = config.headerTextSub;
+                if (config.headerFontSub) subtitleEl.style.fontFamily = config.headerFontSub;
+            }
+        }
+        
+        if (config.headerTextColor) {
+            const titleEl = document.querySelector('.header-content .logo-title');
+            const subtitleEl = document.querySelector('.header-content .logo-subtitle');
+            if (titleEl) titleEl.style.color = config.headerTextColor;
+            if (subtitleEl) subtitleEl.style.color = config.headerTextColor;
+        }
+
+        if (config.menuBarBgColor) {
+            const navWrapper = document.querySelector('.nav-wrapper');
+            if (navWrapper) navWrapper.style.backgroundColor = config.menuBarBgColor;
+        }
+        
+        if (config.welcomeBgColor) {
+            const welcomeBanner = document.querySelector('.welcome-banner');
+            if (welcomeBanner) {
+                welcomeBanner.style.background = config.welcomeBgColor; // Overrides linear-gradient too
+            }
+        }
+        if (config.welcomeTextColor) {
+            const welcomeBanner = document.querySelector('.welcome-banner');
+            if (welcomeBanner) welcomeBanner.style.color = config.welcomeTextColor;
+        }
+        if (config.welcomeText) {
+            const track = document.querySelector('.welcome-track');
+            if (track) {
+                const parts = config.welcomeText.split('★').map(p => p.trim());
+                let html = '';
+                // Duplicate text to create continuous ticker effect
+                for (let i = 0; i < 4; i++) {
+                    parts.forEach((p, index) => {
+                        html += `<span>${p}</span>`;
+                        if (index < parts.length - 1) {
+                            html += `<span class="star">★</span>`;
+                        }
+                    });
+                    
+                    if (i < 3) {
+                        if (parts.length > 1) {
+                            html += `<span class="star">★</span>`;
+                        } else {
+                            html += `<span style="display: inline-block; width: 50px;"></span>`;
+                        }
+                    }
+                }
+                track.innerHTML = html;
+            }
+        }
+
         if (config.newsSectionBgColor) {
             const newsSection = document.getElementById('news-section');
             if (newsSection) newsSection.style.backgroundColor = config.newsSectionBgColor;
@@ -146,6 +215,139 @@ async function loadDynamicConfig() {
         if (config.infoUtilityBgColor) {
             const infoSection = document.getElementById('info-utility-section');
             if (infoSection) infoSection.style.backgroundColor = config.infoUtilityBgColor;
+        }
+        
+        if (config.heroBgColor) {
+            const heroSection = document.querySelector('.hero-section');
+            if (heroSection) heroSection.style.backgroundColor = config.heroBgColor;
+        }
+
+        if (config.heroTitle) {
+            const heroTitleEl = document.querySelector('.hero-title');
+            if (heroTitleEl) heroTitleEl.innerText = config.heroTitle;
+        }
+
+        if (config.heroTitleFont) {
+            const heroTitleEl = document.querySelector('.hero-title');
+            if (heroTitleEl) heroTitleEl.style.fontFamily = config.heroTitleFont;
+        }
+
+        if (config.heroTitleColor) {
+            const heroTitleEl = document.querySelector('.hero-title');
+            if (heroTitleEl) heroTitleEl.style.color = config.heroTitleColor;
+        }
+
+        if (config.heroSubtitle) {
+            const heroSubtitleEl = document.querySelector('.hero-description');
+            if (heroSubtitleEl) heroSubtitleEl.innerText = config.heroSubtitle;
+        }
+
+        if (config.heroSubtitleFont) {
+            const heroSubtitleEl = document.querySelector('.hero-description');
+            if (heroSubtitleEl) heroSubtitleEl.style.fontFamily = config.heroSubtitleFont;
+        }
+
+        if (config.heroSubtitleColor) {
+            const heroSubtitleEl = document.querySelector('.hero-description');
+            if (heroSubtitleEl) heroSubtitleEl.style.color = config.heroSubtitleColor;
+        }
+
+        if (config.heroButtonUrl) {
+            const heroButtonEl = document.querySelector('.btn-readmore');
+            if (heroButtonEl) heroButtonEl.href = config.heroButtonUrl;
+        }
+
+        if (config.heroButtonText) {
+            const heroButtonSpan = document.querySelector('.btn-readmore span');
+            if (heroButtonSpan) heroButtonSpan.innerText = config.heroButtonText;
+        }
+
+        if (config.heroButtonFont) {
+            const heroButtonEl = document.querySelector('.btn-readmore');
+            if (heroButtonEl) heroButtonEl.style.fontFamily = config.heroButtonFont;
+        }
+
+        if (config.heroButtonBgColor) {
+            const heroButtonEl = document.querySelector('.btn-readmore');
+            if (heroButtonEl) heroButtonEl.style.backgroundColor = config.heroButtonBgColor;
+        }
+        
+        if (config.heroImageUrl) {
+            const heroImageContainer = document.querySelector('.hero-image');
+            if (heroImageContainer) {
+                heroImageContainer.innerHTML = `<img src="${config.heroImageUrl}" style="max-width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">`;
+            }
+        }
+        
+        // Ticker logic
+        if (config.tickerLabelText) {
+            const tickerLabel = document.querySelector('.ticker-label');
+            if(tickerLabel) tickerLabel.innerHTML = `<i class="fa-solid fa-bullhorn"></i> ${config.tickerLabelText}`;
+        }
+        
+        if (config.tickerLabelColor) {
+            const tickerLabel = document.querySelector('.ticker-label');
+            if(tickerLabel) {
+                tickerLabel.style.backgroundColor = config.tickerLabelColor;
+                let dynamicStyle = document.getElementById('dynamic-ticker-style');
+                if(!dynamicStyle) {
+                    dynamicStyle = document.createElement('style');
+                    dynamicStyle.id = 'dynamic-ticker-style';
+                    document.head.appendChild(dynamicStyle);
+                }
+                dynamicStyle.innerHTML = \`.ticker-label::after { border-left-color: \${config.tickerLabelColor} !important; }\`;
+            }
+        }
+
+        if (config.tickerItems && Array.isArray(config.tickerItems)) {
+            const track = document.querySelector('.ticker-track');
+            if(track) {
+                let html = '';
+                config.tickerItems.forEach(item => {
+                    html += `<a href="${item.link}">${item.title}</a><span class="ticker-separator">|</span>`;
+                });
+                // Duplicate for seamless scrolling
+                html += html;
+                track.innerHTML = html;
+            }
+        }
+
+        // Tech Solutions logic
+        if (config.techSolutionsItems && Array.isArray(config.techSolutionsItems)) {
+            const cards = document.querySelectorAll('.solution-card');
+            const font = config.techSolutionsFont;
+            const color = config.techSolutionsColor;
+
+            config.techSolutionsItems.forEach((item, index) => {
+                if(cards[index]) {
+                    const card = cards[index];
+                    const h3 = card.querySelector('h3');
+                    const p = card.querySelector('p');
+                    const a = card.querySelector('a.solution-link');
+                    const imgContainer = card.querySelector('.solution-image');
+                    
+                    if (h3) {
+                        h3.innerText = item.title;
+                        if (font) h3.style.fontFamily = font;
+                        if (color) h3.style.color = color;
+                    }
+                    if (p) {
+                        p.innerText = item.desc;
+                        if (font) p.style.fontFamily = font;
+                    }
+                    if (a) {
+                        a.href = item.link;
+                        if (color) {
+                            a.style.color = color;
+                            const svgPath = a.querySelector('svg path');
+                            if (svgPath) svgPath.setAttribute('stroke', color);
+                        }
+                    }
+                    if (imgContainer && item.image) {
+                        imgContainer.innerHTML = `<img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+                    }
+                }
+            });
         }
     } catch (e) {
         console.warn('Backend C# is not running. Using default local styles.');
@@ -185,7 +387,7 @@ async function loadDynamicNews() {
 
 // Khởi tạo khi tải trang
 document.addEventListener('DOMContentLoaded', () => {
-    loadDynamicConfig();
+    loadConfig();
     loadDynamicNews();
     loadAboutContent();
     loadSupportContent();

@@ -122,10 +122,53 @@ async function loadConfig() {
         const response = await fetch(`${API_BASE}/cau-hinh`);
         const config = await response.json();
         if(config) {
-            if(config.bannerUrl) document.getElementById('bannerUrl').value = config.bannerUrl;
-            if(config.bodyBgColor) document.getElementById('bodyBgColor').value = config.bodyBgColor;
-            if(config.newsSectionBgColor) document.getElementById('newsSectionBgColor').value = config.newsSectionBgColor;
-            if(config.infoUtilityBgColor) document.getElementById('infoUtilityBgColor').value = config.infoUtilityBgColor;
+            const fields = [
+                'headerTextMain', 'headerTextSub', 'headerTextColor', 'headerFontMain', 'headerFontSub',
+                'logoUrl', 'faviconUrl', 'bannerUrl', 'menuBarBgColor',
+                'welcomeText', 'welcomeBgColor', 'welcomeTextColor',
+                'tickerLabelText', 'tickerLabelColor',
+                'heroImageUrl', 'heroTitle', 'heroTitleFont', 'heroTitleColor',
+                'heroSubtitle', 'heroSubtitleFont', 'heroSubtitleColor', 'heroBgColor', 'heroButtonUrl',
+                'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
+                'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
+                'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
+                'techSolutionsFont', 'techSolutionsColor'
+            ];
+            
+            fields.forEach(field => {
+                const el = document.getElementById(field);
+                if(el && config[field] !== undefined) {
+                    el.value = config[field];
+                }
+            });
+
+            // Specific previews
+            if(config.heroImageUrl) {
+                const preview = document.getElementById('heroImagePreview');
+                const placeholder = document.getElementById('heroImagePlaceholder');
+                if(preview && placeholder) {
+                    preview.src = config.heroImageUrl;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+            }
+
+            if (typeof updateWelcomeBannerPreview === 'function') updateWelcomeBannerPreview();
+            if (typeof updateHeaderPreview === 'function') updateHeaderPreview();
+            if (typeof updateMenuBarPreview === 'function') updateMenuBarPreview();
+            if (typeof updateHeroPreview === 'function') updateHeroPreview();
+
+            if (config.tickerItems) {
+                tickerItems = config.tickerItems;
+                renderTickerItems();
+            }
+
+            if (config.techSolutionsItems) {
+                techSolutionsItems = config.techSolutionsItems;
+                renderTechSolutionsItems();
+            }
+            if (typeof renderTickerItems === 'function') renderTickerItems();
+            if (typeof updateTickerPreview === 'function') updateTickerPreview();
         }
     } catch (e) {
         console.error("Lỗi lấy cấu hình:", e);
@@ -135,12 +178,29 @@ async function loadConfig() {
 // Lưu cấu hình
 document.getElementById('config-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const config = {
-        bannerUrl: document.getElementById('bannerUrl').value,
-        bodyBgColor: document.getElementById('bodyBgColor').value,
-        newsSectionBgColor: document.getElementById('newsSectionBgColor').value,
-        infoUtilityBgColor: document.getElementById('infoUtilityBgColor').value
-    };
+    const config = {};
+    const fields = [
+        'headerTextMain', 'headerTextSub', 'headerTextColor', 'headerFontMain', 'headerFontSub',
+        'logoUrl', 'faviconUrl', 'bannerUrl', 'menuBarBgColor',
+        'welcomeText', 'welcomeBgColor', 'welcomeTextColor',
+        'tickerLabelText', 'tickerLabelColor',
+        'heroImageUrl', 'heroTitle', 'heroTitleFont', 'heroTitleColor',
+        'heroSubtitle', 'heroSubtitleFont', 'heroSubtitleColor', 'heroBgColor', 'heroButtonUrl',
+        'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
+        'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
+        'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
+        'techSolutionsFont', 'techSolutionsColor'
+    ];
+    
+    fields.forEach(field => {
+        const el = document.getElementById(field);
+        if(el) {
+            config[field] = el.value;
+        }
+    });
+    
+    config.tickerItems = tickerItems;
+    config.techSolutionsItems = techSolutionsItems;
 
     try {
         const response = await fetch(`${API_BASE}/cau-hinh`, {
@@ -716,3 +776,375 @@ document.getElementById('userForm')?.addEventListener('submit', async (e) => {
         showAlert('Lỗi kết nối máy chủ', false);
     }
 });
+
+// Update Header Preview
+function updateHeaderPreview() {
+    const mainText = document.getElementById('headerTextMainPreview');
+    const subText = document.getElementById('headerTextSubPreview');
+    const bgPreview = document.getElementById('headerBannerBgPreview');
+    
+    if (mainText) {
+        mainText.textContent = document.getElementById('headerTextMain')?.value || '';
+        mainText.style.fontFamily = document.getElementById('headerFontMain')?.value || "'Inter', sans-serif";
+        mainText.style.color = document.getElementById('headerTextColor')?.value || '#ffffff';
+    }
+    if (subText) {
+        subText.textContent = document.getElementById('headerTextSub')?.value || '';
+        subText.style.fontFamily = document.getElementById('headerFontSub')?.value || "'Inter', sans-serif";
+        subText.style.color = document.getElementById('headerTextColor')?.value || '#ffffff';
+    }
+}
+document.getElementById('headerTextMain')?.addEventListener('input', updateHeaderPreview);
+document.getElementById('headerTextSub')?.addEventListener('input', updateHeaderPreview);
+document.getElementById('headerTextColor')?.addEventListener('input', updateHeaderPreview);
+document.getElementById('headerFontMain')?.addEventListener('change', updateHeaderPreview);
+document.getElementById('headerFontSub')?.addEventListener('change', updateHeaderPreview);
+setTimeout(updateHeaderPreview, 1000);
+
+// Menu Bar Preview Update
+function updateMenuBarPreview() {
+    const preview = document.getElementById('menuBarPreview');
+    const bgColor = document.getElementById('menuBarBgColor')?.value;
+    if (preview && bgColor) {
+        preview.style.backgroundColor = bgColor;
+    }
+}
+document.getElementById('menuBarBgColor')?.addEventListener('input', updateMenuBarPreview);
+setTimeout(updateMenuBarPreview, 1000);
+
+// Welcome Banner Preview Update
+function updateWelcomeBannerPreview() {
+    const preview = document.getElementById('welcomeBannerPreview');
+    const track = document.getElementById('welcomeTrackPreview');
+    
+    const text = document.getElementById('welcomeText')?.value;
+    const bgColor = document.getElementById('welcomeBgColor')?.value;
+    const textColor = document.getElementById('welcomeTextColor')?.value;
+    
+    if(preview && bgColor) preview.style.backgroundColor = bgColor;
+    if(track) {
+        if (text !== undefined) track.innerHTML = text.replace(/★/g, '<i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: #f1592b;"></i>');
+        if (textColor) track.style.color = textColor;
+    }
+}
+document.getElementById('welcomeText')?.addEventListener('input', updateWelcomeBannerPreview);
+document.getElementById('welcomeBgColor')?.addEventListener('input', updateWelcomeBannerPreview);
+document.getElementById('welcomeTextColor')?.addEventListener('input', updateWelcomeBannerPreview);
+setTimeout(updateWelcomeBannerPreview, 1000);
+
+// Hero Section Preview Update
+function updateHeroPreview() {
+    const container = document.getElementById('heroPreviewContainer');
+    const titleEl = document.getElementById('heroTitlePreview');
+    const subtitleEl = document.getElementById('heroSubtitlePreview');
+    const imageEl = document.getElementById('heroImagePreview');
+    const placeholderEl = document.getElementById('heroImagePlaceholder');
+
+    const bgColor = document.getElementById('heroBgColor')?.value;
+    const title = document.getElementById('heroTitle')?.value;
+    const titleFont = document.getElementById('heroTitleFont')?.value;
+    const titleColor = document.getElementById('heroTitleColor')?.value;
+    const subtitle = document.getElementById('heroSubtitle')?.value;
+    const subtitleFont = document.getElementById('heroSubtitleFont')?.value;
+    const subtitleColor = document.getElementById('heroSubtitleColor')?.value;
+    const buttonText = document.getElementById('heroButtonText')?.value;
+    const buttonFont = document.getElementById('heroButtonFont')?.value;
+    const buttonBgColor = document.getElementById('heroButtonBgColor')?.value;
+    const imageUrl = document.getElementById('heroImageUrl')?.value;
+    const buttonTextEl = document.getElementById('heroButtonTextPreview');
+
+    if(container && bgColor) container.style.backgroundColor = bgColor;
+    if(titleEl) {
+        titleEl.textContent = title;
+        if (titleFont) titleEl.style.fontFamily = titleFont;
+        if (titleColor) titleEl.style.color = titleColor;
+    }
+    if(subtitleEl) {
+        subtitleEl.textContent = subtitle;
+        if (subtitleFont) subtitleEl.style.fontFamily = subtitleFont;
+        if (subtitleColor) subtitleEl.style.color = subtitleColor;
+    }
+    if (buttonTextEl) {
+        buttonTextEl.textContent = buttonText;
+        const btn = buttonTextEl.parentElement;
+        if (buttonFont) {
+            btn.style.fontFamily = buttonFont;
+        }
+        if (buttonBgColor) {
+            btn.style.backgroundColor = buttonBgColor;
+        }
+    }
+    if (imageEl && placeholderEl) {
+        if (imageUrl) {
+            imageEl.src = imageUrl;
+            imageEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+        } else {
+            imageEl.style.display = 'none';
+            placeholderEl.style.display = 'flex';
+        }
+    }
+}
+document.getElementById('heroBgColor')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroTitle')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroTitleFont')?.addEventListener('change', updateHeroPreview);
+document.getElementById('heroTitleColor')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroSubtitle')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroSubtitleFont')?.addEventListener('change', updateHeroPreview);
+document.getElementById('heroSubtitleColor')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroButtonText')?.addEventListener('input', updateHeroPreview);
+document.getElementById('heroButtonFont')?.addEventListener('change', updateHeroPreview);
+document.getElementById('heroButtonBgColor')?.addEventListener('input', updateHeroPreview);
+setTimeout(updateHeroPreview, 1000);
+
+// Add missing applyCrop handling for hero
+const originalApplyCrop = window.applyCrop;
+window.applyCrop = function() {
+    if(currentCropType === 'hero') {
+        const canvas = cropper.getCroppedCanvas();
+        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('heroImageUrl').value = base64;
+        
+        const preview = document.getElementById('heroImagePreview');
+        const placeholder = document.getElementById('heroImagePlaceholder');
+        if (preview && placeholder) {
+            preview.src = base64;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+        
+        closeCropper();
+    } else if (originalApplyCrop) {
+        originalApplyCrop();
+    }
+};
+
+// ========================================
+// TIN NỔI BẬT (FEATURED NEWS TICKER)
+// ========================================
+let tickerItems = [
+    { title: "Đắk Lắk sẵn sàng cho Hội nghị Công bố Quy hoạch và Xúc tiến đầu tư năm 2026", link: "#" },
+    { title: "Tập huấn Hướng dẫn sử dụng Phần mềm Phản ánh Hiện trường", link: "#" },
+    { title: "Chuyển đổi số, Đổi mới sáng tạo, An toàn thông tin, Dữ liệu mở", link: "#" }
+];
+
+function renderTickerItems() {
+    const container = document.getElementById('tickerItemsContainer');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    tickerItems.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.style.display = 'grid';
+        itemDiv.style.gridTemplateColumns = '2fr 1fr auto';
+        itemDiv.style.gap = '10px';
+        itemDiv.style.alignItems = 'end';
+        itemDiv.innerHTML = `
+            <div>
+                <label style="font-size: 13px;">Tiêu đề tin</label>
+                <input type="text" class="form-control" value="${item.title}" oninput="updateTickerItem(${index}, 'title', this.value)">
+            </div>
+            <div>
+                <label style="font-size: 13px;">Link</label>
+                <input type="text" class="form-control" value="${item.link}" oninput="updateTickerItem(${index}, 'link', this.value)">
+            </div>
+            <button type="button" class="btn btn-danger" onclick="removeTickerItem(${index})" style="padding: 6px 12px; margin-bottom: 2px;">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(itemDiv);
+    });
+    updateTickerPreview();
+}
+
+function updateTickerItem(index, key, value) {
+    tickerItems[index][key] = value;
+    updateTickerPreview();
+}
+
+function addTickerItem() {
+    tickerItems.push({ title: "Tin tức mới", link: "#" });
+    renderTickerItems();
+}
+
+function removeTickerItem(index) {
+    tickerItems.splice(index, 1);
+    renderTickerItems();
+}
+
+function updateTickerPreview() {
+    const labelText = document.getElementById('tickerLabelText')?.value || 'TIN NỔI BẬT';
+    const labelColor = document.getElementById('tickerLabelColor')?.value || '#1322BC';
+    
+    const labelEl = document.getElementById('tickerLabelPreview');
+    const labelArrowEl = document.getElementById('tickerLabelArrowPreview');
+    const labelTextEl = document.getElementById('tickerLabelTextPreview');
+    if(labelEl) labelEl.style.backgroundColor = labelColor;
+    if(labelArrowEl) labelArrowEl.style.borderLeftColor = labelColor;
+    if(labelTextEl) labelTextEl.textContent = labelText;
+    
+    const trackEl = document.getElementById('tickerTrackPreview');
+    if(trackEl) {
+        trackEl.innerHTML = '';
+        let html = '';
+        tickerItems.forEach(item => {
+            html += `<a href="${item.link}" style="color: #0f172a; text-decoration: none; padding: 0 15px;">${item.title}</a> <span style="color: #cbd5e1; margin: 0 5px;">|</span> `;
+        });
+        trackEl.innerHTML = html + html; // duplicate for seamless animation
+    }
+}
+
+document.getElementById('tickerLabelText')?.addEventListener('input', updateTickerPreview);
+document.getElementById('tickerLabelColor')?.addEventListener('input', updateTickerPreview);
+setTimeout(renderTickerItems, 500);
+
+// --- Tech Solutions Config ---
+let techSolutionsItems = [
+    {
+        title: 'Bộ công an',
+        desc: 'Trang thông tin điện tử công an tỉnh Đăk Lăk',
+        link: '#',
+        image: ''
+    },
+    {
+        title: 'Bình dân học vụ số',
+        desc: 'Nền tảng phổ cập kiến thức chuyển đổi số cơ bản cho người dân',
+        link: '#',
+        image: ''
+    },
+    {
+        title: 'Thông tin đấu thầu',
+        desc: 'Hệ thống mạng đấu thầu quốc gia, thông tin đấu giá minh bạch',
+        link: '#',
+        image: ''
+    },
+    {
+        title: 'Công báo điện tử',
+        desc: 'Hệ thống công báo điện tử, tra cứu các văn bản quy phạm pháp luật',
+        link: '#',
+        image: ''
+    }
+];
+
+function renderTechSolutionsItems() {
+    const container = document.getElementById('techSolutionsItemsContainer');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    techSolutionsItems.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.style.background = 'white';
+        itemDiv.style.padding = '15px';
+        itemDiv.style.borderRadius = '6px';
+        itemDiv.style.border = '1px solid #e2e8f0';
+        
+        itemDiv.innerHTML = `
+            <h6 style="margin-top: 0; margin-bottom: 15px; color: #475569; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;"><i class="fa-solid fa-cube"></i> Box ${index + 1}</h6>
+            <div class="form-group">
+                <label>Tiêu đề</label>
+                <input type="text" value="${item.title}" oninput="updateTechSolutionItem(${index}, 'title', this.value)">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea rows="2" oninput="updateTechSolutionItem(${index}, 'desc', this.value)">${item.desc}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Link nút "Xem thêm"</label>
+                <input type="text" value="${item.link}" oninput="updateTechSolutionItem(${index}, 'link', this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Upload Hình Ảnh Banner (Thay thế hình SVG mặc định)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionImage(${index}, this)">
+                    ${item.image ? `<button type="button" onclick="removeTechSolutionImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>` : ''}
+                </div>
+            </div>
+        `;
+        container.appendChild(itemDiv);
+    });
+    updateTechSolutionsPreview();
+}
+
+function updateTechSolutionItem(index, key, value) {
+    techSolutionsItems[index][key] = value;
+    updateTechSolutionsPreview();
+}
+
+function uploadTechSolutionImage(index, input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            techSolutionsItems[index].image = e.target.result;
+            renderTechSolutionsItems();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeTechSolutionImage(index) {
+    techSolutionsItems[index].image = '';
+    renderTechSolutionsItems();
+}
+
+function updateTechSolutionsPreview() {
+    const container = document.getElementById('techSolutionsPreviewContainer');
+    if(!container) return;
+    
+    const font = document.getElementById('techSolutionsFont')?.value || "'Inter', sans-serif";
+    const color = document.getElementById('techSolutionsColor')?.value || "#0a59ab";
+    
+    container.style.fontFamily = font;
+    
+    container.innerHTML = '';
+    techSolutionsItems.forEach((item, index) => {
+        let imageHtml = '';
+        if (item.image) {
+            imageHtml = `<img src="${item.image}" style="width: 100%; height: auto; object-fit: cover; border-radius: 8px;" onerror="this.src='https://via.placeholder.com/180x120?text=Error'">`;
+        } else {
+            // Default SVGs
+            const svgs = [
+                `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;"><rect x="60" y="20" width="80" height="100" rx="8" fill="#d4e5f7" /><rect x="70" y="30" width="60" height="40" rx="4" fill="#a8c4db" /><circle cx="100" cy="100" r="8" fill="#8fb3ce" /><rect x="20" y="60" width="30" height="40" rx="4" fill="#e8f0f8" transform="rotate(-10 20 60)" /><rect x="150" y="50" width="30" height="45" rx="4" fill="#e8f0f8" transform="rotate(10 150 50)" /></svg>`,
+                `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;"><rect x="40" y="60" width="120" height="80" rx="6" fill="#d4e5f7" /><rect x="55" y="20" width="30" height="50" rx="4" fill="#e8f0f8" /><rect x="95" y="10" width="50" height="60" rx="4" fill="#a8c4db" /><line x1="105" y1="35" x2="135" y2="35" stroke="#8fb3ce" stroke-width="2" /><line x1="105" y1="45" x2="125" y2="45" stroke="#8fb3ce" stroke-width="2" /><circle cx="70" cy="110" r="8" fill="#8fb3ce" /><circle cx="130" cy="100" r="6" fill="#a8c4db" /></svg>`,
+                `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;"><rect x="50" y="30" width="100" height="70" rx="6" fill="#d4e5f7" /><rect x="65" y="100" width="70" height="8" rx="3" fill="#a8c4db" /><circle cx="100" cy="65" r="20" fill="none" stroke="#8fb3ce" stroke-width="3" /><path d="M92 65 L98 71 L110 59" stroke="#0a59ab" stroke-width="3" fill="none" stroke-linecap="round" /></svg>`,
+                `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;"><rect x="30" y="30" width="140" height="100" rx="6" fill="#d4e5f7" /><path d="M50 100 L80 70 L110 90 L140 50" stroke="#0a59ab" stroke-width="2" fill="none" /><circle cx="80" cy="70" r="4" fill="#f1592b" /><circle cx="110" cy="90" r="4" fill="#f1592b" /></svg>`
+            ];
+            imageHtml = svgs[index];
+        }
+
+        const fontH3 = font === "'Inter', sans-serif" ? "'Playfair Display', serif" : font; // Apply user font or fallback to Playfair
+
+        container.innerHTML += `
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; position: relative; padding: 32px; gap: 20px; transition: all 0.3s ease;">
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(10, 89, 171, 0.8); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">${index + 1}</div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 12px 0; color: ${color}; font-family: ${fontH3}; font-size: 1.4rem; font-weight: 700;">${item.title}</h3>
+                    <p style="margin: 0 0 16px 0; color: #64748b; font-size: 0.9rem; line-height: 1.6;">${item.desc}</p>
+                    <a href="${item.link}" style="color: ${color}; text-decoration: none; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;"><span>Xem thêm</span> <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M11.3333 5.33325L14 7.99992M14 7.99992L11.3333 10.6666M14 7.99992H2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg></a>
+                </div>
+                <div style="width: 180px; flex-shrink: 0;">
+                    ${imageHtml}
+                </div>
+            </div>
+        `;
+    });
+}
+
+document.getElementById('techSolutionsFont')?.addEventListener('change', updateTechSolutionsPreview);
+document.getElementById('techSolutionsColor')?.addEventListener('input', updateTechSolutionsPreview);
+setTimeout(renderTechSolutionsItems, 500);
+
+function toggleConfigSection(headerEl) {
+    const contentEl = headerEl.nextElementSibling;
+    const iconEl = headerEl.querySelector('.fa-chevron-up');
+    const textEl = headerEl.querySelector('.toggle-text');
+    
+    if (contentEl.style.display === 'none') {
+        contentEl.style.display = 'block';
+        iconEl.style.transform = 'rotate(0deg)';
+        if (textEl) textEl.textContent = 'Thu nhỏ';
+    } else {
+        contentEl.style.display = 'none';
+        iconEl.style.transform = 'rotate(180deg)';
+        if (textEl) textEl.textContent = 'Mở rộng';
+    }
+}
