@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Chèn CSS phần xác thực
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'xac-thuc.css';
+    link.href = (window.BASE_URL || '') + 'auth/xac-thuc.css';
     document.head.appendChild(link);
 
     // Chèn trực tiếp HTML phần xác thực (tránh lỗi fetch do dùng file://)
@@ -73,18 +73,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Kiểm tra xem người dùng đã đăng nhập chưa
     let currentUser = localStorage.getItem('currentUser');
     let currentFullName = localStorage.getItem('currentFullName');
-    
+
+    if (currentUser === 'undefined' || currentUser === 'null') {
+        currentUser = null;
+    }
+
     function updateAuthUI() {
+        if (!userBtnText) return;
         if (currentUser) {
             const isValidFullName = currentFullName && currentFullName !== 'undefined' && currentFullName !== 'null';
             userBtnText.textContent = isValidFullName ? currentFullName : currentUser;
+            if (displayUsername) {
+                displayUsername.textContent = isValidFullName ? currentFullName : currentUser;
+            }
         } else {
             userBtnText.textContent = 'Đăng nhập';
+            if (displayUsername) {
+                displayUsername.textContent = 'Guest';
+            }
         }
     }
     
     window.addEventListener('authProfileChanged', () => {
         currentUser = localStorage.getItem('currentUser');
+        if (currentUser === 'undefined' || currentUser === 'null') {
+            currentUser = null;
+        }
         currentFullName = localStorage.getItem('currentFullName');
         updateAuthUI();
     });
