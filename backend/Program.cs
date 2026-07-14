@@ -15,12 +15,16 @@ var projectRoot = Directory.GetParent(builder.Environment.ContentRootPath)?.Full
     ?? builder.Environment.ContentRootPath;
 var frontendRoot = projectRoot;
 
+LoadDotEnv(Path.Combine(builder.Environment.ContentRootPath, ".env"));
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.Configure<UploadOptions>(builder.Configuration.GetSection("Upload"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<TextToSpeechOptions>(builder.Configuration.GetSection("TextToSpeech"));
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
@@ -73,6 +77,20 @@ builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
 });
 builder.Services.AddSingleton<JsonToSqlMigrationService>();
 builder.Services.AddSingleton<AuthTokenService>();
+builder.Services.AddHttpClient<AzureTextToSpeechService>();
+builder.Services.AddTransient<EspeakTextToSpeechService>();
+builder.Services.AddTransient<ITextToSpeechService>(serviceProvider =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<TextToSpeechOptions>>().Value;
+    if (string.Equals(options.Provider, "Azure", StringComparison.OrdinalIgnoreCase) &&
+        !string.IsNullOrWhiteSpace(options.AzureKey) &&
+        !string.IsNullOrWhiteSpace(options.AzureRegion))
+    {
+        return serviceProvider.GetRequiredService<AzureTextToSpeechService>();
+    }
+
+    return serviceProvider.GetRequiredService<EspeakTextToSpeechService>();
+});
 
 var app = builder.Build();
 
@@ -281,6 +299,66 @@ app.MapPost("/api/upload", async (
 
     return Results.Json(new { success = true, url = $"/uploads/{fileName}" });
 }).RequireAuthorization();
+
+app.MapPost("/api/text-to-speech", async (
+    TextToSpeechRequestDto payload,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await textToSpeechService.SynthesizeAsync(payload, cancellationToken);
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
+});
+
+app.MapGet("/api/text-to-speech/content-page/{slug}", async (
+    string slug,
+    IPortalDataStore store,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    if (!contentPages.ContainsKey(slug))
+    {
+        return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay trang noi dung."));
+    }
+
+    var page = await store.GetContentPageAsync(slug, cancellationToken);
+    var result = await textToSpeechService.SynthesizeAsync(new TextToSpeechRequestDto
+    {
+        Text = $"{page.Title}. {page.Content}"
+    }, cancellationToken);
+
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
+});
+
+app.MapGet("/api/text-to-speech/news-category/{slug}", async (
+    string slug,
+    IPortalDataStore store,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    var category = newsCategories.FirstOrDefault(item => string.Equals(item.Slug, slug, StringComparison.OrdinalIgnoreCase));
+    if (category is null)
+    {
+        return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay chuyen muc tin tuc."));
+    }
+
+    var page = await store.GetNewsCategoryAsync(category, cancellationToken);
+    var posts = page.Posts
+        .OrderByDescending(post => DateTime.TryParse(post.CreatedAt, out var date) ? date : DateTime.MinValue)
+        .Select(post => $"{post.Title}. {post.Content}");
+
+    var result = await textToSpeechService.SynthesizeAsync(new TextToSpeechRequestDto
+    {
+        Text = $"{page.Title}. {string.Join(" ", posts)}"
+    }, cancellationToken);
+
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
+});
 
 app.MapGet("/api/nguoi-dung", async (IPortalDataStore store, CancellationToken cancellationToken) =>
 {
@@ -496,6 +574,36 @@ static IReadOnlyList<NewsCategoryInfo> GetNewsCategories()
         new() { Slug = "trao-doi-kinh-nghiem", Title = "Trao đổi kinh nghiệm" },
         new() { Slug = "tuong-tac-cong-dan", Title = "Tương tác công dân" }
     ];
+}
+
+static void LoadDotEnv(string filePath)
+{
+    if (!System.IO.File.Exists(filePath))
+    {
+        return;
+    }
+
+    foreach (var rawLine in System.IO.File.ReadAllLines(filePath))
+    {
+        var line = rawLine.Trim();
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+        if (!string.IsNullOrWhiteSpace(key))
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
 }
 
 public sealed record FrontendRouteInfo(string Url, string FilePath, string Area, string Title);

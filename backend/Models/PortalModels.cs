@@ -129,3 +129,59 @@ public sealed class JwtOptions
     public string SigningKey { get; set; } = "IOC_Daklak_dev_signing_key_change_before_production_2026";
     public int ExpiresMinutes { get; set; } = 120;
 }
+
+public sealed class TextToSpeechOptions
+{
+    public string Provider { get; set; } = "Espeak";
+    public string? ExecutablePath { get; set; }
+    public string ExecutableName { get; set; } = "espeak-ng";
+    public string Voice { get; set; } = "vi";
+    public int Speed { get; set; } = 150;
+    public int Pitch { get; set; } = 50;
+    public int MaxTextLength { get; set; } = 6000;
+    public int TimeoutSeconds { get; set; } = 45;
+    public string? AzureKey { get; set; }
+    public string? AzureRegion { get; set; }
+    public string AzureVoice { get; set; } = "vi-VN-HoaiMyNeural";
+    public string AzureOutputFormat { get; set; } = "audio-24khz-48kbitrate-mono-mp3";
+}
+
+public sealed class TextToSpeechRequestDto
+{
+    public string? Text { get; set; }
+    public string? Voice { get; set; }
+    public int? Speed { get; set; }
+    public int? Pitch { get; set; }
+}
+
+public sealed class TextToSpeechResponseDto
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public string? AudioUrl { get; set; }
+    public string? Voice { get; set; }
+    public int TextLength { get; set; }
+    public bool Cached { get; set; }
+
+    public static TextToSpeechResponseDto Ok(string audioUrl, string voice, int textLength, bool cached)
+    {
+        return new TextToSpeechResponseDto
+        {
+            Success = true,
+            Message = cached ? "Da co audio trong cache." : "Tao audio thanh cong.",
+            AudioUrl = audioUrl,
+            Voice = voice,
+            TextLength = textLength,
+            Cached = cached
+        };
+    }
+
+    public static TextToSpeechResponseDto Fail(string message)
+    {
+        return new TextToSpeechResponseDto
+        {
+            Success = false,
+            Message = message
+        };
+    }
+}

@@ -22,6 +22,14 @@
     <section class="article-section" style="padding: 50px 0; background: #fff;">
         <div class="container" style="max-width: 900px; margin: 0 auto; line-height: 1.8;">
             <h1 id="dynamic-news-title" style="font-size: 28px; color: #0a59ab; margin-bottom: 30px; text-transform: uppercase; font-weight: bold;"></h1>
+            <div style="display: flex; align-items: center; gap: 12px; margin: -12px 0 24px 0;">
+                <button id="ttsTestBtn" type="button" style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid #0a59ab; background: #0a59ab; color: #fff; border-radius: 6px; padding: 9px 14px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>Nghe noi dung</span>
+                </button>
+                <span id="ttsTestStatus" style="font-size: 13px; color: #64748b;"></span>
+            </div>
+            <audio id="ttsTestAudio" controls style="display: none; width: 100%; margin-bottom: 24px;"></audio>
             <div id="dynamic-news-content" style="font-size: 16px; color: #333;">
                 Đang tải dữ liệu...
             </div>
@@ -37,6 +45,71 @@
     <script>window.BASE_URL = "../../";</script>
     <script src="../../shared/components.js"></script>
     <script src="../../user/trang-chu/trang-chu.js"></script>
+    <script>
+        (function () {
+            const apiBase = 'http://localhost:5000/api';
+            const backendOrigin = 'http://localhost:5000';
+            const button = document.getElementById('ttsTestBtn');
+            const status = document.getElementById('ttsTestStatus');
+            const audio = document.getElementById('ttsTestAudio');
+            const title = document.getElementById('dynamic-news-title');
+            const content = document.getElementById('dynamic-news-content');
+
+            if (!button || !status || !audio || !title || !content) return;
+
+            function setStatus(message) {
+                status.textContent = message || '';
+            }
+
+            function setLoading(isLoading) {
+                button.disabled = isLoading;
+                button.style.opacity = isLoading ? '0.7' : '1';
+                button.style.cursor = isLoading ? 'wait' : 'pointer';
+                button.querySelector('span').textContent = isLoading ? 'Dang tao audio...' : 'Nghe noi dung';
+            }
+
+            function getReadableText() {
+                const text = `${title.innerText || ''}. ${content.innerText || ''}`.replace(/\s+/g, ' ').trim();
+                return text.replace('Dang tai du lieu...', '').trim();
+            }
+
+            button.addEventListener('click', async () => {
+                const text = getReadableText();
+                if (!text || text.length < 10) {
+                    setStatus('Chua co noi dung de doc.');
+                    return;
+                }
+
+                setLoading(true);
+                setStatus('Dang goi backend TTS...');
+
+                try {
+                    const response = await fetch(`${apiBase}/text-to-speech`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                        body: JSON.stringify({ text })
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok || !result.success || !result.audioUrl) {
+                        throw new Error(result.message || 'Khong tao duoc audio.');
+                    }
+
+                    audio.src = result.audioUrl.startsWith('http')
+                        ? result.audioUrl
+                        : `${backendOrigin}${result.audioUrl}`;
+                    audio.style.display = 'block';
+                    await audio.play();
+                    setStatus(result.cached ? 'Dang phat audio tu cache.' : 'Da tao audio moi.');
+                } catch (error) {
+                    console.error(error);
+                    setStatus(error.message || 'Loi TTS.');
+                } finally {
+                    setLoading(false);
+                }
+            });
+        })();
+    </script>
     <script src="../../shared/binh-luan.js"></script>
     <script src="../../auth/xac-thuc.js"></script>
 </body>

@@ -4,6 +4,9 @@ backend/obj/
 .tmp/
 
 # Backend local/report artifacts
+backend/.env
+backend/.env.*
+!backend/.env.example
 backend/BAO_CAO_TIEN_DO.md
 backend/data/
 backend/database/
