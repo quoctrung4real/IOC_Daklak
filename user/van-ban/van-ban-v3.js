@@ -6,8 +6,28 @@ async function fetchAndRenderDocuments() {
     const tableBody = document.getElementById('document-table-body');
     if (!tableBody) return;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type') || '';
+    
+    // Đổi tiêu đề trang tùy theo loại văn bản
+    const titleMap = {
+        'cong-van': 'Công văn',
+        'bao-cao': 'Báo cáo',
+        'ke-hoach': 'Kế hoạch',
+        'quyet-dinh': 'Quyết định',
+        'huong-dan': 'Hướng dẫn',
+        'chuong-trinh': 'Chương trình',
+        'tap-huan': 'Tập huấn'
+    };
+    if (type && titleMap[type]) {
+        const titleEl = document.querySelector('.page-title');
+        if (titleEl) titleEl.textContent = titleMap[type];
+        document.title = `${titleMap[type]} - DakLakIOC`;
+    }
+
     try {
-        const response = await fetch('http://localhost:5100/api/van-ban');
+        const apiUrl = type ? `http://localhost:5100/api/van-ban?type=${type}` : 'http://localhost:5100/api/van-ban';
+        const response = await fetch(apiUrl);
         
         let data = [];
         if (response && response.ok) {

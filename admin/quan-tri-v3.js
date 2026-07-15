@@ -116,6 +116,9 @@ document.querySelectorAll('.tab-link').forEach(link => {
             const categoryName = e.currentTarget.textContent.trim();
             document.getElementById('newsTabTitle').textContent = `Quản lý ${categoryName}`;
             loadNews(categoryId);
+        } else if (e.currentTarget.classList.contains('document-category-link')) {
+            const categoryId = e.currentTarget.dataset.category;
+            loadDocuments(categoryId);
         }
     });
 });
@@ -1425,10 +1428,13 @@ function saveCrop() {
 
 // ================= VĂN BẢN (DOCUMENTS) LOGIC =================
 let allDocuments = [];
+let currentDocumentCategory = '';
 
-async function loadDocuments() {
+async function loadDocuments(categoryId = '') {
+    currentDocumentCategory = categoryId;
     try {
-        const response = await apiFetch(API_BASE + '/van-ban');
+        const url = categoryId ? API_BASE + '/van-ban?type=' + categoryId : API_BASE + '/van-ban';
+        const response = await apiFetch(url);
         if (response.ok) {
             allDocuments = await response.json();
             renderDocumentTable();
@@ -1479,6 +1485,8 @@ function openDocumentModal(id = null) {
     document.getElementById('documentForm').reset();
     document.getElementById('currentDocFile').innerText = '';
     document.getElementById('documentId').value = '';
+    const typeCodeEl = document.getElementById('docTypeCode');
+    if (typeCodeEl) typeCodeEl.value = currentDocumentCategory || '';
     
     if (id) {
         document.getElementById('documentModalTitle').innerText = 'Sửa văn bản';
@@ -1489,6 +1497,8 @@ function openDocumentModal(id = null) {
             document.getElementById('docPublishedAt').value = doc.publishedAt ? doc.publishedAt.split('T')[0] : '';
             document.getElementById('docTitle').value = doc.title || '';
             document.getElementById('docIssuingAuthority').value = doc.issuingAuthority || '';
+            const typeCodeEl = document.getElementById('docTypeCode');
+            if (typeCodeEl) typeCodeEl.value = doc.typeCode || '';
             if (doc.fileUrl) {
                 let serverFile = doc.fileUrl.split('/').pop();
                 let displayName = doc.originalFileName || serverFile;
@@ -1507,8 +1517,11 @@ function closeDocumentModal() {
 async function saveDocument(e) {
     e.preventDefault();
     const id = document.getElementById('documentId').value;
+    const typeCodeEl = document.getElementById('docTypeCode');
     const docData = {
         documentNumber: document.getElementById('docNumber').value,
+        typeCode: typeCodeEl ? typeCodeEl.value : '',
+        typeName: (typeCodeEl && typeCodeEl.value) ? typeCodeEl.options[typeCodeEl.selectedIndex].text : '',
         publishedAt: document.getElementById('docPublishedAt').value,
         title: document.getElementById('docTitle').value,
         issuingAuthority: document.getElementById('docIssuingAuthority').value,
@@ -1552,7 +1565,7 @@ async function saveDocument(e) {
         if (res.ok) {
             showAlert('Lưu văn bản thành công', 'success');
             closeDocumentModal();
-            loadDocuments();
+            loadDocuments(currentDocumentCategory);
         } else {
             throw new Error('Lỗi khi lưu văn bản');
         }

@@ -205,7 +205,29 @@
                     <li><a href="#" class="tab-link news-category-link" data-target="dynamic-news-tab" data-category="tuong-tac-cong-dan"><i class="fa-solid fa-users-rays icon-main"></i> <span class="sidebar-text">Tương tác công dân</span></a></li>
                 </ul>
             </li>
-            <li><a href="#" class="tab-link" data-target="documents-tab"><i class="fa-solid fa-file-pdf icon-main"></i> <span class="sidebar-text">Quản lý Văn bản</span></a></li>
+            <li>
+                <div class="menu-parent" onclick="toggleMenu(this)">
+                    <div style="display: flex; align-items: center;"><i class="fa-solid fa-file-pdf icon-main"></i> <span class="sidebar-text">Văn bản</span></div>
+                    <i class="fa-solid fa-chevron-down drop-icon"></i>
+                </div>
+                <ul class="sub-menu">
+                    <li>
+                        <div class="menu-parent tab-link document-category-link active" data-target="documents-tab" data-category="" onclick="toggleMenu(this)">
+                            <div style="display: flex; align-items: center;"><i class="fa-solid fa-file-lines icon-main"></i> <span class="sidebar-text" style="font-size: 14px;">Tất cả văn bản IOC</span></div>
+                            <i class="fa-solid fa-chevron-down drop-icon"></i>
+                        </div>
+                        <ul class="sub-menu">
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="cong-van"><i class="fa-solid fa-file-invoice icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Công văn</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="bao-cao"><i class="fa-solid fa-chart-line icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Báo cáo</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="ke-hoach"><i class="fa-solid fa-calendar-check icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Kế hoạch</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="quyet-dinh"><i class="fa-solid fa-gavel icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Quyết định</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="huong-dan"><i class="fa-solid fa-book-open icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Hướng dẫn</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="chuong-trinh"><i class="fa-solid fa-list-check icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Chương trình</span></a></li>
+                            <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="tap-huan"><i class="fa-solid fa-chalkboard-user icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Tập huấn</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
             <li><a href="#" class="tab-link" data-target="accounts-tab"><i class="fa-solid fa-users icon-main"></i> <span class="sidebar-text">Quản lý Tài Khoản</span></a></li>
             <li><a href="../user/trang-chu/trang-chu.html" target="_blank" style="margin-top: 50px; background: rgba(0,0,0,0.2);"><i class="fa-solid fa-eye icon-main"></i> <span class="sidebar-text">Xem Trang User</span></a></li>
         </ul>
@@ -1154,6 +1176,19 @@
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Số ký hiệu</label>
                     <input type="text" id="docNumber" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Loại văn bản</label>
+                    <select id="docTypeCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif; background-color: white;">
+                        <option value="">-- Chọn loại văn bản --</option>
+                        <option value="cong-van">Công văn</option>
+                        <option value="bao-cao">Báo cáo</option>
+                        <option value="ke-hoach">Kế hoạch</option>
+                        <option value="quyet-dinh">Quyết định</option>
+                        <option value="huong-dan">Hướng dẫn</option>
+                        <option value="chuong-trinh">Chương trình</option>
+                        <option value="tap-huan">Tập huấn</option>
+                    </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Ngày ban hành</label>

@@ -77,19 +77,19 @@ const commonComponents = {
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="van-ban">
-                            <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html">Văn bản <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="#">Văn bản <i class="fa-solid fa-angle-down"></i></a>
                             <ul class="dropdown">
                                 <li class="dropdown-submenu">
-                                    <a href="#">Văn bản Trung tâm IOC <i class="fa-solid fa-angle-right"
+                                    <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html">Văn bản Trung tâm IOC <i class="fa-solid fa-angle-right"
                                             style="float: right; margin-top: 4px;"></i></a>
                                     <ul class="dropdown">
-                                        <li><a href="#">Công văn</a></li>
-                                        <li><a href="#">Báo cáo</a></li>
-                                        <li><a href="#">Kế hoạch</a></li>
-                                        <li><a href="#">Quyết định</a></li>
-                                        <li><a href="#">Hướng dẫn</a></li>
-                                        <li><a href="#">Chương trình</a></li>
-                                        <li><a href="#">Tập huấn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=cong-van">Công văn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=bao-cao">Báo cáo</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=ke-hoach">Kế hoạch</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=quyet-dinh">Quyết định</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=huong-dan">Hướng dẫn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=chuong-trinh">Chương trình</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=tap-huan">Tập huấn</a></li>
                                     </ul>
                                 </li>
                                 <li><a href="#">Bộ Khoa học và Công nghệ</a></li>
