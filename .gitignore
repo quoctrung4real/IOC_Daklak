@@ -10,7 +10,10 @@ backend/.env.*
 *.md
 backend/BAO_CAO_TIEN_DO.md
 backend/data/
-backend/database/
+backend/database/*
+!backend/database/
+!backend/database/IOC_Daklak_complete.sql
+!backend/database/IOC_Daklak_test_data.sql
 backend/wwwroot/uploads/
 
 # OS files

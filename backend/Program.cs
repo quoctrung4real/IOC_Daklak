@@ -300,6 +300,44 @@ app.MapPost("/api/upload", async (
     return Results.Json(new { success = true, url = $"/uploads/{fileName}" });
 }).RequireAuthorization();
 
+app.MapGet("/api/download", (string file, string? name, IWebHostEnvironment environment) =>
+{
+    if (string.IsNullOrWhiteSpace(file))
+    {
+        return Results.BadRequest(new { success = false, message = "Thiếu tên file." });
+    }
+
+    var safeFileName = Path.GetFileName(file);
+    if (string.IsNullOrWhiteSpace(safeFileName))
+    {
+        return Results.BadRequest(new { success = false, message = "Tên file không hợp lệ." });
+    }
+
+    var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+    var allowedDirectories = new[]
+    {
+        Path.Combine(webRootPath, "uploads"),
+        Path.Combine(webRootPath, "documents")
+    };
+
+    foreach (var directory in allowedDirectories)
+    {
+        var rootPath = Path.GetFullPath(directory);
+        var filePath = Path.GetFullPath(Path.Combine(rootPath, safeFileName));
+        if (!filePath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(filePath))
+        {
+            continue;
+        }
+
+        var downloadName = string.IsNullOrWhiteSpace(name) ? safeFileName : Path.GetFileName(name);
+        return Results.File(filePath, "application/octet-stream", downloadName);
+    }
+
+    var fallbackName = string.IsNullOrWhiteSpace(name) ? safeFileName : Path.GetFileName(name);
+    var fallbackPdf = CreatePlaceholderPdf(safeFileName);
+    return Results.File(fallbackPdf, "application/pdf", fallbackName);
+});
+
 app.MapPost("/api/text-to-speech", async (
     TextToSpeechRequestDto payload,
     ITextToSpeechService textToSpeechService,
@@ -604,6 +642,74 @@ static void LoadDotEnv(string filePath)
             Environment.SetEnvironmentVariable(key, value);
         }
     }
+}
+
+static byte[] CreatePlaceholderPdf(string fileName)
+{
+    var lines = new[]
+    {
+        "IOC Dak Lak",
+        "Tai lieu mau",
+        $"File goc chua duoc upload: {SanitizePdfText(fileName)}",
+        "Vui long upload file that vao backend/wwwroot/documents hoac backend/wwwroot/uploads."
+    };
+
+    var content = new StringBuilder();
+    content.AppendLine("BT");
+    content.AppendLine("/F1 14 Tf");
+    content.AppendLine("72 760 Td");
+    foreach (var line in lines)
+    {
+        content.AppendLine($"({EscapePdfText(line)}) Tj");
+        content.AppendLine("0 -24 Td");
+    }
+    content.AppendLine("ET");
+
+    var objects = new[]
+    {
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        $"<< /Length {Encoding.ASCII.GetByteCount(content.ToString())} >>\nstream\n{content}endstream"
+    };
+
+    using var stream = new MemoryStream();
+    WriteAscii(stream, "%PDF-1.4\n");
+    var offsets = new List<long> { 0 };
+
+    for (var i = 0; i < objects.Length; i++)
+    {
+        offsets.Add(stream.Position);
+        WriteAscii(stream, $"{i + 1} 0 obj\n{objects[i]}\nendobj\n");
+    }
+
+    var xrefOffset = stream.Position;
+    WriteAscii(stream, $"xref\n0 {objects.Length + 1}\n");
+    WriteAscii(stream, "0000000000 65535 f \n");
+    foreach (var offset in offsets.Skip(1))
+    {
+        WriteAscii(stream, $"{offset:0000000000} 00000 n \n");
+    }
+    WriteAscii(stream, $"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xrefOffset}\n%%EOF\n");
+
+    return stream.ToArray();
+}
+
+static string SanitizePdfText(string value)
+{
+    return string.Concat(value.Where(ch => ch >= 32 && ch <= 126));
+}
+
+static string EscapePdfText(string value)
+{
+    return value.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
+}
+
+static void WriteAscii(Stream stream, string value)
+{
+    var bytes = Encoding.ASCII.GetBytes(value);
+    stream.Write(bytes, 0, bytes.Length);
 }
 
 public sealed record FrontendRouteInfo(string Url, string FilePath, string Area, string Title);
