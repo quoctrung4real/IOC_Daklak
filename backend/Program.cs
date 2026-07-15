@@ -15,12 +15,16 @@ var projectRoot = Directory.GetParent(builder.Environment.ContentRootPath)?.Full
     ?? builder.Environment.ContentRootPath;
 var frontendRoot = projectRoot;
 
+LoadDotEnv(Path.Combine(builder.Environment.ContentRootPath, ".env"));
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.Configure<UploadOptions>(builder.Configuration.GetSection("Upload"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<TextToSpeechOptions>(builder.Configuration.GetSection("TextToSpeech"));
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
@@ -73,6 +77,20 @@ builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
 });
 builder.Services.AddSingleton<JsonToSqlMigrationService>();
 builder.Services.AddSingleton<AuthTokenService>();
+builder.Services.AddHttpClient<AzureTextToSpeechService>();
+builder.Services.AddTransient<EspeakTextToSpeechService>();
+builder.Services.AddTransient<ITextToSpeechService>(serviceProvider =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<TextToSpeechOptions>>().Value;
+    if (string.Equals(options.Provider, "Azure", StringComparison.OrdinalIgnoreCase) &&
+        !string.IsNullOrWhiteSpace(options.AzureKey) &&
+        !string.IsNullOrWhiteSpace(options.AzureRegion))
+    {
+        return serviceProvider.GetRequiredService<AzureTextToSpeechService>();
+    }
+
+    return serviceProvider.GetRequiredService<EspeakTextToSpeechService>();
+});
 
 var app = builder.Build();
 
@@ -139,31 +157,6 @@ app.MapGet("/api/van-ban", async (string? type, int? take, IPortalDataStore stor
 {
     return Results.Json(await store.GetDocumentsAsync(type, take ?? 20, cancellationToken));
 });
-
-app.MapPost("/api/van-ban", async (DocumentDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
-{
-    var newDoc = await store.AddDocumentAsync(payload, cancellationToken);
-    return Results.Json(new { success = true, message = "Thêm văn bản thành công.", data = newDoc });
-}).RequireAuthorization("AdminOnly");
-
-app.MapPut("/api/van-ban/{id:int}", async (int id, DocumentDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
-{
-    try
-    {
-        var updatedDoc = await store.UpdateDocumentAsync(id, payload, cancellationToken);
-        return Results.Json(new { success = true, message = "Cập nhật văn bản thành công.", data = updatedDoc });
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(new { success = false, message = ex.Message });
-    }
-}).RequireAuthorization("AdminOnly");
-
-app.MapDelete("/api/van-ban/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
-{
-    await store.DeleteDocumentAsync(id, cancellationToken);
-    return Results.Json(new { success = true, message = "Xóa văn bản thành công." });
-}).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tim-kiem", async (string? q, int? take, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
@@ -297,46 +290,112 @@ app.MapPost("/api/upload", async (
     var uploadsDir = Path.Combine(webRootPath, "uploads");
     Directory.CreateDirectory(uploadsDir);
 
-    // Giữ lại tên gốc của file, thêm GUID ngắn để tránh trùng lặp
-    var originalName = Path.GetFileNameWithoutExtension(file.FileName);
-    var sanitizedName = new string(originalName.Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == ' ').ToArray());
-    if (string.IsNullOrWhiteSpace(sanitizedName)) sanitizedName = "document";
-    sanitizedName = sanitizedName.Trim().Replace(" ", "-");
-    
-    var fileName = $"{sanitizedName}_{Guid.NewGuid().ToString().Substring(0, 6)}{extension}";
+    // Sinh tên file mới để tránh ghi đè và tránh tin vào tên file người dùng gửi lên.
+    var fileName = $"{Guid.NewGuid():N}{extension}";
     var filePath = Path.Combine(uploadsDir, fileName);
 
     await using var stream = new FileStream(filePath, FileMode.CreateNew);
     await file.CopyToAsync(stream, cancellationToken);
 
-    return Results.Json(new { success = true, url = $"/uploads/{fileName}", originalFileName = file.FileName });
+    return Results.Json(new { success = true, url = $"/uploads/{fileName}" });
 }).RequireAuthorization();
 
-app.MapGet("/api/download", (string? name, string? file, IWebHostEnvironment environment, HttpContext context) =>
+app.MapGet("/api/download", (string file, string? name, IWebHostEnvironment environment) =>
 {
     if (string.IsNullOrWhiteSpace(file))
     {
-        return Results.BadRequest(new { success = false, message = "Thiếu tham số file." });
+        return Results.BadRequest(new { success = false, message = "Thiếu tên file." });
     }
 
-    // Sanitize: only allow filename, no path traversal
-    var safeFile = Path.GetFileName(file);
+    var safeFileName = Path.GetFileName(file);
+    if (string.IsNullOrWhiteSpace(safeFileName))
+    {
+        return Results.BadRequest(new { success = false, message = "Tên file không hợp lệ." });
+    }
+
     var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-    var filePath = Path.Combine(webRootPath, "uploads", safeFile);
-
-    if (!System.IO.File.Exists(filePath))
+    var allowedDirectories = new[]
     {
-        return Results.NotFound(new { success = false, message = "Không tìm thấy file." });
+        Path.Combine(webRootPath, "uploads"),
+        Path.Combine(webRootPath, "documents")
+    };
+
+    foreach (var directory in allowedDirectories)
+    {
+        var rootPath = Path.GetFullPath(directory);
+        var filePath = Path.GetFullPath(Path.Combine(rootPath, safeFileName));
+        if (!filePath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(filePath))
+        {
+            continue;
+        }
+
+        var downloadName = string.IsNullOrWhiteSpace(name) ? safeFileName : Path.GetFileName(name);
+        return Results.File(filePath, "application/octet-stream", downloadName);
     }
 
-    var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
-    if (!provider.TryGetContentType(filePath, out var contentType))
+    var fallbackName = string.IsNullOrWhiteSpace(name) ? safeFileName : Path.GetFileName(name);
+    var fallbackPdf = CreatePlaceholderPdf(safeFileName);
+    return Results.File(fallbackPdf, "application/pdf", fallbackName);
+});
+
+app.MapPost("/api/text-to-speech", async (
+    TextToSpeechRequestDto payload,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await textToSpeechService.SynthesizeAsync(payload, cancellationToken);
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
+});
+
+app.MapGet("/api/text-to-speech/content-page/{slug}", async (
+    string slug,
+    IPortalDataStore store,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    if (!contentPages.ContainsKey(slug))
     {
-        contentType = "application/octet-stream";
+        return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay trang noi dung."));
     }
 
-    var downloadName = !string.IsNullOrWhiteSpace(name) ? name : safeFile;
-    return Results.File(filePath, contentType: contentType, fileDownloadName: downloadName);
+    var page = await store.GetContentPageAsync(slug, cancellationToken);
+    var result = await textToSpeechService.SynthesizeAsync(new TextToSpeechRequestDto
+    {
+        Text = $"{page.Title}. {page.Content}"
+    }, cancellationToken);
+
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
+});
+
+app.MapGet("/api/text-to-speech/news-category/{slug}", async (
+    string slug,
+    IPortalDataStore store,
+    ITextToSpeechService textToSpeechService,
+    CancellationToken cancellationToken) =>
+{
+    var category = newsCategories.FirstOrDefault(item => string.Equals(item.Slug, slug, StringComparison.OrdinalIgnoreCase));
+    if (category is null)
+    {
+        return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay chuyen muc tin tuc."));
+    }
+
+    var page = await store.GetNewsCategoryAsync(category, cancellationToken);
+    var posts = page.Posts
+        .OrderByDescending(post => DateTime.TryParse(post.CreatedAt, out var date) ? date : DateTime.MinValue)
+        .Select(post => $"{post.Title}. {post.Content}");
+
+    var result = await textToSpeechService.SynthesizeAsync(new TextToSpeechRequestDto
+    {
+        Text = $"{page.Title}. {string.Join(" ", posts)}"
+    }, cancellationToken);
+
+    return result.Success
+        ? (IResult)Results.Json(result)
+        : Results.BadRequest(result);
 });
 
 app.MapGet("/api/nguoi-dung", async (IPortalDataStore store, CancellationToken cancellationToken) =>
@@ -553,6 +612,104 @@ static IReadOnlyList<NewsCategoryInfo> GetNewsCategories()
         new() { Slug = "trao-doi-kinh-nghiem", Title = "Trao đổi kinh nghiệm" },
         new() { Slug = "tuong-tac-cong-dan", Title = "Tương tác công dân" }
     ];
+}
+
+static void LoadDotEnv(string filePath)
+{
+    if (!System.IO.File.Exists(filePath))
+    {
+        return;
+    }
+
+    foreach (var rawLine in System.IO.File.ReadAllLines(filePath))
+    {
+        var line = rawLine.Trim();
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+        if (!string.IsNullOrWhiteSpace(key))
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
+
+static byte[] CreatePlaceholderPdf(string fileName)
+{
+    var lines = new[]
+    {
+        "IOC Dak Lak",
+        "Tai lieu mau",
+        $"File goc chua duoc upload: {SanitizePdfText(fileName)}",
+        "Vui long upload file that vao backend/wwwroot/documents hoac backend/wwwroot/uploads."
+    };
+
+    var content = new StringBuilder();
+    content.AppendLine("BT");
+    content.AppendLine("/F1 14 Tf");
+    content.AppendLine("72 760 Td");
+    foreach (var line in lines)
+    {
+        content.AppendLine($"({EscapePdfText(line)}) Tj");
+        content.AppendLine("0 -24 Td");
+    }
+    content.AppendLine("ET");
+
+    var objects = new[]
+    {
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        $"<< /Length {Encoding.ASCII.GetByteCount(content.ToString())} >>\nstream\n{content}endstream"
+    };
+
+    using var stream = new MemoryStream();
+    WriteAscii(stream, "%PDF-1.4\n");
+    var offsets = new List<long> { 0 };
+
+    for (var i = 0; i < objects.Length; i++)
+    {
+        offsets.Add(stream.Position);
+        WriteAscii(stream, $"{i + 1} 0 obj\n{objects[i]}\nendobj\n");
+    }
+
+    var xrefOffset = stream.Position;
+    WriteAscii(stream, $"xref\n0 {objects.Length + 1}\n");
+    WriteAscii(stream, "0000000000 65535 f \n");
+    foreach (var offset in offsets.Skip(1))
+    {
+        WriteAscii(stream, $"{offset:0000000000} 00000 n \n");
+    }
+    WriteAscii(stream, $"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xrefOffset}\n%%EOF\n");
+
+    return stream.ToArray();
+}
+
+static string SanitizePdfText(string value)
+{
+    return string.Concat(value.Where(ch => ch >= 32 && ch <= 126));
+}
+
+static string EscapePdfText(string value)
+{
+    return value.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
+}
+
+static void WriteAscii(Stream stream, string value)
+{
+    var bytes = Encoding.ASCII.GetBytes(value);
+    stream.Write(bytes, 0, bytes.Length);
 }
 
 public sealed record FrontendRouteInfo(string Url, string FilePath, string Area, string Title);
