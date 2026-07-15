@@ -67,8 +67,8 @@ const commonComponents = {
                                 <li><a href="${window.BASE_URL || ''}user/tin-tuc/cds-doi-moi-sang-tao.html">CĐS - Đổi mới sáng tạo</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/chuyen-muc-khac/chi-dao-dieu-hanh.html">Chỉ đạo điều hành</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/chuyen-muc-khac/cong-tac-xay-dung-dang.html">Công tác xây dựng Đảng</a></li>
-                                <li><a href="${window.BASE_URL || ''}user/giai-phap/giai-phap-an-toan-mang.html">Giải pháp An toàn mạng</a></li>
-                                <li><a href="${window.BASE_URL || ''}user/giai-phap/giai-phap-an-toan-thong-tin.html">Giải pháp An toàn thông tin</a></li>
+                                <li><a href="${window.BASE_URL || ''}user/tin-tuc/giai-phap-an-toan-mang.html">Giải pháp An toàn mạng</a></li>
+                                <li><a href="${window.BASE_URL || ''}user/tin-tuc/giai-phap-an-toan-thong-tin.html">Giải pháp An toàn thông tin</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/tin-tuc/thong-bao.html">Thông báo</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/chuyen-muc-khac/tieu-chuan-chat-luong.html">Tiêu chuẩn - Chất lượng</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/tin-tuc/tin-hoat-dong.html">Tin hoạt động</a></li>
@@ -79,13 +79,25 @@ const commonComponents = {
                         <li class="nav-item has-dropdown" data-nav="van-ban">
                             <a href="#">Văn bản <i class="fa-solid fa-angle-down"></i></a>
                             <ul class="dropdown">
+                                <li class="dropdown-submenu">
+                                    <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html">Văn bản Trung tâm IOC <i class="fa-solid fa-angle-right"
+                                            style="float: right; margin-top: 4px;"></i></a>
+                                    <ul class="dropdown">
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=cong-van">Công văn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=bao-cao">Báo cáo</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=ke-hoach">Kế hoạch</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=quyet-dinh">Quyết định</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=huong-dan">Hướng dẫn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=chuong-trinh">Chương trình</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=tap-huan">Tập huấn</a></li>
+                                    </ul>
+                                </li>
                                 <li><a href="#">Bộ Khoa học và Công nghệ</a></li>
-                                <li><a href="#">CSDL VBQPPL tỉnh Đắk Lắk</a></li>
-                                <li><a href="#">Khoa học và Công nghệ địa phương</a></li>
-                                <li><a href="#">Khoa học và Công nghệ Trung ương</a></li>
                                 <li><a href="#">UBND tỉnh Đắk Lắk</a></li>
-                                <li><a href="#">Văn bản</a></li>
-                                <li><a href="#">Văn bản Trung tâm IOC</a></li>
+                                <li><a href="#">CSDL VBQPPL tỉnh Đắk Lắk</a></li>
+                                <li><a href="#">Khoa học và Công nghệ Trung ương</a></li>
+                                <li><a href="#">Khoa học và Công nghệ địa phương</a></li>
+                                <li><a href="#">Văn bản luật</a></li>
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="y-kien-du-thao">
@@ -158,6 +170,7 @@ const commonComponents = {
                             <li class="user-info-item">Xin chào, <b id="displayUsername">Guest</b></li>
                             <li><hr></li>
                             <li><a href="${window.BASE_URL || ''}profile/ho-so.html"><i class="fa-solid fa-address-card"></i> Hồ sơ cá nhân</a></li>
+                            <li id="adminLinkItem" style="display: none;"><a href="${window.BASE_URL || ''}admin/quan-tri.html" target="_blank"><i class="fa-solid fa-user-shield"></i> Chuyển tới trang Admin</a></li>
                             <li><a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
                         </ul>
                     </div>

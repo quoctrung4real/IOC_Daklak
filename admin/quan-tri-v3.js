@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:5100/api';
 
 function getAuthHeaders(extraHeaders = {}) {
     const token = localStorage.getItem('accessToken');
@@ -14,6 +14,12 @@ async function apiFetch(url, options = {}) {
 
     if (response.status === 401 || response.status === 403) {
         showAlert('Phiên đăng nhập không có quyền quản trị hoặc đã hết hạn. Vui lòng đăng nhập lại bằng tài khoản admin.', false);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('tokenType');
+        setTimeout(() => {
+            window.location.href = '../user/trang-chu/trang-chu.html';
+        }, 1500);
+        throw new Error('Unauthorized');
     }
 
     return response;
@@ -29,10 +35,41 @@ function showAlert(message, isSuccess = true) {
     }, 3000);
 }
 
+// Custom confirm modal
+function showConfirm(message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    if (!modal) return;
+    
+    document.getElementById('confirmModalMessage').textContent = message;
+    
+    const btnCancel = document.getElementById('btnConfirmCancel');
+    const btnOk = document.getElementById('btnConfirmOk');
+    
+    // Clean up previous event listeners
+    const newBtnCancel = btnCancel.cloneNode(true);
+    const newBtnOk = btnOk.cloneNode(true);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+    btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+    
+    newBtnCancel.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    newBtnOk.addEventListener('click', () => {
+        modal.style.display = 'none';
+        if (onConfirm) onConfirm();
+    });
+    
+    modal.style.display = 'flex';
+}
+
 async function ensureAdminSession() {
     const token = localStorage.getItem('accessToken');
     if (!token) {
         showAlert('Vui lòng đăng nhập bằng tài khoản admin trước khi quản trị hệ thống.', false);
+        setTimeout(() => {
+            window.location.href = '../user/trang-chu/trang-chu.html';
+        }, 1500);
         return false;
     }
 
@@ -43,12 +80,14 @@ async function ensureAdminSession() {
         const profile = await response.json();
         if (profile.role !== 'Admin') {
             showAlert('Tài khoản hiện tại không có quyền quản trị.', false);
+            setTimeout(() => {
+                window.location.href = '../user/trang-chu/trang-chu.html';
+            }, 1500);
             return false;
         }
 
         return true;
     } catch (err) {
-        showAlert('Không kiểm tra được phiên quản trị. Vui lòng thử lại.', false);
         return false;
     }
 }
@@ -77,6 +116,9 @@ document.querySelectorAll('.tab-link').forEach(link => {
             const categoryName = e.currentTarget.textContent.trim();
             document.getElementById('newsTabTitle').textContent = `Quản lý ${categoryName}`;
             loadNews(categoryId);
+        } else if (e.currentTarget.classList.contains('document-category-link')) {
+            const categoryId = e.currentTarget.dataset.category;
+            loadDocuments(categoryId);
         }
     });
 });
@@ -577,13 +619,19 @@ function renderNewsTable() {
         const tr = document.createElement('tr');
         tr.style.borderBottom = "1px solid #e2e8f0";
         tr.innerHTML = `
-            <td style="padding: 12px;"><img src="${post.imageUrl || 'https://via.placeholder.com/100x60'}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+            <td style="padding: 12px;">
+                ${post.imageUrl ? 
+                    `<img src="${post.imageUrl}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px;" onerror="this.outerHTML='<div style=\\'width: 80px; height: 50px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; border: 1px dashed #cbd5e1;\\'>Không có<br>hình ảnh</div>'">` 
+                    : 
+                    `<div style="width: 80px; height: 50px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; border: 1px dashed #cbd5e1;">Không có<br>hình ảnh</div>`
+                }
+            </td>
             <td style="padding: 12px; font-weight: 500;">${post.title}</td>
             <td style="padding: 12px;">${post.source || '-'}</td>
             <td style="padding: 12px; color: #64748b;">${post.createdAt}</td>
             <td style="padding: 12px; text-align: center;">
-                <button onclick="editNews('${post.id}')" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 10px;" title="Sửa"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteNews('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer;" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" onclick="editNews('${post.id}')" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 10px;" title="Sửa"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" onclick="deleteNews('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer;" title="Xóa"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -600,6 +648,10 @@ function openNewsModal() {
     document.getElementById('newsPostForm').reset();
     document.getElementById('newsFormId').value = '';
     newsEditor.root.innerHTML = '';
+    
+    updateFeaturedCountPreview();
+    
+    updateNewsImagePreview();
     document.getElementById('newsModal').style.display = 'flex';
 }
 
@@ -617,18 +669,23 @@ function editNews(id) {
     document.getElementById('newsFormTitle').value = post.title;
     document.getElementById('newsFormImageUrl').value = post.imageUrl || '';
     document.getElementById('newsFormSource').value = post.source || '';
+    document.getElementById('newsFormAuthor').value = post.author || '';
     document.getElementById('newsFormLinkUrl').value = post.linkUrl || '';
     document.getElementById('newsFormLinkText').value = post.linkText || '';
+    document.getElementById('newsFormIsFeatured').checked = post.isFeatured || false;
     newsEditor.root.innerHTML = post.content || '';
     
+    updateFeaturedCountPreview();
+    
+    updateNewsImagePreview();
     document.getElementById('newsModal').style.display = 'flex';
 }
 
 async function deleteNews(id) {
-    if (!confirm('Bạn có chắc chắn muốn xóa tin này?')) return;
-    
-    newsDataGlobal.posts = newsDataGlobal.posts.filter(p => p.id !== id);
-    await saveNewsToServer('Đã xóa tin bài.');
+    showConfirm('Bạn có chắc chắn muốn xóa tin này?', async () => {
+        newsDataGlobal.posts = newsDataGlobal.posts.filter(p => p.id !== id);
+        await saveNewsToServer('Đã xóa tin bài.');
+    });
 }
 
 document.getElementById('newsPostForm').addEventListener('submit', async (e) => {
@@ -660,9 +717,11 @@ document.getElementById('newsPostForm').addEventListener('submit', async (e) => 
         title: document.getElementById('newsFormTitle').value,
         imageUrl: imageUrl,
         source: document.getElementById('newsFormSource').value,
+        author: document.getElementById('newsFormAuthor').value,
         content: newsEditor.root.innerHTML,
         linkUrl: document.getElementById('newsFormLinkUrl').value,
-        linkText: document.getElementById('newsFormLinkText').value
+        linkText: document.getElementById('newsFormLinkText').value,
+        isFeatured: document.getElementById('newsFormIsFeatured').checked
     };
     
     if (isEditingNews) {
@@ -756,7 +815,7 @@ async function deleteUser(username) {
         return;
     }
     
-    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản "${username}" không?`)) {
+    showConfirm(`Bạn có chắc chắn muốn xóa tài khoản "${username}" không?`, async () => {
         try {
             const res = await apiFetch(`${API_BASE}/admin/nguoi-dung/${username}`, {
                 method: 'DELETE'
@@ -772,7 +831,7 @@ async function deleteUser(username) {
             console.error(err);
             showAlert('Lỗi kết nối máy chủ', false);
         }
-    }
+    });
 }
 
 document.getElementById('userForm')?.addEventListener('submit', async (e) => {
@@ -1196,3 +1255,363 @@ function toggleConfigSection(headerEl) {
         if (textEl) textEl.textContent = 'Mở rộng';
     }
 }
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    sidebar.classList.toggle('collapsed');
+}
+
+// Thêm sự kiện cập nhật preview ảnh tin tức
+document.getElementById('newsFormImageUrl')?.addEventListener('input', updateNewsImagePreview);
+document.getElementById('newsFormIsFeatured')?.addEventListener('change', updateFeaturedCountPreview);
+
+function updateFeaturedCountPreview() {
+    let featuredCount = newsDataGlobal.posts.filter(p => p.isFeatured).length;
+    
+    const formId = document.getElementById('newsFormId').value;
+    const isCurrentlyFeatured = document.getElementById('newsFormIsFeatured').checked;
+    
+    if (formId) {
+        const post = newsDataGlobal.posts.find(p => p.id === formId);
+        if (post && post.isFeatured) {
+            featuredCount--; 
+        }
+    }
+    
+    if (isCurrentlyFeatured && featuredCount >= 2) {
+        document.getElementById('newsFormIsFeatured').checked = false;
+        const errorSpan = document.getElementById('newsFormFeaturedError');
+        if (errorSpan) {
+            errorSpan.style.opacity = '1';
+            setTimeout(() => {
+                errorSpan.style.opacity = '0';
+            }, 4000);
+        }
+    } else if (isCurrentlyFeatured) {
+        featuredCount++;
+    }
+    
+    const label = document.getElementById('newsFormIsFeaturedLabel');
+    if (label) {
+        label.textContent = `Tin tức nổi bật (tính năng đã chọn ${featuredCount}/2 tin)`;
+    }
+}
+
+function updateNewsImagePreview() {
+    const url = document.getElementById('newsFormImageUrl').value;
+    const previewContainer = document.getElementById('newsFormImagePreviewContainer');
+    const previewImg = document.getElementById('newsFormImagePreview');
+    const emptyText = document.getElementById('newsFormImageEmpty');
+    const deleteBtn = document.getElementById('newsFormDeleteImageBtn');
+    
+    if (!previewContainer) return;
+    
+    if (url) {
+        previewImg.src = (url.startsWith('http') || url.startsWith('data:')) ? url : `http://localhost:5100${url}`;
+        previewContainer.style.display = 'block';
+        if (emptyText) emptyText.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'flex';
+    } else {
+        previewContainer.style.display = 'none';
+        if (emptyText) emptyText.style.display = 'block';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+    }
+}
+
+function clearNewsImage() {
+    document.getElementById('newsFormImageUrl').value = '';
+    document.getElementById('newsFormImageUpload').value = '';
+    updateNewsImagePreview();
+}
+
+// === CROPPER LOGIC ===
+let cropper = null;
+let currentCropTarget = null;
+let currentCropInput = null;
+
+function openCropper(input, target) {
+    if (input.files && input.files[0]) {
+        currentCropTarget = target;
+        currentCropInput = input;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('cropperImage').src = e.target.result;
+            document.getElementById('cropperModal').style.display = 'flex';
+            
+            if (cropper) {
+                cropper.destroy();
+            }
+            
+            const image = document.getElementById('cropperImage');
+            
+            let aspectRatio = NaN;
+            const shapeSelector = document.getElementById('cropShapeSelector');
+            if (shapeSelector) shapeSelector.style.display = 'none';
+            
+            if (target === 'news') {
+                aspectRatio = 16 / 9;
+            } else if (target === 'logo' || target === 'favicon') {
+                aspectRatio = 1;
+                if (shapeSelector) shapeSelector.style.display = 'block';
+            } else if (target === 'banner') {
+                aspectRatio = 21 / 9;
+            } else if (target === 'hero') {
+                aspectRatio = 16 / 9;
+            }
+            
+            cropper = new Cropper(image, {
+                aspectRatio: aspectRatio,
+                viewMode: 1,
+                autoCropArea: 1,
+            });
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function closeCropperModal() {
+    document.getElementById('cropperModal').style.display = 'none';
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    if (currentCropInput) {
+        currentCropInput.value = '';
+    }
+}
+
+function updateCropShape() {
+    const shapeInput = document.querySelector('input[name="cropShape"]:checked');
+    if (!shapeInput) return;
+    
+    if (shapeInput.value === 'circle') {
+        document.querySelector('.cropper-view-box').style.borderRadius = '50%';
+        document.querySelector('.cropper-face').style.borderRadius = '50%';
+    } else {
+        document.querySelector('.cropper-view-box').style.borderRadius = '0';
+        document.querySelector('.cropper-face').style.borderRadius = '0';
+    }
+}
+
+function saveCrop() {
+    if (!cropper) return;
+    
+    let canvasWidth = 800;
+    
+    // Thu nhỏ mini hình ảnh để tối ưu dung lượng
+    if (currentCropTarget === 'news') {
+        canvasWidth = 800;
+    } else if (currentCropTarget === 'logo' || currentCropTarget === 'favicon') {
+        canvasWidth = 200;
+    } else if (currentCropTarget === 'banner') {
+        canvasWidth = 1200;
+    } else if (currentCropTarget === 'hero') {
+        canvasWidth = 1200;
+    }
+
+    const canvas = cropper.getCroppedCanvas({
+        width: canvasWidth,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+    });
+    
+    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+    
+    if (currentCropTarget === 'news') {
+        document.getElementById('newsFormImageUrl').value = base64Image;
+        updateNewsImagePreview();
+    }
+    
+    closeCropperModal();
+}
+
+// ================= VĂN BẢN (DOCUMENTS) LOGIC =================
+let allDocuments = [];
+let currentDocumentCategory = '';
+
+async function loadDocuments(categoryId = '') {
+    currentDocumentCategory = categoryId;
+    try {
+        const url = categoryId ? API_BASE + '/van-ban?type=' + categoryId : API_BASE + '/van-ban';
+        const response = await apiFetch(url);
+        if (response.ok) {
+            allDocuments = await response.json();
+            renderDocumentTable();
+        } else {
+            showAlert('Lỗi khi tải danh sách văn bản', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showAlert('Không thể kết nối đến máy chủ', 'error');
+    }
+}
+
+function renderDocumentTable(docsToRender = allDocuments) {
+    const tbody = document.getElementById('document-table-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    if (docsToRender.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Chưa có văn bản nào</td></tr>';
+        return;
+    }
+    
+    docsToRender.forEach((doc, idx) => {
+        let serverFile = doc.fileUrl ? doc.fileUrl.split('/').pop() : '';
+        let displayName = doc.originalFileName || serverFile;
+        const fileLink = doc.fileUrl 
+            ? `<a href="http://localhost:5100/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank" style="color: #0a59ab;"><i class="fa-solid fa-download"></i> Tải về</a>` 
+            : `<span style="color: #999;">Không có</span>`;
+            
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${idx + 1}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500;">${doc.documentNumber || ''}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${doc.publishedAt || ''}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${doc.title || ''}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${fileLink}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
+                <button type="button" onclick="openDocumentModal(${doc.id})" style="background: none; border: none; color: #0a59ab; cursor: pointer; margin-right: 10px;" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button type="button" onclick="deleteDocument(${doc.id})" style="background: none; border: none; color: #dc2626; cursor: pointer;" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openDocumentModal(id = null) {
+    document.getElementById('documentModal').style.display = 'flex';
+    document.getElementById('documentForm').reset();
+    document.getElementById('currentDocFile').innerText = '';
+    document.getElementById('documentId').value = '';
+    const typeCodeEl = document.getElementById('docTypeCode');
+    if (typeCodeEl) typeCodeEl.value = currentDocumentCategory || '';
+    
+    if (id) {
+        document.getElementById('documentModalTitle').innerText = 'Sửa văn bản';
+        const doc = allDocuments.find(d => d.id === id);
+        if (doc) {
+            document.getElementById('documentId').value = doc.id;
+            document.getElementById('docNumber').value = doc.documentNumber || '';
+            document.getElementById('docPublishedAt').value = doc.publishedAt ? doc.publishedAt.split('T')[0] : '';
+            document.getElementById('docTitle').value = doc.title || '';
+            document.getElementById('docIssuingAuthority').value = doc.issuingAuthority || '';
+            const typeCodeEl = document.getElementById('docTypeCode');
+            if (typeCodeEl) typeCodeEl.value = doc.typeCode || '';
+            if (doc.fileUrl) {
+                let serverFile = doc.fileUrl.split('/').pop();
+                let displayName = doc.originalFileName || serverFile;
+                document.getElementById('currentDocFile').innerHTML = `File hiện tại: <a href="http://localhost:5100/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank">${displayName}</a>`;
+            }
+        }
+    } else {
+        document.getElementById('documentModalTitle').innerText = 'Thêm văn bản mới';
+    }
+}
+
+function closeDocumentModal() {
+    document.getElementById('documentModal').style.display = 'none';
+}
+
+async function saveDocument(e) {
+    e.preventDefault();
+    const id = document.getElementById('documentId').value;
+    const typeCodeEl = document.getElementById('docTypeCode');
+    const docData = {
+        documentNumber: document.getElementById('docNumber').value,
+        typeCode: typeCodeEl ? typeCodeEl.value : '',
+        typeName: (typeCodeEl && typeCodeEl.value) ? typeCodeEl.options[typeCodeEl.selectedIndex].text : '',
+        publishedAt: document.getElementById('docPublishedAt').value,
+        title: document.getElementById('docTitle').value,
+        issuingAuthority: document.getElementById('docIssuingAuthority').value,
+    };
+    
+    const fileInput = document.getElementById('docFile');
+    const file = fileInput.files[0];
+    
+    try {
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const uploadRes = await apiFetch(API_BASE + '/upload', {
+                method: 'POST',
+                body: formData
+            });
+            if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                docData.fileUrl = uploadData.url;
+                docData.originalFileName = uploadData.originalFileName;
+            } else {
+                throw new Error('Upload file thất bại');
+            }
+        } else if (id) {
+            const existingDoc = allDocuments.find(d => d.id == id);
+            if (existingDoc && existingDoc.fileUrl) {
+                docData.fileUrl = existingDoc.fileUrl;
+                docData.originalFileName = existingDoc.originalFileName;
+            }
+        }
+        
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? API_BASE + '/van-ban/' + id : API_BASE + '/van-ban';
+        
+        const res = await apiFetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(docData)
+        });
+        
+        if (res.ok) {
+            showAlert('Lưu văn bản thành công', 'success');
+            closeDocumentModal();
+            loadDocuments(currentDocumentCategory);
+        } else {
+            throw new Error('Lỗi khi lưu văn bản');
+        }
+    } catch (error) {
+        console.error(error);
+        showAlert(error.message || 'Lỗi khi lưu văn bản', 'error');
+    }
+}
+
+async function deleteDocument(id) {
+    showConfirm('Bạn có chắc chắn muốn xóa văn bản này?', async () => {
+        try {
+            const res = await apiFetch(API_BASE + '/van-ban/' + id, { method: 'DELETE' });
+            if (res.ok) {
+                showAlert('Xóa văn bản thành công', 'success');
+                loadDocuments();
+            } else {
+                showAlert('Lỗi khi xóa văn bản', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert('Không thể kết nối đến máy chủ', 'error');
+        }
+    });
+}
+
+// Search documents
+const docSearchInput = document.getElementById('document-search-input');
+if (docSearchInput) {
+    docSearchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const filtered = allDocuments.filter(d => 
+            (d.documentNumber && d.documentNumber.toLowerCase().includes(query)) ||
+            (d.title && d.title.toLowerCase().includes(query))
+        );
+        renderDocumentTable(filtered);
+    });
+}
+
+// Call loadDocuments if on the document tab (or add to init functions)
+document.querySelectorAll('.tab-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        if (this.getAttribute('data-target') === 'documents-tab') {
+            loadDocuments();
+        }
+    });
+});
+
+

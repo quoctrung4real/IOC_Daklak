@@ -77,19 +77,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentUser === 'undefined' || currentUser === 'null') {
         currentUser = null;
     }
+    let currentRole = localStorage.getItem('currentUserRole');
 
     function updateAuthUI() {
         if (!userBtnText) return;
+        const adminLinkItem = document.getElementById('adminLinkItem');
         if (currentUser) {
             const isValidFullName = currentFullName && currentFullName !== 'undefined' && currentFullName !== 'null';
             userBtnText.textContent = isValidFullName ? currentFullName : currentUser;
             if (displayUsername) {
                 displayUsername.textContent = isValidFullName ? currentFullName : currentUser;
             }
+            if (adminLinkItem) {
+                adminLinkItem.style.display = currentRole === 'Admin' ? 'block' : 'none';
+            }
         } else {
             userBtnText.textContent = 'Đăng nhập';
             if (displayUsername) {
                 displayUsername.textContent = 'Guest';
+            }
+            if (adminLinkItem) {
+                adminLinkItem.style.display = 'none';
             }
         }
     }
@@ -100,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUser = null;
         }
         currentFullName = localStorage.getItem('currentFullName');
+        currentRole = localStorage.getItem('currentUserRole');
         updateAuthUI();
     });
     
@@ -154,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorEl.textContent = '';
 
         try {
-            const res = await fetch('http://localhost:5000/api/login', {
+            const res = await fetch('http://localhost:5100/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -173,6 +182,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     localStorage.removeItem('currentFullName');
                     currentFullName = null;
+                }
+                if (data.user.role) {
+                    localStorage.setItem('currentUserRole', data.user.role);
+                    currentRole = data.user.role;
+                } else {
+                    localStorage.removeItem('currentUserRole');
+                    currentRole = null;
                 }
                 currentUser = data.user.username;
                 updateAuthUI();
@@ -198,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorEl.textContent = '';
 
         try {
-            const res = await fetch('http://localhost:5000/api/register', {
+            const res = await fetch('http://localhost:5100/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -213,6 +229,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 localStorage.removeItem('currentFullName');
                 currentFullName = null;
+                if (data.user.role) {
+                    localStorage.setItem('currentUserRole', data.user.role);
+                    currentRole = data.user.role;
+                } else {
+                    localStorage.removeItem('currentUserRole');
+                    currentRole = null;
+                }
                 currentUser = data.user.username;
                 updateAuthUI();
                 authModal.classList.remove('show');
@@ -235,8 +258,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('tokenType');
         localStorage.removeItem('tokenExpiresAt');
+        localStorage.removeItem('currentUserRole');
         currentUser = null;
         currentFullName = null;
+        currentRole = null;
         updateAuthUI();
         userDropdownMenu.classList.remove('show');
         window.dispatchEvent(new Event('userLoginStateChanged'));
