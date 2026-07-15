@@ -942,7 +942,7 @@
         <!-- Quản lý Văn Bản -->
         <div id="documents-tab" class="tab-content">
             <div class="card">
-                <h3>Quản lý Văn bản</h3>
+                <h3 id="documentTabTitle">Quản lý Tất cả văn bản IOC</h3>
                 <div style="display: flex; gap: 15px; margin-bottom: 20px;">
                     <button type="button" class="btn-action btn-add" onclick="openDocumentModal()">
                         <i class="fa-solid fa-plus"></i> Thêm văn bản mới
@@ -955,7 +955,7 @@
 
                 <div style="overflow-x: auto;">
                     <table class="news-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">
-                        <thead>
+                        <thead id="document-table-head">
                             <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                                 <th style="padding: 12px; text-align: left;">STT</th>
                                 <th style="padding: 12px; text-align: left;">Số kí hiệu</th>

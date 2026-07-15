@@ -118,6 +118,8 @@ document.querySelectorAll('.tab-link').forEach(link => {
             loadNews(categoryId);
         } else if (e.currentTarget.classList.contains('document-category-link')) {
             const categoryId = e.currentTarget.dataset.category;
+            const categoryName = e.currentTarget.textContent.trim();
+            document.getElementById('documentTabTitle').textContent = `Quản lý ${categoryName}`;
             loadDocuments(categoryId);
         }
     });
@@ -1451,9 +1453,26 @@ function renderDocumentTable(docsToRender = allDocuments) {
     const tbody = document.getElementById('document-table-body');
     if (!tbody) return;
     
+    const isAllDocuments = (currentDocumentCategory === '');
+    const thead = document.getElementById('document-table-head');
+    if (thead) {
+        thead.innerHTML = `
+            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <th style="padding: 12px; text-align: left;">STT</th>
+                <th style="padding: 12px; text-align: left;">Số kí hiệu</th>
+                ${isAllDocuments ? '<th style="padding: 12px; text-align: left;">Phân loại</th>' : ''}
+                <th style="padding: 12px; text-align: left;">Ngày ban hành</th>
+                <th style="padding: 12px; text-align: left;">Trích yếu</th>
+                <th style="padding: 12px; text-align: left;">File đính kèm</th>
+                <th style="padding: 12px; text-align: center;">Thao tác</th>
+            </tr>
+        `;
+    }
+    
     tbody.innerHTML = '';
     if (docsToRender.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Chưa có văn bản nào</td></tr>';
+        const colSpan = isAllDocuments ? 7 : 6;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; padding: 20px;">Chưa có văn bản nào</td></tr>`;
         return;
     }
     
@@ -1468,6 +1487,7 @@ function renderDocumentTable(docsToRender = allDocuments) {
         tr.innerHTML = `
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${idx + 1}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500;">${doc.documentNumber || ''}</td>
+            ${isAllDocuments ? `<td style="padding: 12px; border-bottom: 1px solid #e2e8f0;"><span style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #e0f2fe; color: #0369a1; font-size: 13px;">${doc.typeName || 'Khác'}</span></td>` : ''}
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${doc.publishedAt || ''}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${doc.title || ''}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${fileLink}</td>
@@ -1581,7 +1601,7 @@ async function deleteDocument(id) {
             const res = await apiFetch(API_BASE + '/van-ban/' + id, { method: 'DELETE' });
             if (res.ok) {
                 showAlert('Xóa văn bản thành công', 'success');
-                loadDocuments();
+                loadDocuments(currentDocumentCategory);
             } else {
                 showAlert('Lỗi khi xóa văn bản', 'error');
             }
@@ -1604,14 +1624,4 @@ if (docSearchInput) {
         renderDocumentTable(filtered);
     });
 }
-
-// Call loadDocuments if on the document tab (or add to init functions)
-document.querySelectorAll('.tab-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-        if (this.getAttribute('data-target') === 'documents-tab') {
-            loadDocuments();
-        }
-    });
-});
-
 
