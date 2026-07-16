@@ -93,7 +93,7 @@ const commonComponents = {
                                     </ul>
                                 </li>
                                 <li id="menu-bo-khcn"><a href="#">Bộ Khoa học và Công nghệ</a></li>
-                                <li><a href="#">UBND tỉnh Đắk Lắk</a></li>
+                                <li id="menu-ubnd"><a href="#">UBND tỉnh Đắk Lắk</a></li>
                                 <li><a href="#">CSDL VBQPPL tỉnh Đắk Lắk</a></li>
                                 <li><a href="#">Khoa học và Công nghệ Trung ương</a></li>
                                 <li><a href="#">Khoa học và Công nghệ địa phương</a></li>
@@ -412,6 +412,17 @@ const commonComponents = {
                         }
                         boKhcnEl.href = link;
                         boKhcnEl.target = '_blank';
+                    }
+                }
+                if (config && config.ubndLink) {
+                    const ubndEl = document.querySelector('#menu-ubnd a');
+                    if (ubndEl) {
+                        let link = config.ubndLink.trim();
+                        if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                            link = 'https://' + link;
+                        }
+                        ubndEl.href = link;
+                        ubndEl.target = '_blank';
                     }
                 }
             }

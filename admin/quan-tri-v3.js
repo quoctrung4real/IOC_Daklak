@@ -219,7 +219,7 @@ async function loadConfig() {
                 'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
                 'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
                 'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
-                'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink'
+                'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink'
             ];
             
             fields.forEach(field => {
@@ -276,7 +276,7 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
         'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
         'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
         'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
-        'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink'
+        'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink'
     ];
     
     fields.forEach(field => {
@@ -316,6 +316,35 @@ if(bkhcnForm) {
             // Update only the link
             const newLink = document.getElementById('boKhcnLink').value;
             currentConfig['boKhcnLink'] = newLink;
+            
+            // Save it back
+            const saveRes = await apiFetch(`${API_BASE}/cau-hinh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentConfig)
+            });
+            const result = await saveRes.json();
+            if(result.success) showAlert('Đã lưu liên kết thành công!');
+            else showAlert('Lỗi lưu liên kết', false);
+        } catch(error) {
+            showAlert('Lỗi kết nối tới Server', false);
+        }
+    });
+}
+
+// Xử lý lưu Liên kết UBND tỉnh Đắk Lắk
+const ubndForm = document.getElementById('ubnd-link-form');
+if(ubndForm) {
+    ubndForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            // Fetch current config first
+            const res = await apiFetch(`${API_BASE}/cau-hinh`);
+            const currentConfig = await res.json();
+            
+            // Update only the link
+            const newLink = document.getElementById('ubndLink').value;
+            currentConfig['ubndLink'] = newLink;
             
             // Save it back
             const saveRes = await apiFetch(`${API_BASE}/cau-hinh`, {
