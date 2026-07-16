@@ -216,11 +216,17 @@
                     <div class="doc-detail-label">File đính kèm</div>
                     <div class="doc-detail-value" id="docDetailFile"></div>
                 </div>
-                <button id="docTtsBtn" class="tts-btn" type="button">
-                    <i class="fa-solid fa-volume-high"></i>
-                    <span>Nghe nội dung</span>
-                </button>
-                <span id="docTtsStatus" style="margin-left: 12px; font-size: 13px; color: #64748b;"></span>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                    <a id="docDetailLinkBtn" href="#" class="tts-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Xem chi tiết</span>
+                    </a>
+                    <button id="docTtsBtn" class="tts-btn" type="button">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span>Nghe nội dung</span>
+                    </button>
+                    <span id="docTtsStatus" style="font-size: 13px; color: #64748b;"></span>
+                </div>
                 <audio id="docDetailAudio" controls></audio>
             </div>
         </div>

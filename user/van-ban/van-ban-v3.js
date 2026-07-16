@@ -108,6 +108,11 @@ function openDocumentDetail(doc) {
     setText('docDetailType', doc.typeName || doc.typeCode || '');
     setText('docDetailAuthority', doc.issuingAuthority || 'Chưa cập nhật');
 
+    const detailLinkBtn = document.getElementById('docDetailLinkBtn');
+    if (detailLinkBtn) {
+        detailLinkBtn.href = `chi-tiet.html?id=${doc.id}`;
+    }
+
     const fileEl = document.getElementById('docDetailFile');
     if (fileEl) fileEl.innerHTML = buildDownloadLink(doc);
 

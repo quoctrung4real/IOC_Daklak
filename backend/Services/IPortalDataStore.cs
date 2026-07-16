@@ -31,9 +31,10 @@ public interface IPortalDataStore
     Task<List<AnnouncementDto>> GetAnnouncementsAsync(int take, CancellationToken cancellationToken);
     Task<List<DocumentTypeDto>> GetDocumentTypesAsync(CancellationToken cancellationToken);
     Task<List<DocumentDto>> GetDocumentsAsync(string? typeCode, int take, CancellationToken cancellationToken);
-    Task<DocumentDto> AddDocumentAsync(DocumentDto document, CancellationToken cancellationToken);
-    Task<DocumentDto> UpdateDocumentAsync(int id, DocumentDto document, CancellationToken cancellationToken);
-    Task DeleteDocumentAsync(int id, CancellationToken cancellationToken);
+    Task<DocumentDto> AddDocumentAsync(DocumentDto payload, CancellationToken cancellationToken = default);
+    Task<DocumentDto> UpdateDocumentAsync(int id, DocumentDto payload, CancellationToken cancellationToken = default);
+    Task DeleteDocumentAsync(int id, CancellationToken cancellationToken = default);
+    Task<DocumentDto?> GetDocumentByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<List<SearchResultDto>> SearchAsync(string keyword, int take, CancellationToken cancellationToken);
     Task<HomePageDto> GetHomePageAsync(CancellationToken cancellationToken);
 }

@@ -400,13 +400,17 @@ const commonComponents = {
     // 5. Load dynamic config (e.g. Bo KHCN link)
     setTimeout(async () => {
         try {
-            const res = await fetch(`${window.BASE_URL || ''}api/cau-hinh`);
+            const res = await fetch('http://localhost:5100/api/cau-hinh');
             if (res.ok) {
                 const config = await res.json();
                 if (config && config.boKhcnLink) {
                     const boKhcnEl = document.querySelector('#menu-bo-khcn a');
                     if (boKhcnEl) {
-                        boKhcnEl.href = config.boKhcnLink;
+                        let link = config.boKhcnLink.trim();
+                        if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                            link = 'https://' + link;
+                        }
+                        boKhcnEl.href = link;
                         boKhcnEl.target = '_blank';
                     }
                 }

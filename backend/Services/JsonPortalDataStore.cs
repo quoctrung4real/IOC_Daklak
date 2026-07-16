@@ -262,7 +262,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return docs.OrderByDescending(d => d.Id).Take(take).ToList();
     }
 
-    public async Task<DocumentDto> AddDocumentAsync(DocumentDto document, CancellationToken cancellationToken)
+    public async Task<DocumentDto> AddDocumentAsync(DocumentDto document, CancellationToken cancellationToken = default)
     {
         var docs = await ReadDocumentsAsync(cancellationToken);
         document.Id = docs.Count > 0 ? docs.Max(d => d.Id) + 1 : 1;
@@ -271,7 +271,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return document;
     }
 
-    public async Task<DocumentDto> UpdateDocumentAsync(int id, DocumentDto document, CancellationToken cancellationToken)
+    public async Task<DocumentDto> UpdateDocumentAsync(int id, DocumentDto document, CancellationToken cancellationToken = default)
     {
         var docs = await ReadDocumentsAsync(cancellationToken);
         var existing = docs.FirstOrDefault(d => d.Id == id);
@@ -289,15 +289,17 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return existing;
     }
 
-    public async Task DeleteDocumentAsync(int id, CancellationToken cancellationToken)
+    public async Task DeleteDocumentAsync(int id, CancellationToken cancellationToken = default)
     {
         var docs = await ReadDocumentsAsync(cancellationToken);
-        var existing = docs.FirstOrDefault(d => d.Id == id);
-        if (existing != null)
-        {
-            docs.Remove(existing);
-            await WriteDocumentsAsync(docs, cancellationToken);
-        }
+        docs.RemoveAll(d => d.Id == id);
+        await WriteDocumentsAsync(docs, cancellationToken);
+    }
+
+    public async Task<DocumentDto?> GetDocumentByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var docs = await ReadDocumentsAsync(cancellationToken);
+        return docs.FirstOrDefault(d => d.Id == id);
     }
 
     public async Task<List<SearchResultDto>> SearchAsync(string keyword, int take, CancellationToken cancellationToken)

@@ -93,10 +93,13 @@ public sealed class DocumentDto
     public string? TypeName { get; set; }
     public string? DocumentNumber { get; set; }
     public string? PublishedAt { get; set; }
+    public string? EffectiveDate { get; set; }
+    public string? Domain { get; set; }
     public string? Title { get; set; }
     public string? FileUrl { get; set; }
     public string? OriginalFileName { get; set; }
     public string? IssuingAuthority { get; set; }
+    public string? Signer { get; set; }
 }
 
 public sealed class SearchResultDto

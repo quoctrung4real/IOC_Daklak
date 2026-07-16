@@ -303,6 +303,35 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
     }
 });
 
+// Xử lý lưu Liên kết Bộ KH&CN riêng biệt (ở tab mới)
+const bkhcnForm = document.getElementById('bkhcn-link-form');
+if(bkhcnForm) {
+    bkhcnForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            // Fetch current config first
+            const res = await apiFetch(`${API_BASE}/cau-hinh`);
+            const currentConfig = await res.json();
+            
+            // Update only the link
+            const newLink = document.getElementById('boKhcnLink').value;
+            currentConfig['boKhcnLink'] = newLink;
+            
+            // Save it back
+            const saveRes = await apiFetch(`${API_BASE}/cau-hinh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentConfig)
+            });
+            const result = await saveRes.json();
+            if(result.success) showAlert('Đã lưu liên kết thành công!');
+            else showAlert('Lỗi lưu liên kết', false);
+        } catch(error) {
+            showAlert('Lỗi kết nối tới Server', false);
+        }
+    });
+}
+
 // Khởi tạo
 document.addEventListener('DOMContentLoaded', () => {
     ensureAdminSession();
@@ -1503,8 +1532,12 @@ function renderDocumentTable(docsToRender = allDocuments) {
 function openDocumentModal(id = null) {
     document.getElementById('documentModal').style.display = 'flex';
     document.getElementById('documentForm').reset();
-    document.getElementById('currentDocFile').innerText = '';
     document.getElementById('documentId').value = '';
+    document.getElementById('docFile').value = '';
+    document.getElementById('currentDocFile').innerHTML = '';
+    document.getElementById('docEffectiveDate').value = '';
+    document.getElementById('docDomain').value = '';
+    document.getElementById('docSigner').value = '';
     const typeCodeEl = document.getElementById('docTypeCode');
     if (typeCodeEl) typeCodeEl.value = currentDocumentCategory || '';
     
@@ -1517,6 +1550,9 @@ function openDocumentModal(id = null) {
             document.getElementById('docPublishedAt').value = doc.publishedAt ? doc.publishedAt.split('T')[0] : '';
             document.getElementById('docTitle').value = doc.title || '';
             document.getElementById('docIssuingAuthority').value = doc.issuingAuthority || '';
+            document.getElementById('docEffectiveDate').value = doc.effectiveDate || '';
+            document.getElementById('docDomain').value = doc.domain || '';
+            document.getElementById('docSigner').value = doc.signer || '';
             const typeCodeEl = document.getElementById('docTypeCode');
             if (typeCodeEl) typeCodeEl.value = doc.typeCode || '';
             if (doc.fileUrl) {
@@ -1545,6 +1581,9 @@ async function saveDocument(e) {
         publishedAt: document.getElementById('docPublishedAt').value,
         title: document.getElementById('docTitle').value,
         issuingAuthority: document.getElementById('docIssuingAuthority').value,
+        effectiveDate: document.getElementById('docEffectiveDate').value,
+        domain: document.getElementById('docDomain').value,
+        signer: document.getElementById('docSigner').value,
     };
     
     const fileInput = document.getElementById('docFile');
@@ -1561,7 +1600,7 @@ async function saveDocument(e) {
             if (uploadRes.ok) {
                 const uploadData = await uploadRes.json();
                 docData.fileUrl = uploadData.url;
-                docData.originalFileName = uploadData.originalFileName;
+                docData.originalFileName = file.name;
             } else {
                 throw new Error('Upload file thất bại');
             }

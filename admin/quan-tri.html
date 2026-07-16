@@ -226,6 +226,7 @@
                             <li><a href="#" class="tab-link document-category-link" data-target="documents-tab" data-category="tap-huan"><i class="fa-solid fa-chalkboard-user icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Tập huấn</span></a></li>
                         </ul>
                     </li>
+                    <li><a href="#" class="tab-link" data-target="bkhcn-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Bộ KH & CN</span></a></li>
                 </ul>
             </li>
             <li><a href="#" class="tab-link" data-target="accounts-tab"><i class="fa-solid fa-users icon-main"></i> <span class="sidebar-text">Quản lý Tài Khoản</span></a></li>
@@ -792,18 +793,7 @@
                     
                         </div></div>
                     
-                    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                        <div class="config-section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; cursor: pointer; user-select: none;" onclick="toggleConfigSection(this)">
-                            <h4 style="margin: 0; color: var(--primary); font-size: 1.1rem;"><i class="fa-solid fa-link"></i> Cấu hình Liên kết Menu</h4>
-                            <div class="toggle-indicator" style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.9rem; font-weight: 500;"><span class="toggle-text">Mở rộng</span><i class="fa-solid fa-chevron-up" style="transition: transform 0.3s; font-size: 1.1rem; transform: rotate(180deg);"></i></div>
-                        </div>
-                        <div class="config-section-content" style="display: none;">
-                            <div class="form-group">
-                                <label for="boKhcnLink">Liên kết "Bộ Khoa học và Công nghệ"</label>
-                                <input type="text" id="boKhcnLink" placeholder="https://...">
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Removed boKhcnLink section -->
                     
                     <button type="submit" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 10px;"><i class="fa-solid fa-save"></i> Lưu Toàn Bộ Cấu Hình Giao Diện</button>
                 </form>
@@ -983,6 +973,21 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <div id="bkhcn-link-tab" class="tab-content">
+            <div class="card">
+                <h3>Quản lý Liên kết "Bộ KH & CN"</h3>
+                <form id="bkhcn-link-form">
+                    <div class="form-group">
+                        <label for="boKhcnLink">Đường dẫn liên kết (khi nhấn vào menu Bộ KH & CN sẽ mở ra trang này)</label>
+                        <input type="text" id="boKhcnLink" placeholder="Ví dụ: https://www.most.gov.vn">
+                    </div>
+                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
+                        <i class="fa-solid fa-save"></i> Lưu Liên kết
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -1214,6 +1219,18 @@
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Cơ quan ban hành</label>
                     <input type="text" id="docIssuingAuthority" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Ngày có hiệu lực</label>
+                    <input type="date" id="docEffectiveDate" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Lĩnh vực</label>
+                    <input type="text" id="docDomain" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Người ký</label>
+                    <input type="text" id="docSigner" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">File đính kèm</label>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết văn bản - Trung tâm Giám sát, Điều hành đô thị thông minh tỉnh Đăk Lăk</title>
+    <meta name="description" content="Trung tâm Giám sát, Điều hành đô thị thông minh tỉnh Đăk Lăk - DakLakIOC">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../shared/giao-dien.css">
+    <style>
+        .doc-detail-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .doc-detail-meta-table th, .doc-detail-meta-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .doc-detail-meta-table th {
+            width: 30%;
+            font-weight: 600;
+            color: #475569;
+            background-color: #f8fafc;
+        }
+        .doc-detail-meta-table td {
+            color: #1e293b;
+        }
+        .doc-detail-meta-table tr:last-child th,
+        .doc-detail-meta-table tr:last-child td {
+            border-bottom: none;
+        }
+        .doc-detail-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .doc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #0a59ab;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .doc-btn:hover {
+            background: #084280;
+        }
+        .doc-btn-secondary {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .doc-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body data-page-id="chi-tiet-van-ban">
+
+    <!-- ===== ARTICLE CONTENT ===== -->
+    <section class="article-section" style="padding: 50px 0; background: #f8fafc; min-height: 70vh;">
+        <div class="container" style="max-width: 900px; margin: 0 auto; line-height: 1.8;">
+            <!-- Nút quay lại -->
+            <a href="van-ban.html" style="display: inline-block; margin-bottom: 20px; color: #0a59ab; text-decoration: none; font-weight: 500;">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+            </a>
+            
+            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h1 id="detail-title" style="font-size: 28px; color: #0f172a; margin-bottom: 30px; font-weight: bold; line-height: 1.5;">
+                    Đang tải dữ liệu...
+                </h1>
+
+                <table class="doc-detail-meta-table">
+                    <tbody>
+                        <tr>
+                            <th>Số / Ký hiệu</th>
+                            <td id="detail-number"></td>
+                        </tr>
+                        <tr>
+                            <th>Ngày ban hành</th>
+                            <td id="detail-published-at"></td>
+                        </tr>
+                        <tr>
+                            <th>Ngày có hiệu lực</th>
+                            <td id="detail-effective-date"></td>
+                        </tr>
+                        <tr>
+                            <th>Lĩnh vực</th>
+                            <td id="detail-domain"></td>
+                        </tr>
+                        <tr>
+                            <th>Trích yếu</th>
+                            <td id="detail-summary" style="font-weight: 500; line-height: 1.5;"></td>
+                        </tr>
+                        <tr>
+                            <th>Loại văn bản</th>
+                            <td id="detail-type"></td>
+                        </tr>
+                        <tr>
+                            <th>Cơ quan ban hành</th>
+                            <td id="detail-authority"></td>
+                        </tr>
+                        <tr>
+                            <th>Người ký</th>
+                            <td id="detail-signer"></td>
+                        </tr>
+                        <tr>
+                            <th>Tài liệu đính kèm</th>
+                            <td id="detail-file-action"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="doc-detail-actions">
+                    <button id="docTtsBtn" class="doc-btn doc-btn-secondary" type="button">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span>Nghe nội dung</span>
+                    </button>
+                    <span id="docTtsStatus" style="align-self: center; font-size: 14px; color: #64748b;"></span>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <audio id="docDetailAudio" controls style="display: none; width: 100%; height: 40px;"></audio>
+                </div>
+
+                <!-- RELATED DOCS SECTION -->
+                <div id="related-docs-container" style="display: none; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 30px;">
+                    <h2 style="font-size: 20px; color: #0f172a; margin-bottom: 20px; font-weight: bold;">Các văn bản cùng thể loại</h2>
+                    <div id="related-docs-list" style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- JS will populate related docs here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script>window.BASE_URL = "../../";</script>
+    <script src="../../shared/components.js"></script>
+    <script src="../../auth/xac-thuc.js"></script>
+    <script src="../../user/trang-chu/trang-chu.js"></script>
+    <script src="chi-tiet-van-ban.js"></script>
+</body>
+</html>

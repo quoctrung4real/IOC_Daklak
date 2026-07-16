@@ -514,9 +514,9 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         }
 
         await using var command = new SqlCommand("""
-            INSERT INTO Gov.Documents (DocumentTypeId, DocumentNumber, PublishedAt, Title, FileUrl, OriginalFileName, IssuingAuthority, IsActive, IsDeleted, CreatedAt)
+            INSERT INTO Gov.Documents (DocumentTypeId, DocumentNumber, PublishedAt, Title, FileUrl, OriginalFileName, IssuingAuthority, EffectiveDate, Domain, Signer, IsActive, IsDeleted, CreatedAt)
             OUTPUT INSERTED.Id
-            VALUES (@DocumentTypeId, @DocumentNumber, @PublishedAt, @Title, @FileUrl, @OriginalFileName, @IssuingAuthority, 1, 0, GETDATE());
+            VALUES (@DocumentTypeId, @DocumentNumber, @PublishedAt, @Title, @FileUrl, @OriginalFileName, @IssuingAuthority, @EffectiveDate, @Domain, @Signer, 1, 0, GETDATE());
             """, connection);
 
         command.Parameters.Add("@DocumentTypeId", SqlDbType.Int).Value = typeId;
@@ -526,6 +526,9 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         command.Parameters.Add("@FileUrl", SqlDbType.NVarChar, 1000).Value = (object?)document.FileUrl ?? DBNull.Value;
         command.Parameters.Add("@OriginalFileName", SqlDbType.NVarChar, 255).Value = (object?)document.OriginalFileName ?? DBNull.Value;
         command.Parameters.Add("@IssuingAuthority", SqlDbType.NVarChar, 255).Value = (object?)document.IssuingAuthority ?? DBNull.Value;
+        command.Parameters.Add("@EffectiveDate", SqlDbType.NVarChar, 50).Value = (object?)document.EffectiveDate ?? DBNull.Value;
+        command.Parameters.Add("@Domain", SqlDbType.NVarChar, 150).Value = (object?)document.Domain ?? DBNull.Value;
+        command.Parameters.Add("@Signer", SqlDbType.NVarChar, 150).Value = (object?)document.Signer ?? DBNull.Value;
 
         var newId = (int)(await command.ExecuteScalarAsync(cancellationToken))!;
         document.Id = newId;
@@ -570,6 +573,9 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                 FileUrl = @FileUrl,
                 OriginalFileName = @OriginalFileName,
                 IssuingAuthority = @IssuingAuthority,
+                EffectiveDate = @EffectiveDate,
+                Domain = @Domain,
+                Signer = @Signer,
                 UpdatedAt = GETDATE()
             WHERE Id = @Id AND IsDeleted = 0
             """, connection);
@@ -582,18 +588,52 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         command.Parameters.Add("@FileUrl", SqlDbType.NVarChar, 1000).Value = (object?)document.FileUrl ?? DBNull.Value;
         command.Parameters.Add("@OriginalFileName", SqlDbType.NVarChar, 255).Value = (object?)document.OriginalFileName ?? DBNull.Value;
         command.Parameters.Add("@IssuingAuthority", SqlDbType.NVarChar, 255).Value = (object?)document.IssuingAuthority ?? DBNull.Value;
+        command.Parameters.Add("@EffectiveDate", SqlDbType.NVarChar, 50).Value = (object?)document.EffectiveDate ?? DBNull.Value;
+        command.Parameters.Add("@Domain", SqlDbType.NVarChar, 150).Value = (object?)document.Domain ?? DBNull.Value;
+        command.Parameters.Add("@Signer", SqlDbType.NVarChar, 150).Value = (object?)document.Signer ?? DBNull.Value;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
         document.Id = id;
         return document;
     }
 
-    public async Task DeleteDocumentAsync(int id, CancellationToken cancellationToken)
+    public async Task DeleteDocumentAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand("UPDATE Gov.Documents SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id", connection);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
         await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<DocumentDto?> GetDocumentByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand("""
+            SELECT 
+                d.Id,
+                t.Code,
+                t.Name,
+                d.DocumentNumber,
+                d.PublishedAt,
+                d.Title,
+                d.FileUrl,
+                d.OriginalFileName,
+                d.IssuingAuthority,
+                d.EffectiveDate,
+                d.Domain,
+                d.Signer
+            FROM Gov.Documents d
+            INNER JOIN Gov.DocumentTypes t ON t.Id = d.DocumentTypeId
+            WHERE d.Id = @Id AND d.IsActive = 1 AND d.IsDeleted = 0
+            """, connection);
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            return ReadDocument(reader);
+        }
+        return null;
     }
 
     public async Task<List<DocumentDto>> GetDocumentsAsync(string? typeCode, int take, CancellationToken cancellationToken)
@@ -608,7 +648,11 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                 d.PublishedAt,
                 d.Title,
                 d.FileUrl,
-                d.IssuingAuthority
+                d.OriginalFileName,
+                d.IssuingAuthority,
+                d.EffectiveDate,
+                d.Domain,
+                d.Signer
             FROM Gov.Documents d
             INNER JOIN Gov.DocumentTypes t ON t.Id = d.DocumentTypeId
             WHERE d.IsActive = 1
@@ -854,13 +898,17 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         return new DocumentDto
         {
             Id = reader.GetInt32(0),
-            TypeCode = reader.GetString(1),
-            TypeName = reader.GetString(2),
-            DocumentNumber = reader.GetString(3),
-            PublishedAt = reader.GetDateTime(4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            Title = reader.GetString(5),
-            FileUrl = reader.GetString(6),
-            IssuingAuthority = reader.IsDBNull(7) ? null : reader.GetString(7)
+            TypeCode = reader.IsDBNull(1) ? null : reader.GetString(1),
+            TypeName = reader.IsDBNull(2) ? null : reader.GetString(2),
+            DocumentNumber = reader.IsDBNull(3) ? null : reader.GetString(3),
+            PublishedAt = reader.IsDBNull(4) ? null : reader.GetDateTime(4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Title = reader.IsDBNull(5) ? null : reader.GetString(5),
+            FileUrl = reader.IsDBNull(6) ? null : reader.GetString(6),
+            OriginalFileName = reader.IsDBNull(7) ? null : reader.GetString(7),
+            IssuingAuthority = reader.IsDBNull(8) ? null : reader.GetString(8),
+            EffectiveDate = HasReaderColumn(reader, "EffectiveDate") && !reader.IsDBNull(reader.GetOrdinal("EffectiveDate")) ? reader.GetString(reader.GetOrdinal("EffectiveDate")) : null,
+            Domain = HasReaderColumn(reader, "Domain") && !reader.IsDBNull(reader.GetOrdinal("Domain")) ? reader.GetString(reader.GetOrdinal("Domain")) : null,
+            Signer = HasReaderColumn(reader, "Signer") && !reader.IsDBNull(reader.GetOrdinal("Signer")) ? reader.GetString(reader.GetOrdinal("Signer")) : null
         };
     }
 

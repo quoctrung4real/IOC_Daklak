@@ -94,6 +94,34 @@ builder.Services.AddTransient<ITextToSpeechService>(serviceProvider =>
 
 var app = builder.Build();
 
+try
+{
+    var configuration = app.Services.GetRequiredService<IConfiguration>();
+    if (string.Equals(configuration["DataProvider"], "SqlServer", StringComparison.OrdinalIgnoreCase))
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+            connection.Open();
+            using var command = new Microsoft.Data.SqlClient.SqlCommand(@"
+                IF NOT EXISTS (
+                    SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'Documents' AND COLUMN_NAME = 'OriginalFileName'
+                )
+                BEGIN
+                    ALTER TABLE Gov.Documents ADD OriginalFileName NVARCHAR(255) NULL;
+                END
+            ", connection);
+            command.ExecuteNonQuery();
+        }
+    }
+}
+catch (Exception ex)
+{
+    app.Logger.LogWarning("Auto-migration failed: {Message}", ex.Message);
+}
+
 app.UseCors();
 app.UseStaticFiles();
 UseFrontendStaticFiles(app, frontendRoot);
@@ -153,10 +181,36 @@ app.MapGet("/api/loai-van-ban", async (IPortalDataStore store, CancellationToken
     return Results.Json(await store.GetDocumentTypesAsync(cancellationToken));
 });
 
+app.MapGet("/api/van-ban/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var document = await store.GetDocumentByIdAsync(id, cancellationToken);
+    if (document == null)
+        return Results.NotFound(new { success = false, message = "Document not found" });
+    return Results.Json(new { success = true, document });
+});
+
 app.MapGet("/api/van-ban", async (string? type, int? take, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
     return Results.Json(await store.GetDocumentsAsync(type, take ?? 20, cancellationToken));
 });
+
+app.MapPost("/api/van-ban", async (DocumentDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var result = await store.AddDocumentAsync(payload, cancellationToken);
+    return Results.Json(new { success = true, document = result });
+}).RequireAuthorization("AdminOnly");
+
+app.MapPut("/api/van-ban/{id:int}", async (int id, DocumentDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var result = await store.UpdateDocumentAsync(id, payload, cancellationToken);
+    return Results.Json(new { success = true, document = result });
+}).RequireAuthorization("AdminOnly");
+
+app.MapDelete("/api/van-ban/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    await store.DeleteDocumentAsync(id, cancellationToken);
+    return Results.Json(new { success = true, message = "Đã xóa văn bản." });
+}).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tim-kiem", async (string? q, int? take, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
@@ -498,6 +552,26 @@ app.MapDelete("/api/admin/nguoi-dung/{username}", async (string username, IPorta
         ? (IResult)Results.Json(new { success = true, message = result.Message })
         : Results.Json(new { success = false, message = result.Message }, statusCode: username.Equals("admin", StringComparison.OrdinalIgnoreCase) ? StatusCodes.Status403Forbidden : StatusCodes.Status404NotFound);
 }).RequireAuthorization("AdminOnly");
+
+using (var scope = app.Services.CreateScope())
+{
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var cStr = config.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrEmpty(cStr))
+    {
+        try {
+            using var conn = new Microsoft.Data.SqlClient.SqlConnection(cStr);
+            conn.Open();
+            var cols = new[] { "EffectiveDate", "Domain", "Signer" };
+            foreach (var col in cols) {
+                try {
+                    using var cmd = new Microsoft.Data.SqlClient.SqlCommand($"ALTER TABLE Gov.Documents ADD {col} NVARCHAR(150) NULL;", conn);
+                    cmd.ExecuteNonQuery();
+                } catch { } // Ignore if exists
+            }
+        } catch { } // Ignore if connection fails at this point
+    }
+}
 
 app.Run();
 
