@@ -3,47 +3,60 @@
     "id": "765b12a1-6473-452c-b666-9e3f5824c92c",
     "username": "admin",
     "password": "admin123",
+    "role": "Admin",
     "registerDate": "2026-07-09 17:27:51",
     "email": null,
     "dateOfBirth": null,
     "avatarUrl": null,
     "fullName": "trung",
-    "isActive": true,
-    "role": "Admin"
+    "isActive": true
   },
   {
     "id": "108519bf-325e-4c39-a046-eb4e350d4240",
     "username": "admin1",
     "password": "admin123",
+    "role": "Admin",
     "registerDate": "2026-07-10 08:08:28",
     "email": null,
     "dateOfBirth": null,
     "avatarUrl": null,
     "fullName": null,
-    "isActive": true,
-    "role": "Admin"
+    "isActive": true
   },
   {
     "id": "a712458a-96de-4df2-8a5f-80a54fdbc53e",
     "username": "admin2",
     "password": "admin123",
+    "role": "Admin",
     "registerDate": "2026-07-10 08:09:10",
     "email": null,
     "dateOfBirth": null,
     "avatarUrl": null,
     "fullName": null,
-    "isActive": true,
-    "role": "Admin"
+    "isActive": true
   },
   {
     "id": "a59c769c-1070-41dc-9afe-1f6f43d19822",
     "username": "testuser",
     "password": "123",
+    "role": "User",
     "registerDate": "2026-07-10 08:54:32",
     "email": null,
     "dateOfBirth": null,
     "avatarUrl": null,
     "fullName": null,
+    "isActive": true
+  },
+  {
+    "id": "78068997-8096-42bb-b415-dea05134bfaf",
+    "username": "testadmin",
+    "password": "PBKDF2$100000$uucrxjrqItzlniTN3EpT8A==$D5v5W9TGe7gufSM7rxGbgcyIB2ibe9jngLk/GmEz/Kg=",
+    "role": "Admin",
+    "registerDate": "2026-07-16 10:32:40",
+    "email": null,
+    "dateOfBirth": null,
+    "avatarUrl": null,
+    "fullName": "Test Admin",
     "isActive": true
   }
 ]

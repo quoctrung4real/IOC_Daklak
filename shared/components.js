@@ -101,22 +101,23 @@ const commonComponents = {
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="y-kien-du-thao">
-                            <a href="#">Ý kiến dự thảo <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Ý kiến dự thảo <i class="fa-solid fa-angle-down"></i></a>
                             <ul class="dropdown">
-                                <li><a href="#">Văn bản dự thảo Sở KHCN</a></li>
+                                <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html" style="font-weight: bold; color: var(--primary);">Tất cả văn bản dự thảo</a></li>
+                                <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Văn bản dự thảo Sở KHCN</a></li>
                                 <li class="dropdown-submenu">
-                                    <a href="#">Văn bản dự thảo Trung tâm IOC <i class="fa-solid fa-angle-right"
+                                    <a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Văn bản dự thảo Trung tâm IOC <i class="fa-solid fa-angle-right"
                                             style="float: right; margin-top: 4px;"></i></a>
                                     <ul class="dropdown">
-                                        <li><a href="#">Báo cáo</a></li>
-                                        <li><a href="#">Công văn</a></li>
-                                        <li><a href="#">Hướng dẫn</a></li>
-                                        <li><a href="#">Quyết định</a></li>
-                                        <li><a href="#">Tập huấn</a></li>
-                                        <li><a href="#">Thông báo</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Báo cáo</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Công văn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Hướng dẫn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Quyết định</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Tập huấn</a></li>
+                                        <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Thông báo</a></li>
                                     </ul>
                                 </li>
-                                <li><a href="#">Văn bản dự thảo UBND tỉnh Đắk Lắk</a></li>
+                                <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Văn bản dự thảo UBND tỉnh Đắk Lắk</a></li>
                             </ul>
                         </li>
                         <li class="nav-item" data-nav="lich-cong-tac">

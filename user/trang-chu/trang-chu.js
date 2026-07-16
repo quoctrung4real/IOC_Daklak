@@ -137,6 +137,57 @@ async function loadConfig() {
             }
         }
         
+        
+        // Inject dynamic links from config
+        const menu_ubnd = document.getElementById('menu-ubnd');
+        if (menu_ubnd) {
+            const a = menu_ubnd.querySelector('a');
+            if (a) {
+                a.href = config['Url_UBND'] || 'https://daklak.gov.vn';
+                a.target = '_blank';
+            }
+        }
+        const menu_csdl_vbqppl = document.getElementById('menu-csdl-vbqppl');
+        if (menu_csdl_vbqppl) {
+            const a = menu_csdl_vbqppl.querySelector('a');
+            if (a) {
+                a.href = config['Url_CSDL'] || 'https://qppl.daklak.gov.vn';
+                a.target = '_blank';
+            }
+        }
+        const menu_khcn_tw = document.getElementById('menu-khcn-tw');
+        if (menu_khcn_tw) {
+            const a = menu_khcn_tw.querySelector('a');
+            if (a) {
+                a.href = config['Url_KHCN_TW'] || 'https://www.most.gov.vn';
+                a.target = '_blank';
+            }
+        }
+        const menu_khcn_dp = document.getElementById('menu-khcn-dp');
+        if (menu_khcn_dp) {
+            const a = menu_khcn_dp.querySelector('a');
+            if (a) {
+                a.href = config['Url_KHCN_DP'] || 'https://khcn.daklak.gov.vn';
+                a.target = '_blank';
+            }
+        }
+        const menu_vb_luat = document.getElementById('menu-vb-luat');
+        if (menu_vb_luat) {
+            const a = menu_vb_luat.querySelector('a');
+            if (a) {
+                a.href = config['Url_VBLuat'] || 'https://vbpl.vn';
+                a.target = '_blank';
+            }
+        }
+        const menu_bo_khcn = document.getElementById('menu-bo-khcn');
+        if (menu_bo_khcn) {
+            const a = menu_bo_khcn.querySelector('a');
+            if (a) {
+                a.href = config['Url_KHCN_TW'] || 'https://www.most.gov.vn';
+                a.target = '_blank';
+            }
+        }
+
         if (config.logoUrl) {
             const logoEl = document.querySelector('.header-content .logo .logo-icon');
             if (logoEl) {

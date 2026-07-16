@@ -189,3 +189,25 @@ public sealed class TextToSpeechResponseDto
         };
     }
 }
+
+public sealed class DraftOpinionDto
+{
+    public int Id { get; set; }
+    public string? DocumentNumber { get; set; }
+    public string? Title { get; set; }
+    public string? FileUrl { get; set; }
+    public string? OriginalFileName { get; set; }
+    public string? CreatedAt { get; set; }
+    public string? EndDate { get; set; }
+}
+
+public sealed class OpinionFeedbackDto
+{
+    public int Id { get; set; }
+    public int DraftOpinionId { get; set; }
+    public string? FullName { get; set; }
+    public string? Email { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? Content { get; set; }
+    public string? CreatedAt { get; set; }
+}

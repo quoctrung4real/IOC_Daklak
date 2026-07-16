@@ -209,7 +209,63 @@ app.MapPut("/api/van-ban/{id:int}", async (int id, DocumentDto payload, IPortalD
 app.MapDelete("/api/van-ban/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
     await store.DeleteDocumentAsync(id, cancellationToken);
-    return Results.Json(new { success = true, message = "Đã xóa văn bản." });
+    return Results.Json(new { success = true });
+}).RequireAuthorization("AdminOnly");
+
+// --- Draft Opinions API ---
+app.MapGet("/api/y-kien-du-thao", async (IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    return Results.Json(new { success = true, draftOpinions = await store.GetDraftOpinionsAsync(cancellationToken) });
+});
+
+app.MapGet("/api/y-kien-du-thao/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var draft = await store.GetDraftOpinionByIdAsync(id, cancellationToken);
+    if (draft == null)
+        return Results.NotFound(new { success = false, message = "Không tìm thấy dự thảo" });
+    return Results.Json(new { success = true, draftOpinion = draft });
+});
+
+app.MapPost("/api/y-kien-du-thao", async (DraftOpinionDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var result = await store.AddDraftOpinionAsync(payload, cancellationToken);
+    return Results.Json(new { success = true, draftOpinion = result });
+}).RequireAuthorization("AdminOnly");
+
+app.MapPut("/api/y-kien-du-thao/{id:int}", async (int id, DraftOpinionDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var result = await store.UpdateDraftOpinionAsync(id, payload, cancellationToken);
+    return Results.Json(new { success = true, draftOpinion = result });
+}).RequireAuthorization("AdminOnly");
+
+app.MapDelete("/api/y-kien-du-thao/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    await store.DeleteDraftOpinionAsync(id, cancellationToken);
+    return Results.Json(new { success = true });
+}).RequireAuthorization("AdminOnly");
+
+// --- Feedbacks API ---
+app.MapGet("/api/y-kien-du-thao/{id:int}/gop-y", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    return Results.Json(new { success = true, feedbacks = await store.GetFeedbacksAsync(id, cancellationToken) });
+}).RequireAuthorization("AdminOnly");
+
+app.MapGet("/api/gop-y", async (IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    return Results.Json(new { success = true, feedbacks = await store.GetFeedbacksAsync(null, cancellationToken) });
+}).RequireAuthorization("AdminOnly");
+
+app.MapPost("/api/y-kien-du-thao/{id:int}/gop-y", async (int id, OpinionFeedbackDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    payload.DraftOpinionId = id;
+    var result = await store.AddFeedbackAsync(payload, cancellationToken);
+    return Results.Json(new { success = true, feedback = result });
+});
+
+app.MapDelete("/api/gop-y/{id:int}", async (int id, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    await store.DeleteFeedbackAsync(id, cancellationToken);
+    return Results.Json(new { success = true });
 }).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tim-kiem", async (string? q, int? take, IPortalDataStore store, CancellationToken cancellationToken) =>

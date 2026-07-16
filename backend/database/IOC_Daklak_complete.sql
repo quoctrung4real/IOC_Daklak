@@ -894,3 +894,43 @@ BEGIN
         WHERE LegacyId IS NOT NULL AND IsDeleted = 0;
 END
 GO
+
+-- Bảng Ý kiến dự thảo
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Gov')
+BEGIN
+    EXEC('CREATE SCHEMA Gov');
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'DraftOpinions')
+BEGIN
+    CREATE TABLE Gov.DraftOpinions (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        DocumentNumber NVARCHAR(255) NULL,
+        Title NVARCHAR(MAX) NULL,
+        FileUrl NVARCHAR(1000) NULL,
+        OriginalFileName NVARCHAR(255) NULL,
+        CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        EndDate DATETIME2 NULL,
+        IsDeleted BIT NOT NULL DEFAULT 0
+    );
+END
+GO
+
+-- Bảng Góp ý
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'OpinionFeedbacks')
+BEGIN
+    CREATE TABLE Gov.OpinionFeedbacks (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        DraftOpinionId INT NOT NULL,
+        FullName NVARCHAR(255) NULL,
+        Email NVARCHAR(255) NULL,
+        PhoneNumber NVARCHAR(50) NULL,
+        Content NVARCHAR(MAX) NULL,
+        CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        IsDeleted BIT NOT NULL DEFAULT 0,
+        CONSTRAINT FK_OpinionFeedbacks_DraftOpinions FOREIGN KEY (DraftOpinionId) REFERENCES Gov.DraftOpinions(Id)
+    );
+END
+GO
+

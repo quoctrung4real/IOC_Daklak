@@ -37,4 +37,16 @@ public interface IPortalDataStore
     Task<DocumentDto?> GetDocumentByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<List<SearchResultDto>> SearchAsync(string keyword, int take, CancellationToken cancellationToken);
     Task<HomePageDto> GetHomePageAsync(CancellationToken cancellationToken);
+    
+    // Ý kiến dự thảo
+    Task<List<DraftOpinionDto>> GetDraftOpinionsAsync(CancellationToken cancellationToken);
+    Task<DraftOpinionDto?> GetDraftOpinionByIdAsync(int id, CancellationToken cancellationToken);
+    Task<DraftOpinionDto> AddDraftOpinionAsync(DraftOpinionDto payload, CancellationToken cancellationToken);
+    Task<DraftOpinionDto> UpdateDraftOpinionAsync(int id, DraftOpinionDto payload, CancellationToken cancellationToken);
+    Task DeleteDraftOpinionAsync(int id, CancellationToken cancellationToken);
+    
+    // Góp ý
+    Task<List<OpinionFeedbackDto>> GetFeedbacksAsync(int? draftOpinionId, CancellationToken cancellationToken);
+    Task<OpinionFeedbackDto> AddFeedbackAsync(OpinionFeedbackDto payload, CancellationToken cancellationToken);
+    Task DeleteFeedbackAsync(int id, CancellationToken cancellationToken);
 }

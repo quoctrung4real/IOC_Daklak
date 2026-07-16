@@ -234,6 +234,16 @@
                     <li><a href="#" class="tab-link" data-target="vb-luat-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Văn bản luật</span></a></li>
                 </ul>
             </li>
+            <li>
+                <div class="menu-parent" onclick="toggleMenu(this)">
+                    <div style="display: flex; align-items: center;"><i class="fa-solid fa-comments icon-main"></i> <span class="sidebar-text">Ý kiến dự thảo</span></div>
+                    <i class="fa-solid fa-chevron-down drop-icon"></i>
+                </div>
+                <ul class="sub-menu">
+                    <li><a href="#" class="tab-link" data-target="draft-opinions-tab"><i class="fa-solid fa-file-signature icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Quản lý Dự thảo</span></a></li>
+                    <li><a href="#" class="tab-link" data-target="feedbacks-tab"><i class="fa-solid fa-list-check icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Danh sách Góp ý</span></a></li>
+                </ul>
+            </li>
             <li><a href="#" class="tab-link" data-target="accounts-tab"><i class="fa-solid fa-users icon-main"></i> <span class="sidebar-text">Quản lý Tài Khoản</span></a></li>
             <li><a href="../user/trang-chu/trang-chu.html" target="_blank" style="margin-top: 50px; background: rgba(0,0,0,0.2);"><i class="fa-solid fa-eye icon-main"></i> <span class="sidebar-text">Xem Trang User</span></a></li>
         </ul>
@@ -1056,20 +1066,95 @@
             </div>
         </div>
 
+        <!-- Quản lý Link Văn bản luật -->
         <div id="vb-luat-link-tab" class="tab-content">
             <div class="card">
-                <h3>Quản lý Liên kết "Văn bản luật"</h3>
+                <h3>Quản Lý Link: Văn bản luật</h3>
                 <form id="vb-luat-link-form">
                     <div class="form-group">
-                        <label for="vbLuatLink">Đường dẫn liên kết</label>
-                        <input type="text" id="vbLuatLink" placeholder="Ví dụ: https://thuvienphapluat.vn">
+                        <label>Đường dẫn (URL)</label>
+                        <input type="url" id="vb-luat-link-url" class="form-control" required placeholder="Nhập đường dẫn liên kết (VD: https://...)">
                     </div>
-                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
-                        <i class="fa-solid fa-save"></i> Lưu Liên kết
-                    </button>
+                    <button type="submit" class="btn">Lưu Đường Dẫn</button>
                 </form>
             </div>
         </div>
+
+        <!-- Quản lý Dự thảo -->
+        <div id="draft-opinions-tab" class="tab-content">
+            <div class="card">
+                <h3>Thêm / Sửa Dự thảo</h3>
+                <form id="draft-opinion-form">
+                    <input type="hidden" id="draft-opinion-id">
+                    <div class="form-group">
+                        <label>Số, ký hiệu <span style="color:red">*</span></label>
+                        <input type="text" id="draft-opinion-number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Trích yếu <span style="color:red">*</span></label>
+                        <textarea id="draft-opinion-title" class="form-control" required rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Thời hạn (ngày kết thúc)</label>
+                        <input type="date" id="draft-opinion-enddate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>File đính kèm</label>
+                        <input type="file" id="draft-opinion-file" class="form-control">
+                        <div id="draft-opinion-file-link" style="margin-top:5px; font-size: 0.9em;"></div>
+                    </div>
+                    <button type="submit" class="btn">Lưu Dự thảo</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetDraftOpinionForm()">Hủy</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Danh sách Dự thảo</h3>
+                <div style="overflow-x:auto;">
+                    <table class="table" id="draft-opinions-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ID</th>
+                                <th style="width: 150px;">Số, ký hiệu</th>
+                                <th>Trích yếu</th>
+                                <th style="width: 120px;">Thời hạn</th>
+                                <th style="width: 100px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quản lý Góp ý -->
+        <div id="feedbacks-tab" class="tab-content">
+            <div class="card">
+                <h3>Danh sách Góp ý</h3>
+                <div class="form-group" style="max-width: 300px; margin-bottom: 20px;">
+                    <label>Lọc theo Dự thảo</label>
+                    <select id="feedbacks-draft-filter" class="form-control">
+                        <option value="">-- Tất cả dự thảo --</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="table" id="feedbacks-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ID</th>
+                                <th>Dự thảo</th>
+                                <th>Người góp ý</th>
+                                <th>Thông tin</th>
+                                <th>Nội dung</th>
+                                <th style="width: 100px;">Ngày gửi</th>
+                                <th style="width: 80px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="accounts-tab" class="tab-content">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -1233,8 +1318,11 @@
     </div>
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-<script src="../admin/quan-tri-v3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="quan-tri.js"></script>
+    <script src="quan-tri-v2.js"></script>
+    <script src="quan-tri-v3.js"></script>
+    <script src="quan-tri-y-kien.js"></script>
 
     <!-- Cropper Modal -->
     <div id="cropperModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">

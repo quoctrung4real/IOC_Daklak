@@ -1728,3 +1728,89 @@ if (docSearchInput) {
     });
 }
 
+
+
+// QUẢN LÝ LIÊN KẾT NGOÀI
+async function loadExternalLinksConfig() {
+    try {
+        const response = await fetch(`${API_BASE}/cau-hinh`);
+        if (!response.ok) return;
+        const config = await response.json();
+        
+        const bkhcnInput = document.getElementById('boKhcnLink');
+        if (bkhcnInput && config.Url_KHCN_TW) bkhcnInput.value = config.Url_KHCN_TW;
+        
+        const ubndInput = document.getElementById('ubndLink');
+        if (ubndInput && config.Url_UBND) ubndInput.value = config.Url_UBND;
+        
+        const csdlInput = document.getElementById('csdlVbqpplLink');
+        if (csdlInput && config.Url_CSDL) csdlInput.value = config.Url_CSDL;
+        
+        const khcnTwInput = document.getElementById('khcnTwLink');
+        if (khcnTwInput && config.Url_KHCN_TW) khcnTwInput.value = config.Url_KHCN_TW;
+        
+        const khcnDpInput = document.getElementById('khcnDpLink');
+        if (khcnDpInput && config.Url_KHCN_DP) khcnDpInput.value = config.Url_KHCN_DP;
+        
+        const vbLuatInput = document.getElementById('vb-luat-link-url');
+        if (vbLuatInput && config.Url_VBLuat) vbLuatInput.value = config.Url_VBLuat;
+        
+    } catch (error) {
+        console.error('Error loading external links:', error);
+    }
+}
+
+async function saveExternalLinkConfig(key, value) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const configToSave = {};
+        configToSave[key] = value;
+        
+        const response = await fetch(`${API_BASE}/cau-hinh`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(configToSave)
+        });
+        
+        if (response.ok) {
+            alert('Lưu liên kết thành công!');
+        } else {
+            alert('Lỗi khi lưu liên kết.');
+        }
+    } catch (error) {
+        console.error('Error saving link:', error);
+        alert('Có lỗi xảy ra.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Bind forms
+    const forms = [
+        { id: 'bkhcn-link-form', inputId: 'bkhcnLink', key: 'Url_KHCN_TW' },
+        { id: 'ubnd-link-form', inputId: 'ubndLink', key: 'Url_UBND' },
+        { id: 'csdl-vbqppl-link-form', inputId: 'csdlVbqpplLink', key: 'Url_CSDL' },
+        { id: 'khcn-tw-link-form', inputId: 'khcnTwLink', key: 'Url_KHCN_TW' },
+        { id: 'khcn-dp-link-form', inputId: 'khcnDpLink', key: 'Url_KHCN_DP' },
+        { id: 'vb-luat-link-form', inputId: 'vbLuatLink', key: 'Url_VBLuat' }
+    ];
+    
+    forms.forEach(f => {
+        const formEl = document.getElementById(f.id);
+        if (formEl) {
+            formEl.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const inputEl = document.getElementById(f.inputId);
+                if (inputEl) {
+                    saveExternalLinkConfig(f.key, inputEl.value.trim());
+                }
+            });
+        }
+    });
+    
+    // Load existing configs
+    loadExternalLinksConfig();
+});
+

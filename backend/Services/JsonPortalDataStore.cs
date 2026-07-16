@@ -343,11 +343,117 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return new HomePageDto
         {
             Config = await GetConfigAsync(cancellationToken),
-            FeaturedNews = await GetMainNewsAsync(cancellationToken),
+            FeaturedNews = (await GetMainNewsAsync(cancellationToken)).Take(5).ToList(),
             Announcements = await GetAnnouncementsAsync(5, cancellationToken),
             DocumentTypes = await GetDocumentTypesAsync(cancellationToken),
-            Documents = await GetDocumentsAsync(null, 10, cancellationToken)
+            Documents = (await GetDocumentsAsync(null, 10, cancellationToken)).ToList()
         };
+    }
+
+    // --- Draft Opinions ---
+    private async Task<List<DraftOpinionDto>> ReadDraftOpinionsAsync(CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("y-kien-du-thao.json", "[]", cancellationToken);
+        return JsonSerializer.Deserialize<List<DraftOpinionDto>>(json, _jsonOptions) ?? [];
+    }
+    
+    private async Task WriteDraftOpinionsAsync(List<DraftOpinionDto> drafts, CancellationToken cancellationToken)
+    {
+        await WriteFileAsync("y-kien-du-thao.json", JsonSerializer.Serialize(drafts, _jsonOptions), cancellationToken);
+    }
+
+    public async Task<List<DraftOpinionDto>> GetDraftOpinionsAsync(CancellationToken cancellationToken)
+    {
+        return await ReadDraftOpinionsAsync(cancellationToken);
+    }
+
+    public async Task<DraftOpinionDto?> GetDraftOpinionByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var drafts = await ReadDraftOpinionsAsync(cancellationToken);
+        return drafts.FirstOrDefault(d => d.Id == id);
+    }
+
+    public async Task<DraftOpinionDto> AddDraftOpinionAsync(DraftOpinionDto payload, CancellationToken cancellationToken)
+    {
+        var drafts = await ReadDraftOpinionsAsync(cancellationToken);
+        payload.Id = drafts.Count > 0 ? drafts.Max(d => d.Id) + 1 : 1;
+        if (string.IsNullOrWhiteSpace(payload.CreatedAt))
+        {
+            payload.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        drafts.Insert(0, payload);
+        await WriteDraftOpinionsAsync(drafts, cancellationToken);
+        return payload;
+    }
+
+    public async Task<DraftOpinionDto> UpdateDraftOpinionAsync(int id, DraftOpinionDto payload, CancellationToken cancellationToken)
+    {
+        var drafts = await ReadDraftOpinionsAsync(cancellationToken);
+        var existing = drafts.FirstOrDefault(d => d.Id == id);
+        if (existing != null)
+        {
+            existing.DocumentNumber = payload.DocumentNumber;
+            existing.Title = payload.Title;
+            existing.EndDate = payload.EndDate;
+            if (!string.IsNullOrEmpty(payload.FileUrl))
+            {
+                existing.FileUrl = payload.FileUrl;
+                existing.OriginalFileName = payload.OriginalFileName;
+            }
+            await WriteDraftOpinionsAsync(drafts, cancellationToken);
+        }
+        return existing ?? payload;
+    }
+
+    public async Task DeleteDraftOpinionAsync(int id, CancellationToken cancellationToken)
+    {
+        var drafts = await ReadDraftOpinionsAsync(cancellationToken);
+        var count = drafts.RemoveAll(d => d.Id == id);
+        if (count > 0)
+        {
+            await WriteDraftOpinionsAsync(drafts, cancellationToken);
+        }
+    }
+
+    // --- Feedbacks ---
+    private async Task<List<OpinionFeedbackDto>> ReadFeedbacksAsync(CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("gop-y.json", "[]", cancellationToken);
+        return JsonSerializer.Deserialize<List<OpinionFeedbackDto>>(json, _jsonOptions) ?? [];
+    }
+
+    private async Task WriteFeedbacksAsync(List<OpinionFeedbackDto> feedbacks, CancellationToken cancellationToken)
+    {
+        await WriteFileAsync("gop-y.json", JsonSerializer.Serialize(feedbacks, _jsonOptions), cancellationToken);
+    }
+
+    public async Task<List<OpinionFeedbackDto>> GetFeedbacksAsync(int? draftOpinionId, CancellationToken cancellationToken)
+    {
+        var feedbacks = await ReadFeedbacksAsync(cancellationToken);
+        if (draftOpinionId.HasValue)
+        {
+            feedbacks = feedbacks.Where(f => f.DraftOpinionId == draftOpinionId.Value).ToList();
+        }
+        return feedbacks.OrderByDescending(f => f.CreatedAt).ToList();
+    }
+
+    public async Task<OpinionFeedbackDto> AddFeedbackAsync(OpinionFeedbackDto payload, CancellationToken cancellationToken)
+    {
+        var feedbacks = await ReadFeedbacksAsync(cancellationToken);
+        payload.Id = feedbacks.Count > 0 ? feedbacks.Max(f => f.Id) + 1 : 1;
+        payload.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        feedbacks.Add(payload);
+        await WriteFeedbacksAsync(feedbacks, cancellationToken);
+        return payload;
+    }
+
+    public async Task DeleteFeedbackAsync(int id, CancellationToken cancellationToken)
+    {
+        var feedbacks = await ReadFeedbacksAsync(cancellationToken);
+        if (feedbacks.RemoveAll(f => f.Id == id) > 0)
+        {
+            await WriteFeedbacksAsync(feedbacks, cancellationToken);
+        }
     }
 
     private async Task<List<UserDto>> ReadUsersAsync(CancellationToken cancellationToken)

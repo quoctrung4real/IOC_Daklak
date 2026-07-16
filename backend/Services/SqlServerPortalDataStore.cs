@@ -958,6 +958,218 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    // --- Draft Opinions ---
+    public async Task<List<DraftOpinionDto>> GetDraftOpinionsAsync(CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        var list = new List<DraftOpinionDto>();
+        await using var command = new SqlCommand("SELECT Id, DocumentNumber, Title, FileUrl, OriginalFileName, CreatedAt, EndDate FROM Gov.DraftOpinions WHERE IsDeleted = 0 ORDER BY Id DESC", connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            list.Add(new DraftOpinionDto
+            {
+                Id = reader.GetInt32(0),
+                DocumentNumber = reader.IsDBNull(1) ? null : reader.GetString(1),
+                Title = reader.IsDBNull(2) ? null : reader.GetString(2),
+                FileUrl = reader.IsDBNull(3) ? null : reader.GetString(3),
+                OriginalFileName = reader.IsDBNull(4) ? null : reader.GetString(4),
+                CreatedAt = FormatDateTime(reader.GetDateTime(5)),
+                EndDate = reader.IsDBNull(6) ? null : FormatDateTime(reader.GetDateTime(6))
+            });
+        }
+        return list;
+    }
+
+    public async Task<DraftOpinionDto?> GetDraftOpinionByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("SELECT Id, DocumentNumber, Title, FileUrl, OriginalFileName, CreatedAt, EndDate FROM Gov.DraftOpinions WHERE Id = @Id AND IsDeleted = 0", connection);
+        command.Parameters.AddWithValue("@Id", id);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            return new DraftOpinionDto
+            {
+                Id = reader.GetInt32(0),
+                DocumentNumber = reader.IsDBNull(1) ? null : reader.GetString(1),
+                Title = reader.IsDBNull(2) ? null : reader.GetString(2),
+                FileUrl = reader.IsDBNull(3) ? null : reader.GetString(3),
+                OriginalFileName = reader.IsDBNull(4) ? null : reader.GetString(4),
+                CreatedAt = FormatDateTime(reader.GetDateTime(5)),
+                EndDate = reader.IsDBNull(6) ? null : FormatDateTime(reader.GetDateTime(6))
+            };
+        }
+        return null;
+    }
+
+    public async Task<DraftOpinionDto> AddDraftOpinionAsync(DraftOpinionDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand(@"
+            INSERT INTO Gov.DraftOpinions (DocumentNumber, Title, FileUrl, OriginalFileName, CreatedAt, EndDate, IsDeleted)
+            OUTPUT INSERTED.Id, INSERTED.CreatedAt
+            VALUES (@DocumentNumber, @Title, @FileUrl, @OriginalFileName, ISNULL(@CreatedAt, SYSUTCDATETIME()), @EndDate, 0)", connection);
+        command.Parameters.AddWithValue("@DocumentNumber", DbValue(payload.DocumentNumber));
+        command.Parameters.AddWithValue("@Title", DbValue(payload.Title));
+        command.Parameters.AddWithValue("@FileUrl", DbValue(payload.FileUrl));
+        command.Parameters.AddWithValue("@OriginalFileName", DbValue(payload.OriginalFileName));
+        command.Parameters.AddWithValue("@CreatedAt", DateTimeValue(payload.CreatedAt));
+        command.Parameters.AddWithValue("@EndDate", DateValue(payload.EndDate));
+        
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            payload.Id = reader.GetInt32(0);
+            payload.CreatedAt = FormatDateTime(reader.GetDateTime(1));
+        }
+        return payload;
+    }
+
+    public async Task<DraftOpinionDto> UpdateDraftOpinionAsync(int id, DraftOpinionDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        
+        var updateFile = !string.IsNullOrEmpty(payload.FileUrl);
+        var fileUpdateSql = updateFile ? ", FileUrl = @FileUrl, OriginalFileName = @OriginalFileName" : "";
+        
+        await using var command = new SqlCommand($@"
+            UPDATE Gov.DraftOpinions 
+            SET DocumentNumber = @DocumentNumber, Title = @Title, EndDate = @EndDate {fileUpdateSql}
+            WHERE Id = @Id", connection);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@DocumentNumber", DbValue(payload.DocumentNumber));
+        command.Parameters.AddWithValue("@Title", DbValue(payload.Title));
+        command.Parameters.AddWithValue("@EndDate", DateValue(payload.EndDate));
+        if (updateFile)
+        {
+            command.Parameters.AddWithValue("@FileUrl", DbValue(payload.FileUrl));
+            command.Parameters.AddWithValue("@OriginalFileName", DbValue(payload.OriginalFileName));
+        }
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        return payload;
+    }
+
+    public async Task DeleteDraftOpinionAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("UPDATE Gov.DraftOpinions SET IsDeleted = 1 WHERE Id = @Id", connection);
+        command.Parameters.AddWithValue("@Id", id);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    // --- Feedbacks ---
+    public async Task<List<OpinionFeedbackDto>> GetFeedbacksAsync(int? draftOpinionId, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        var list = new List<OpinionFeedbackDto>();
+        var filterSql = draftOpinionId.HasValue ? "AND DraftOpinionId = @DraftOpinionId" : "";
+        await using var command = new SqlCommand($"SELECT Id, DraftOpinionId, FullName, Email, PhoneNumber, Content, CreatedAt FROM Gov.OpinionFeedbacks WHERE IsDeleted = 0 {filterSql} ORDER BY Id DESC", connection);
+        if (draftOpinionId.HasValue) command.Parameters.AddWithValue("@DraftOpinionId", draftOpinionId.Value);
+        
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            list.Add(new OpinionFeedbackDto
+            {
+                Id = reader.GetInt32(0),
+                DraftOpinionId = reader.GetInt32(1),
+                FullName = reader.IsDBNull(2) ? null : reader.GetString(2),
+                Email = reader.IsDBNull(3) ? null : reader.GetString(3),
+                PhoneNumber = reader.IsDBNull(4) ? null : reader.GetString(4),
+                Content = reader.IsDBNull(5) ? null : reader.GetString(5),
+                CreatedAt = FormatDateTime(reader.GetDateTime(6))
+            });
+        }
+        return list;
+    }
+
+    public async Task<OpinionFeedbackDto> AddFeedbackAsync(OpinionFeedbackDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand(@"
+            INSERT INTO Gov.OpinionFeedbacks (DraftOpinionId, FullName, Email, PhoneNumber, Content, CreatedAt, IsDeleted)
+            OUTPUT INSERTED.Id, INSERTED.CreatedAt
+            VALUES (@DraftOpinionId, @FullName, @Email, @PhoneNumber, @Content, SYSUTCDATETIME(), 0)", connection);
+        command.Parameters.AddWithValue("@DraftOpinionId", payload.DraftOpinionId);
+        command.Parameters.AddWithValue("@FullName", DbValue(payload.FullName));
+        command.Parameters.AddWithValue("@Email", DbValue(payload.Email));
+        command.Parameters.AddWithValue("@PhoneNumber", DbValue(payload.PhoneNumber));
+        command.Parameters.AddWithValue("@Content", DbValue(payload.Content));
+        
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            payload.Id = reader.GetInt32(0);
+            payload.CreatedAt = FormatDateTime(reader.GetDateTime(1));
+        }
+        return payload;
+    }
+
+    public async Task DeleteFeedbackAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureDraftTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("UPDATE Gov.OpinionFeedbacks SET IsDeleted = 1 WHERE Id = @Id", connection);
+        command.Parameters.AddWithValue("@Id", id);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task EnsureDraftTablesAsync(SqlConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(@"
+            IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Gov')
+            BEGIN
+                EXEC('CREATE SCHEMA Gov');
+            END
+
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'DraftOpinions')
+            BEGIN
+                CREATE TABLE Gov.DraftOpinions (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    DocumentNumber NVARCHAR(255) NULL,
+                    Title NVARCHAR(MAX) NULL,
+                    FileUrl NVARCHAR(1000) NULL,
+                    OriginalFileName NVARCHAR(255) NULL,
+                    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                    EndDate DATETIME2 NULL,
+                    IsDeleted BIT NOT NULL DEFAULT 0
+                );
+            END
+
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'OpinionFeedbacks')
+            BEGIN
+                CREATE TABLE Gov.OpinionFeedbacks (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    DraftOpinionId INT NOT NULL,
+                    FullName NVARCHAR(255) NULL,
+                    Email NVARCHAR(255) NULL,
+                    PhoneNumber NVARCHAR(50) NULL,
+                    Content NVARCHAR(MAX) NULL,
+                    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                    IsDeleted BIT NOT NULL DEFAULT 0,
+                    CONSTRAINT FK_OpinionFeedbacks_DraftOpinions FOREIGN KEY (DraftOpinionId) REFERENCES Gov.DraftOpinions(Id)
+                );
+            END
+        ", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private static JsonNode? ParseConfigValue(string rawValue)
     {
         try

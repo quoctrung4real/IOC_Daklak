@@ -76,5 +76,9 @@
       "image": ""
     }
   ],
-  "boKhcnLink": "https://mst.gov.vn/van-ban-phap-luat.htm"
+  "boKhcnLink": "https://mst.gov.vn/van-ban-phap-luat.htm",
+  "ubndLink": "https://daklak.gov.vn/van-ban-dia-phuong",
+  "khcnTwLink": "https://skhcn.daklak.gov.vn/van-ban/khcn-trung-uong-185.html",
+  "khcnDpLink": "https://skhcn.daklak.gov.vn/van-ban/khcn-dia-phuong-75.html",
+  "vbLuatLink": "https://skhcn.daklak.gov.vn/van-ban/van-ban-luat-193.html"
 }
