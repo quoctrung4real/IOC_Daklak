@@ -94,10 +94,10 @@ const commonComponents = {
                                 </li>
                                 <li id="menu-bo-khcn"><a href="#">Bộ Khoa học và Công nghệ</a></li>
                                 <li id="menu-ubnd"><a href="#">UBND tỉnh Đắk Lắk</a></li>
-                                <li><a href="#">CSDL VBQPPL tỉnh Đắk Lắk</a></li>
-                                <li><a href="#">Khoa học và Công nghệ Trung ương</a></li>
-                                <li><a href="#">Khoa học và Công nghệ địa phương</a></li>
-                                <li><a href="#">Văn bản luật</a></li>
+                                <li id="menu-csdl-vbqppl"><a href="#">CSDL VBQPPL tỉnh Đắk Lắk</a></li>
+                                <li id="menu-khcn-tw"><a href="#">Khoa học và Công nghệ Trung ương</a></li>
+                                <li id="menu-khcn-dp"><a href="#">Khoa học và Công nghệ địa phương</a></li>
+                                <li id="menu-vb-luat"><a href="#">Văn bản luật</a></li>
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="y-kien-du-thao">
@@ -425,6 +425,25 @@ const commonComponents = {
                         ubndEl.target = '_blank';
                     }
                 }
+                
+                const processLink = (configKey, menuId) => {
+                    if (config && config[configKey]) {
+                        const el = document.querySelector(`#${menuId} a`);
+                        if (el) {
+                            let link = config[configKey].trim();
+                            if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                                link = 'https://' + link;
+                            }
+                            el.href = link;
+                            el.target = '_blank';
+                        }
+                    }
+                };
+                
+                processLink('csdlVbqpplLink', 'menu-csdl-vbqppl');
+                processLink('khcnTwLink', 'menu-khcn-tw');
+                processLink('khcnDpLink', 'menu-khcn-dp');
+                processLink('vbLuatLink', 'menu-vb-luat');
             }
         } catch (e) {
             console.error('Error loading dynamic config:', e);

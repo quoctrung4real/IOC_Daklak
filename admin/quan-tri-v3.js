@@ -219,7 +219,8 @@ async function loadConfig() {
                 'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
                 'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
                 'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
-                'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink'
+                'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink',
+                'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink'
             ];
             
             fields.forEach(field => {
@@ -276,7 +277,8 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
         'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
         'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
         'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
-        'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink'
+        'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink',
+        'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink'
     ];
     
     fields.forEach(field => {
@@ -360,6 +362,39 @@ if(ubndForm) {
         }
     });
 }
+
+function setupLinkFormHandler(formId, inputId, configKey) {
+    const form = document.getElementById(formId);
+    if(form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            try {
+                const res = await apiFetch(`${API_BASE}/cau-hinh`);
+                const currentConfig = await res.json();
+                
+                const newLink = document.getElementById(inputId).value;
+                currentConfig[configKey] = newLink;
+                
+                const saveRes = await apiFetch(`${API_BASE}/cau-hinh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                const result = await saveRes.json();
+                if(result.success) showAlert('Đã lưu liên kết thành công!');
+                else showAlert('Lỗi lưu liên kết', false);
+            } catch(error) {
+                showAlert('Lỗi kết nối tới Server', false);
+            }
+        });
+    }
+}
+
+setupLinkFormHandler('csdl-vbqppl-link-form', 'csdlVbqpplLink', 'csdlVbqpplLink');
+setupLinkFormHandler('khcn-tw-link-form', 'khcnTwLink', 'khcnTwLink');
+setupLinkFormHandler('khcn-dp-link-form', 'khcnDpLink', 'khcnDpLink');
+setupLinkFormHandler('vb-luat-link-form', 'vbLuatLink', 'vbLuatLink');
+
 
 // Khởi tạo
 document.addEventListener('DOMContentLoaded', () => {

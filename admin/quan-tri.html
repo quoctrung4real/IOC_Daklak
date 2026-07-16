@@ -228,6 +228,10 @@
                     </li>
                     <li><a href="#" class="tab-link" data-target="bkhcn-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Bộ KH & CN</span></a></li>
                     <li><a href="#" class="tab-link" data-target="ubnd-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">UBND tỉnh Đắk Lắk</span></a></li>
+                    <li><a href="#" class="tab-link" data-target="csdl-vbqppl-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">CSDL VBQPPL</span></a></li>
+                    <li><a href="#" class="tab-link" data-target="khcn-tw-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">KH&CN Trung ương</span></a></li>
+                    <li><a href="#" class="tab-link" data-target="khcn-dp-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">KH&CN địa phương</span></a></li>
+                    <li><a href="#" class="tab-link" data-target="vb-luat-link-tab"><i class="fa-solid fa-link icon-main" style="margin-left: 10px; font-size: 1rem;"></i> <span class="sidebar-text" style="font-size: 14px;">Văn bản luật</span></a></li>
                 </ul>
             </li>
             <li><a href="#" class="tab-link" data-target="accounts-tab"><i class="fa-solid fa-users icon-main"></i> <span class="sidebar-text">Quản lý Tài Khoản</span></a></li>
@@ -999,6 +1003,66 @@
                     <div class="form-group">
                         <label for="ubndLink">Đường dẫn liên kết (khi nhấn vào menu UBND tỉnh Đắk Lắk sẽ mở ra trang này)</label>
                         <input type="text" id="ubndLink" placeholder="Ví dụ: https://daklak.gov.vn">
+                    </div>
+                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
+                        <i class="fa-solid fa-save"></i> Lưu Liên kết
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="csdl-vbqppl-link-tab" class="tab-content">
+            <div class="card">
+                <h3>Quản lý Liên kết "CSDL VBQPPL tỉnh Đắk Lắk"</h3>
+                <form id="csdl-vbqppl-link-form">
+                    <div class="form-group">
+                        <label for="csdlVbqpplLink">Đường dẫn liên kết</label>
+                        <input type="text" id="csdlVbqpplLink" placeholder="Ví dụ: https://vbpl.vn">
+                    </div>
+                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
+                        <i class="fa-solid fa-save"></i> Lưu Liên kết
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="khcn-tw-link-tab" class="tab-content">
+            <div class="card">
+                <h3>Quản lý Liên kết "Khoa học và Công nghệ Trung ương"</h3>
+                <form id="khcn-tw-link-form">
+                    <div class="form-group">
+                        <label for="khcnTwLink">Đường dẫn liên kết</label>
+                        <input type="text" id="khcnTwLink" placeholder="Ví dụ: https://www.most.gov.vn">
+                    </div>
+                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
+                        <i class="fa-solid fa-save"></i> Lưu Liên kết
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="khcn-dp-link-tab" class="tab-content">
+            <div class="card">
+                <h3>Quản lý Liên kết "Khoa học và Công nghệ địa phương"</h3>
+                <form id="khcn-dp-link-form">
+                    <div class="form-group">
+                        <label for="khcnDpLink">Đường dẫn liên kết</label>
+                        <input type="text" id="khcnDpLink" placeholder="Ví dụ: https://sokhcn.daklak.gov.vn">
+                    </div>
+                    <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
+                        <i class="fa-solid fa-save"></i> Lưu Liên kết
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="vb-luat-link-tab" class="tab-content">
+            <div class="card">
+                <h3>Quản lý Liên kết "Văn bản luật"</h3>
+                <form id="vb-luat-link-form">
+                    <div class="form-group">
+                        <label for="vbLuatLink">Đường dẫn liên kết</label>
+                        <input type="text" id="vbLuatLink" placeholder="Ví dụ: https://thuvienphapluat.vn">
                     </div>
                     <button type="submit" class="btn-action btn-add" style="margin-top: 15px;">
                         <i class="fa-solid fa-save"></i> Lưu Liên kết
