@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch('/api/y-kien-du-thao');
+        const response = await fetch('http://localhost:5100/api/y-kien-du-thao');
         const data = await response.json();
         
         const tbody = document.getElementById('drafts-table-body');

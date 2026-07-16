@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const response = await fetch(`/api/y-kien-du-thao/${draftId}`);
+        const response = await fetch(`http://localhost:5100/api/y-kien-du-thao/${draftId}`);
         const data = await response.json();
         
         if (data.success && data.draftOpinion) {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert.style.display = 'none';
 
         try {
-            const res = await fetch(`/api/y-kien-du-thao/${draftId}/gop-y`, {
+            const res = await fetch(`http://localhost:5100/api/y-kien-du-thao/${draftId}/gop-y`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
