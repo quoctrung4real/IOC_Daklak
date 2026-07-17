@@ -4,7 +4,6 @@ backend/obj/
 .tmp/
 
 # Backend local/report artifacts
-backend/appsettings.json
 backend/.env
 backend/.env.*
 !backend/.env.example
