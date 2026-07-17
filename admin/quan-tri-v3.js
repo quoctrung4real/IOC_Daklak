@@ -257,7 +257,7 @@ async function loadConfig() {
                 'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
                 'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
                 'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink',
-                'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink'
+                'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink', 'agencyLinksColor'
             ];
             
             fields.forEach(field => {
@@ -292,6 +292,11 @@ async function loadConfig() {
                 techSolutionsItems = config.techSolutionsItems;
                 renderTechSolutionsItems();
             }
+            
+            if (config.agencyLinksGroups) {
+                agencyLinksGroups = config.agencyLinksGroups;
+            }
+            if (typeof renderAgencyLinksGroups === 'function') renderAgencyLinksGroups();
             if (typeof renderTickerItems === 'function') renderTickerItems();
             if (typeof updateTickerPreview === 'function') updateTickerPreview();
         }
@@ -315,7 +320,7 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
         'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
         'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
         'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink',
-        'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink'
+        'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink', 'agencyLinksColor'
     ];
     
     fields.forEach(field => {
@@ -327,6 +332,7 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
     
     config.tickerItems = tickerItems;
     config.techSolutionsItems = techSolutionsItems;
+    config.agencyLinksGroups = agencyLinksGroups;
 
     try {
         const response = await apiFetch(`${API_BASE}/cau-hinh`, {
@@ -1854,4 +1860,152 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load existing configs
     loadExternalLinksConfig();
 });
+
+// --- Agency Links Config (Accordion) ---
+let agencyLinksGroups = [
+    {
+        title: "Bộ / Ngành Trung ương",
+        links: [
+            { text: "Bộ Khoa học và Công nghệ", url: "#" },
+            { text: "Bộ Giáo dục và Đào tạo", url: "#" },
+            { text: "Bộ Tài chính", url: "#" },
+            { text: "Bộ Y tế", url: "#" }
+        ]
+    },
+    {
+        title: "Sở / Ban ngành",
+        links: [
+            { text: "Sở Khoa học và Công nghệ", url: "#" },
+            { text: "Sở Nông nghiệp và Phát triển nông thôn", url: "#" },
+            { text: "Sở Công thương", url: "#" },
+            { text: "Sở Tài chính", url: "#" },
+            { text: "Sở Tư pháp", url: "#" }
+        ]
+    },
+    {
+        title: "Ubnd Xã / Phường",
+        links: [
+            { text: "Phường Buôn Ma Thuột", url: "#" },
+            { text: "Phường Bình Kiến", url: "#" },
+            { text: "Phường Buôn Hồ", url: "#" },
+            { text: "Phường Phú Yên", url: "#" },
+            { text: "Phường Tuy Hoà", url: "#" }
+        ]
+    },
+    {
+        title: "Các cơ quan khác",
+        links: [
+            { text: "Cổng thông tin chính phủ", url: "#" },
+            { text: "Báo điện tử Chính phủ", url: "#" },
+            { text: "Đài tiếng nói Việt Nam", url: "#" },
+            { text: "Liên đoàn lao động tỉnh", url: "#" },
+            { text: "Hội nông dân", url: "#" }
+        ]
+    }
+];
+
+function renderAgencyLinksGroups() {
+    const container = document.getElementById('agencyLinksGroupsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    agencyLinksGroups.forEach((group, groupIndex) => {
+        let linksHtml = '';
+        group.links.forEach((link, linkIndex) => {
+            linksHtml += `
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <div style="flex: 2;">
+                        <input type="text" placeholder="Tên liên kết" value="${link.text}" oninput="updateAgencyLink(${groupIndex}, ${linkIndex}, 'text', this.value)" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 2;">
+                        <input type="text" placeholder="Đường link (URL)" value="${link.url}" oninput="updateAgencyLink(${groupIndex}, ${linkIndex}, 'url', this.value)" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    </div>
+                    <button type="button" onclick="removeAgencyLink(${groupIndex}, ${linkIndex})" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+        });
+
+        const groupDiv = document.createElement('div');
+        groupDiv.style.background = 'white';
+        groupDiv.style.padding = '15px';
+        groupDiv.style.borderRadius = '6px';
+        groupDiv.style.border = '1px solid #e2e8f0';
+        
+        groupDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+                <input type="text" value="${group.title}" oninput="updateAgencyGroupTitle(${groupIndex}, this.value)" style="font-weight: 600; color: #475569; font-size: 15px; border: none; outline: none; background: transparent; width: 80%;" placeholder="Tên nhóm cơ quan">
+                <button type="button" onclick="removeAgencyGroup(${groupIndex})" style="background: transparent; color: #ef4444; border: none; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa Nhóm</button>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Danh sách liên kết</label>
+            </div>
+            ${linksHtml}
+            <button type="button" onclick="addAgencyLink(${groupIndex})" style="background: #f1f5f9; color: #475569; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 6px 12px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 5px;"><i class="fa-solid fa-plus"></i> Thêm liên kết mới</button>
+        `;
+        container.appendChild(groupDiv);
+    });
+    updateAgencyLinksPreview();
+}
+
+function updateAgencyGroupTitle(groupIndex, title) {
+    agencyLinksGroups[groupIndex].title = title;
+    updateAgencyLinksPreview();
+}
+
+function updateAgencyLink(groupIndex, linkIndex, key, value) {
+    agencyLinksGroups[groupIndex].links[linkIndex][key] = value;
+    updateAgencyLinksPreview();
+}
+
+function addAgencyGroup() {
+    agencyLinksGroups.push({ title: "Nhóm mới", links: [] });
+    renderAgencyLinksGroups();
+}
+
+function removeAgencyGroup(groupIndex) {
+    if(confirm("Bạn có chắc muốn xóa nhóm này không?")) {
+        agencyLinksGroups.splice(groupIndex, 1);
+        renderAgencyLinksGroups();
+    }
+}
+
+function addAgencyLink(groupIndex) {
+    agencyLinksGroups[groupIndex].links.push({ text: "Tên liên kết", url: "#" });
+    renderAgencyLinksGroups();
+}
+
+function removeAgencyLink(groupIndex, linkIndex) {
+    agencyLinksGroups[groupIndex].links.splice(linkIndex, 1);
+    renderAgencyLinksGroups();
+}
+
+function updateAgencyLinksPreview() {
+    const container = document.getElementById('agencyLinksPreviewContainer');
+    if (!container) return;
+    
+    const bgColor = document.getElementById('agencyLinksColor')?.value || '#0a59ab';
+    
+    container.innerHTML = '';
+    agencyLinksGroups.forEach(group => {
+        let linksHtml = '';
+        group.links.forEach(link => {
+            linksHtml += `<li><a href="${link.url}" target="_blank" style="text-decoration: none; color: #333; display: block; padding: 8px 15px; border-bottom: 1px solid #f1f5f9;"><i class="fa-solid fa-angle-right" style="font-size: 0.8em; margin-right: 6px; color: #94a3b8;"></i> ${link.text}</a></li>`;
+        });
+        
+        container.innerHTML += `
+            <div class="accordion-item" style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+                <button class="accordion-header" style="background-color: ${bgColor}; color: white; padding: 12px 15px; border: none; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; cursor: pointer;">
+                    <span>${group.title}</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content" style="background: white;">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        ${linksHtml}
+                    </ul>
+                </div>
+            </div>
+        `;
+    });
+}
+
 

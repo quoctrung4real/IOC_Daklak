@@ -400,6 +400,44 @@ async function loadConfig() {
                 }
             });
         }
+        
+        // Agency Links (Liên kết cơ quan) logic
+        if (config.agencyLinksGroups && Array.isArray(config.agencyLinksGroups)) {
+            const container = document.getElementById('agency-links-container');
+            if (container) {
+                container.innerHTML = '';
+                const bgColor = config.agencyLinksColor || '#0a59ab';
+                config.agencyLinksGroups.forEach(group => {
+                    let linksHtml = '';
+                    group.links.forEach(link => {
+                        linksHtml += `<li><a href="${link.url}" target="_blank"><i class="fa-solid fa-angle-right" style="font-size: 0.8em; margin-right: 6px;"></i> ${link.text}</a></li>`;
+                    });
+                    
+                    container.innerHTML += `
+                        <div class="accordion-item">
+                            <button class="accordion-header" style="background-color: ${bgColor};">
+                                <span>${group.title}</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul>
+                                    ${linksHtml}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Attach event listeners for the newly added accordion headers
+                const newHeaders = container.querySelectorAll('.accordion-header');
+                newHeaders.forEach(header => {
+                    header.addEventListener('click', () => {
+                        const item = header.parentElement;
+                        item.classList.toggle('active');
+                    });
+                });
+            }
+        }
     } catch (e) {
         console.warn('Backend C# is not running. Using default local styles.');
     }
