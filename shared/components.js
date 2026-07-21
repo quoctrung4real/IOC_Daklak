@@ -184,44 +184,17 @@ const commonComponents = {
         </button>
     </header>`,
 
-    footer: `
-    <!-- ===== FOOTER ===== -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-main">
-                <div class="footer-left">
-                    <div class="footer-brand">
-                        <div class="footer-logo">
-                            <svg viewBox="0 0 60 60" width="60" height="60">
-                                <circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.5)"
-                                    stroke-width="1.5" />
-                                <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.3)"
-                                    stroke-width="1" />
-                                <text x="30" y="28" text-anchor="middle" fill="white" font-size="8" font-weight="700"
-                                    font-family="Inter">DakLakIOC</text>
-                                <text x="30" y="38" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="5"
-                                    font-family="Inter">SMART CITY</text>
-                            </svg>
-                        </div>
-                        <div class="footer-brand-text">
-                            <strong>DAKLAK IOC</strong>
-                            <span>Trung tâm Giám sát, điều hành đô thị thông minh tỉnh Đăk Lăk</span>
-                        </div>
-                    </div>
-                    <div class="footer-info">
-                        <h4>THÔNG TIN TRUNG TÂM</h4>
-                        <p><i class="fa-solid fa-location-dot"></i> Địa chỉ: 28B Y Bih Aleo, Phường Buôn Ma Thuột, tỉnh
-                            Đắk Lắk</p>
-                        <p><i class="fa-solid fa-phone"></i> Điện thoại: <a href="tel:02621022">02621022</a> - Fax:
-                            02621022</p>
-                        <p><i class="fa-solid fa-envelope"></i> Email: <a
-                                href="mailto:banbientapioc.tttt@daklak.gov.vn">banbientapioc.tttt@daklak.gov.vn</a></p>
-                    </div>
-                </div>
-                <div class="footer-right">
-                    <div class="footer-cert">
-                        <div class="cert-badge">
-                            <svg viewBox="0 0 140 50" width="140" height="50">
+    renderFooter: (config = {}) => {
+        const formatLink = (link) => {
+            if (!link || link === '#') return '#';
+            link = link.trim();
+            if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                return 'https://' + link;
+            }
+            return link;
+        };
+
+        const ncscImg = config.ncscImageUrl ? `<img src="${config.ncscImageUrl}" alt="NCSC" style="max-height: 50px; border-radius: 6px;">` : `<svg viewBox="0 0 140 50" width="140" height="50">
                                 <rect width="140" height="50" rx="6" fill="white" />
                                 <text x="70" y="20" text-anchor="middle" fill="#1a5276" font-size="10" font-weight="700"
                                     font-family="Inter">NCSC</text>
@@ -229,33 +202,9 @@ const commonComponents = {
                                     font-family="Inter">Website đạt chứng nhận</text>
                                 <text x="70" y="43" text-anchor="middle" fill="#c0392b" font-size="8" font-weight="700"
                                     font-family="Inter">TÍN NHIỆM MẠNG</text>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="footer-social">
-                        <h4>THEO DÕI CHÚNG TÔI TẠI</h4>
-                        <div class="social-links">
-                            <a href="#" class="social-icon facebook" aria-label="Facebook">
-                                <i class="fa-brands fa-facebook-f"></i>
-                            </a>
-                            <a href="#" class="social-icon zalo" aria-label="Zalo">
-                                <span style="font-weight:700;font-size:10px;">Zalo</span>
-                            </a>
-                            <a href="#" class="social-icon youtube" aria-label="YouTube">
-                                <i class="fa-brands fa-youtube"></i>
-                            </a>
-                            <a href="#" class="social-icon tiktok" aria-label="TikTok">
-                                <i class="fa-brands fa-tiktok"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="footer-app">
-                        <h4>TẢI ỨNG DỤNG ĐĂK LĂK SỐ</h4>
-                        <div class="app-download">
-                            <div class="qr-code">
-                                <svg viewBox="0 0 80 80" width="80" height="80">
+                            </svg>`;
+        const qrImg = config.qrCodeUrl ? `<img src="${config.qrCodeUrl}" alt="QR Code" style="width: 80px; height: 80px; border-radius: 4px;">` : `<svg viewBox="0 0 80 80" width="80" height="80">
                                     <rect width="80" height="80" rx="4" fill="white" />
-                                    <!-- QR code pattern -->
                                     <rect x="8" y="8" width="20" height="20" rx="2" fill="#333" />
                                     <rect x="52" y="8" width="20" height="20" rx="2" fill="#333" />
                                     <rect x="8" y="52" width="20" height="20" rx="2" fill="#333" />
@@ -276,25 +225,81 @@ const commonComponents = {
                                     <rect x="40" y="56" width="4" height="4" fill="#333" />
                                     <rect x="52" y="52" width="8" height="8" fill="#333" />
                                     <rect x="64" y="56" width="4" height="4" fill="#333" />
-                                </svg>
+                                </svg>`;
+
+        return `
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-column">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <svg viewBox="0 0 60 60" width="60" height="60">
+                                <circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" />
+                                <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+                                <text x="30" y="28" text-anchor="middle" fill="white" font-size="8" font-weight="700" font-family="Inter">DakLakIOC</text>
+                                <text x="30" y="38" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="5" font-family="Inter">SMART CITY</text>
+                            </svg>
+                        </div>
+                        <div class="footer-brand-text">
+                            <strong>${config.brandName || 'DAKLAK IOC'}</strong>
+                            <span>${config.brandDesc || 'Trung tâm Giám sát, điều hành đô thị thông minh tỉnh Đăk Lăk'}</span>
+                        </div>
+                    </div>
+                    <div class="footer-info">
+                        <h4>THÔNG TIN TRUNG TÂM</h4>
+                        <p><i class="fa-solid fa-location-dot"></i> ${config.address || 'Địa chỉ: 28B Y Bih Aleo, Phường Buôn Ma Thuột, tỉnh Đắk Lắk'}</p>
+                        <p><i class="fa-solid fa-phone"></i> Điện thoại: <a href="tel:${config.phone || '02621022'}">${config.phone || '02621022'}</a> - Fax: ${config.fax || '02621022'}</p>
+                        <p><i class="fa-solid fa-envelope"></i> Email: <a href="mailto:${config.email || 'banbientapioc.tttt@daklak.gov.vn'}">${config.email || 'banbientapioc.tttt@daklak.gov.vn'}</a></p>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <div class="footer-social">
+                        <h4>THEO DÕI CHÚNG TÔI TẠI</h4>
+                        <div class="social-links">
+                            <a href="${formatLink(config.facebookLink)}" target="_blank" class="social-icon facebook" aria-label="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="${formatLink(config.zaloLink)}" target="_blank" class="social-icon zalo" aria-label="Zalo">
+                                <span style="font-weight:700;font-size:10px;">Zalo</span>
+                            </a>
+                            <a href="${formatLink(config.youtubeLink)}" target="_blank" class="social-icon youtube" aria-label="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                            <a href="${formatLink(config.tiktokLink)}" target="_blank" class="social-icon tiktok" aria-label="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="footer-cert" style="margin-top: 15px;">
+                        <div class="cert-badge">
+                            <a href="${formatLink(config.ncscLink)}" target="_blank" style="text-decoration:none;">
+                                ${ncscImg}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <div class="footer-app">
+                        <h4>TẢI ỨNG DỤNG ĐĂK LĂK SỐ</h4>
+                        <div class="app-download">
+                            <div class="qr-code">
+                                ${qrImg}
                             </div>
                             <div class="store-links">
-                                <a href="#" class="store-btn">
+                                <a href="${formatLink(config.appStoreLink)}" target="_blank" class="store-btn">
                                     <svg viewBox="0 0 135 40" width="135" height="40">
                                         <rect width="135" height="40" rx="6" fill="#000" />
-                                        <text x="67" y="15" text-anchor="middle" fill="#999" font-size="7"
-                                            font-family="Inter">Download on the</text>
-                                        <text x="67" y="28" text-anchor="middle" fill="white" font-size="13"
-                                            font-weight="600" font-family="Inter">App Store</text>
+                                        <text x="67" y="15" text-anchor="middle" fill="#999" font-size="7" font-family="Inter">Download on the</text>
+                                        <text x="67" y="28" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="Inter">App Store</text>
                                     </svg>
                                 </a>
-                                <a href="#" class="store-btn">
+                                <a href="${formatLink(config.googlePlayLink)}" target="_blank" class="store-btn">
                                     <svg viewBox="0 0 135 40" width="135" height="40">
                                         <rect width="135" height="40" rx="6" fill="#000" />
-                                        <text x="67" y="15" text-anchor="middle" fill="#999" font-size="7"
-                                            font-family="Inter">GET IT ON</text>
-                                        <text x="67" y="28" text-anchor="middle" fill="white" font-size="13"
-                                            font-weight="600" font-family="Inter">Google Play</text>
+                                        <text x="67" y="15" text-anchor="middle" fill="#999" font-size="7" font-family="Inter">GET IT ON</text>
+                                        <text x="67" y="28" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="Inter">Google Play</text>
                                     </svg>
                                 </a>
                             </div>
@@ -303,12 +308,12 @@ const commonComponents = {
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>© 2026 Trung tâm Giám sát, Điều hành đô thị thông minh tỉnh Đắk Lắk – All Rights Reserved</p>
-                <p>Ghi rõ nguồn "Trang Thông tin điện tử Trung tâm IOC" hoặc iocdaklak.vn khi phát hành lại thông tin từ
-                    các nguồn này.</p>
+                <p>${config.copyrightText || '© 2026 Trung tâm Giám sát, Điều hành đô thị thông minh tỉnh Đắk Lắk – All Rights Reserved'}</p>
+                <p>${config.disclaimerText || 'Ghi rõ nguồn "Trang Thông tin điện tử Trung tâm IOC" hoặc iocdaklak.vn khi phát hành lại thông tin từ các nguồn này.'}</p>
             </div>
         </div>
-    </footer>`,
+    </footer>`;
+    },
 
     comments: `
             <!-- ===== COMMENTS SECTION ===== -->
@@ -352,7 +357,8 @@ const commonComponents = {
     document.body.insertAdjacentHTML('afterbegin', commonComponents.header);
     
     // 2. Inject Footer & Scroll Top at the end of body
-    document.body.insertAdjacentHTML('beforeend', commonComponents.footer);
+    document.body.insertAdjacentHTML('beforeend', '<div id="footer-placeholder"></div>');
+    document.getElementById('footer-placeholder').outerHTML = commonComponents.renderFooter({}); // default first
     document.body.insertAdjacentHTML('beforeend', commonComponents.scrollTop);
     
     // 3. Inject Comments Section if placeholder exists
@@ -464,9 +470,19 @@ const commonComponents = {
     // 5. Load dynamic config (e.g. Bo KHCN link)
     setTimeout(async () => {
         try {
+            
             const res = await fetch('http://localhost:5100/api/cau-hinh');
             if (res.ok) {
                 const config = await res.json();
+                
+                // FOOTER UPDATE
+                if (config && config.footerConfig) {
+                    const existingFooter = document.querySelector('.footer');
+                    if (existingFooter) {
+                        existingFooter.outerHTML = commonComponents.renderFooter(config.footerConfig);
+                    }
+                }
+
                 if (config && config.boKhcnLink) {
                     const boKhcnEl = document.querySelector('#menu-bo-khcn a');
                     if (boKhcnEl) {

@@ -314,6 +314,14 @@ async function loadConfig() {
                 featuredNewsSelections = [];
             }
             if (typeof loadAllNewsForFeatured === 'function') loadAllNewsForFeatured();
+            
+            if (config.footerConfig) {
+                const fc = config.footerConfig;
+                ['brandName', 'brandDesc', 'address', 'phone', 'fax', 'email', 'facebookLink', 'zaloLink', 'youtubeLink', 'tiktokLink', 'ncscLink', 'ncscImageUrl', 'qrCodeUrl', 'appStoreLink', 'googlePlayLink', 'copyrightText', 'disclaimerText'].forEach(key => {
+                    const el = document.getElementById('footer' + key.charAt(0).toUpperCase() + key.slice(1));
+                    if (el && fc[key] !== undefined) el.value = fc[key];
+                });
+            }
         }
     } catch (e) {
         console.error("Lỗi lấy cấu hình:", e);
@@ -323,7 +331,16 @@ async function loadConfig() {
 // Lưu cấu hình
 document.getElementById('config-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const config = {};
+    
+    // FETCH FIRST to preserve multimedia keys and other unmapped keys
+    let config = {};
+    try {
+        const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+        if (res.ok) config = await res.json();
+    } catch (e) {
+        console.warn("Could not fetch current config", e);
+    }
+
     const fields = [
         'headerTextMain', 'headerTextSub', 'headerTextColor', 'headerFontMain', 'headerFontSub',
         'logoUrl', 'faviconUrl', 'bannerUrl', 'menuBarBgColor',
@@ -349,6 +366,9 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
     config.techSolutionsItems = techSolutionsItems;
     config.agencyLinksGroups = agencyLinksGroups;
     config.featuredNewsIds = typeof featuredNewsSelections !== 'undefined' ? featuredNewsSelections : [];
+    config.externalLinks = typeof externalLinksApp !== 'undefined' ? externalLinksApp.items : [];
+
+    // Footer configuration is now handled by a separate form (footer-config-form)
 
     try {
         const response = await apiFetch(`${API_BASE}/cau-hinh`, {
@@ -363,6 +383,40 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
         showAlert('Lỗi kết nối tới Server', false);
     }
 });
+
+// Lưu cấu hình Footer
+const footerForm = document.getElementById('footer-config-form');
+if(footerForm) {
+    footerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            // Fetch current config first to preserve other settings
+            const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+            let config = await res.json();
+            
+            config.footerConfig = config.footerConfig || {};
+            ['brandName', 'brandDesc', 'address', 'phone', 'fax', 'email', 'facebookLink', 'zaloLink', 'youtubeLink', 'tiktokLink', 'ncscLink', 'ncscImageUrl', 'qrCodeUrl', 'appStoreLink', 'googlePlayLink', 'copyrightText', 'disclaimerText'].forEach(key => {
+                const el = document.getElementById('footer' + key.charAt(0).toUpperCase() + key.slice(1));
+                if (el) config.footerConfig[key] = el.value;
+            });
+
+            const response = await apiFetch(`${API_BASE}/cau-hinh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            const result = await response.json();
+            if(result.success) {
+                showAlert('Lưu cấu hình Footer thành công!');
+            } else {
+                showAlert('Lỗi lưu cấu hình', false);
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert('Lỗi kết nối tới Server', false);
+        }
+    });
+}
 
 // Xử lý lưu Liên kết Bộ KH&CN riêng biệt (ở tab mới)
 const bkhcnForm = document.getElementById('bkhcn-link-form');
@@ -763,6 +817,47 @@ async function loadNews(categoryId) {
     }
 }
 
+async function handleNewsAttachmentUpload(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showAlert('Kích thước tệp vượt quá 10MB', false);
+        input.value = '';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const upRes = await apiFetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+        const upData = await upRes.json();
+        if (upData.url) {
+            document.getElementById('newsFormAttachmentUrl').value = upData.url;
+            document.getElementById('newsFormAttachmentName').value = file.name;
+            
+            document.getElementById('newsFormAttachmentPreview').style.display = 'block';
+            document.getElementById('newsFormAttachmentPreview').innerText = 'Tệp đã đính kèm: ' + file.name;
+            document.getElementById('newsFormDeleteAttachmentBtn').style.display = 'inline-flex';
+        } else {
+            showAlert('Lỗi tải tệp lên', false);
+            input.value = '';
+        }
+    } catch (err) {
+        showAlert('Lỗi tải tệp lên', false);
+        input.value = '';
+    }
+}
+
+function clearNewsAttachment() {
+    document.getElementById('newsFormAttachmentUpload').value = '';
+    document.getElementById('newsFormAttachmentUrl').value = '';
+    document.getElementById('newsFormAttachmentName').value = '';
+    document.getElementById('newsFormAttachmentPreview').style.display = 'none';
+    document.getElementById('newsFormDeleteAttachmentBtn').style.display = 'none';
+}
+
 function renderNewsTable() {
     const tbody = document.getElementById('newsTableBody');
     tbody.innerHTML = '';
@@ -803,6 +898,12 @@ function openNewsModal() {
     document.getElementById('newsPostForm').reset();
     document.getElementById('newsFormId').value = '';
     
+    document.getElementById('newsFormAttachmentUrl').value = '';
+    document.getElementById('newsFormAttachmentName').value = '';
+    document.getElementById('newsFormAttachmentUpload').value = '';
+    document.getElementById('newsFormAttachmentPreview').style.display = 'none';
+    document.getElementById('newsFormDeleteAttachmentBtn').style.display = 'none';
+    
     document.getElementById('newsFormVideoUrlContainer').style.display = currentNewsCategory === 'tin-tuc-da-phuong-tien' ? 'block' : 'none';
     document.getElementById('newsFormMultimediaTypeContainer').style.display = currentNewsCategory === 'tin-tuc-da-phuong-tien' ? 'block' : 'none';
     if(currentNewsCategory === 'tin-tuc-da-phuong-tien') {
@@ -838,6 +939,18 @@ function editNews(id) {
     document.getElementById('newsFormAuthor').value = post.author || '';
     document.getElementById('newsFormLinkUrl').value = post.linkUrl || '';
     document.getElementById('newsFormLinkText').value = post.linkText || '';
+
+    document.getElementById('newsFormAttachmentUrl').value = post.attachmentUrl || '';
+    document.getElementById('newsFormAttachmentName').value = post.attachmentName || '';
+    document.getElementById('newsFormAttachmentUpload').value = '';
+    if (post.attachmentUrl) {
+        document.getElementById('newsFormAttachmentPreview').style.display = 'block';
+        document.getElementById('newsFormAttachmentPreview').innerText = 'Tệp đã đính kèm: ' + (post.attachmentName || 'Tài liệu');
+        document.getElementById('newsFormDeleteAttachmentBtn').style.display = 'inline-flex';
+    } else {
+        document.getElementById('newsFormAttachmentPreview').style.display = 'none';
+        document.getElementById('newsFormDeleteAttachmentBtn').style.display = 'none';
+    }
 
     document.getElementById('newsFormMultimediaTypeContainer').style.display = currentNewsCategory === 'tin-tuc-da-phuong-tien' ? 'block' : 'none';
     
@@ -903,6 +1016,8 @@ document.getElementById('newsPostForm').addEventListener('submit', async (e) => 
         linkText: document.getElementById('newsFormLinkText').value,
         videoUrl: (currentNewsCategory === 'tin-tuc-da-phuong-tien' && document.getElementById('newsFormMultimediaType').value === 'video') ? document.getElementById('newsFormVideoUrl').value : '',
         multimediaType: currentNewsCategory === 'tin-tuc-da-phuong-tien' ? document.getElementById('newsFormMultimediaType').value : undefined,
+        attachmentUrl: document.getElementById('newsFormAttachmentUrl').value,
+        attachmentName: document.getElementById('newsFormAttachmentName').value,
         isFeatured: document.getElementById('newsFormIsFeatured').checked
     };
     
@@ -1222,7 +1337,7 @@ const multimediaApp = {
 
     async init() {
         try {
-            const res = await fetch(`${API_BASE}/cau-hinh`);
+            const res = await apiFetch(`${API_BASE}/cau-hinh`);
             if (res.ok) {
                 const config = await res.json();
                 if (config.multimediaBgColor) this.bgColor = config.multimediaBgColor;
@@ -1235,7 +1350,7 @@ const multimediaApp = {
                 if (config.multimediaSecondaryInfographicIds) this.secondaryInfographicIds = config.multimediaSecondaryInfographicIds;
             }
 
-            const newsRes = await fetch(`${API_BASE}/tin-tuc-da-phuong-tien`);
+            const newsRes = await apiFetch(`${API_BASE}/tin-tuc-da-phuong-tien`);
             if (newsRes.ok) {
                 const newsData = await newsRes.json();
                 this.allNews = newsData.posts || [];
@@ -1352,7 +1467,7 @@ const multimediaApp = {
         try {
             this.bgColor = document.getElementById('multimedia-bgColor').value || '#0a59ab';
 
-            const response = await fetch(`${API_BASE}/cau-hinh`);
+            const response = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
             let currentConfig = {};
             if (response.ok) {
                 currentConfig = await response.json();
@@ -1372,7 +1487,7 @@ const multimediaApp = {
             currentConfig.multimediaImages = undefined;
             currentConfig.multimediaInfographics = undefined;
 
-            const saveRes = await fetch(`${API_BASE}/cau-hinh`, {
+            const saveRes = await apiFetch(`${API_BASE}/cau-hinh`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(currentConfig)
@@ -1389,10 +1504,157 @@ const multimediaApp = {
         }
     }
 };
+const externalLinksApp = {
+    items: [],
+    
+    async init() {
+        try {
+            const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+            if (res.ok) {
+                const config = await res.json();
+                this.items = config.externalLinks || [];
+                this.renderList();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    renderList() {
+        const listEl = document.getElementById('external-links-list');
+        if (!listEl) return;
+        if (this.items.length === 0) {
+            listEl.innerHTML = '<div style="grid-column: 1 / -1; color: #64748b; text-align: center; padding: 20px; background: white; border: 1px dashed #cbd5e1; border-radius: 4px;">Chưa có liên kết nào. Bấm "Thêm Box Mới" để tạo.</div>';
+            return;
+        }
+
+        listEl.innerHTML = this.items.map(item => `
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; position: relative;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <div style="width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: ${item.color || '#0a59ab'}; color: white;">
+                        ${item.logoUrl ? `<img src="${item.logoUrl}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '<i class="fa-solid fa-link"></i>'}
+                    </div>
+                    <div style="font-weight: 600; color: #1e293b; flex: 1; word-break: break-word;">${item.name || ''}</div>
+                </div>
+                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; word-break: break-all;">
+                    ${item.url || ''}
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" onclick="externalLinksApp.openEditModal('${item.id}')" style="flex: 1; background: #f1f5f9; border: none; padding: 5px; border-radius: 4px; cursor: pointer; color: #0a59ab;"><i class="fa-solid fa-edit"></i> Sửa</button>
+                    <button type="button" onclick="externalLinksApp.deleteItem('${item.id}')" style="flex: 1; background: #fef2f2; border: none; padding: 5px; border-radius: 4px; cursor: pointer; color: #ef4444;"><i class="fa-solid fa-trash"></i> Xóa</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    openAddModal() {
+        document.getElementById('extLinkForm').reset();
+        document.getElementById('extLinkId').value = '';
+        document.getElementById('extLinkLogoUrl').value = '';
+        document.getElementById('extLinkBgUrl').value = '';
+        document.getElementById('extLinkLogoPreview').style.display = 'none';
+        document.getElementById('extLinkBgPreview').style.display = 'none';
+        document.getElementById('extLinkModalTitle').innerText = 'Thêm Liên Kết Ngoài';
+        document.getElementById('externalLinkModal').style.display = 'flex';
+    },
+
+    openEditModal(id) {
+        const item = this.items.find(x => x.id === id);
+        if (!item) return;
+        
+        document.getElementById('extLinkId').value = item.id;
+        document.getElementById('extLinkName').value = item.name || '';
+        document.getElementById('extLinkUrl').value = item.url || '';
+        document.getElementById('extLinkColor').value = item.color || '#0a59ab';
+        
+        document.getElementById('extLinkLogoUrl').value = item.logoUrl || '';
+        if (item.logoUrl) {
+            document.getElementById('extLinkLogoPreview').style.display = 'block';
+            document.getElementById('extLinkLogoPreview').querySelector('img').src = item.logoUrl;
+        } else {
+            document.getElementById('extLinkLogoPreview').style.display = 'none';
+        }
+        
+        document.getElementById('extLinkBgUrl').value = item.bgUrl || '';
+        if (item.bgUrl) {
+            document.getElementById('extLinkBgPreview').style.display = 'block';
+            document.getElementById('extLinkBgPreview').querySelector('img').src = item.bgUrl;
+        } else {
+            document.getElementById('extLinkBgPreview').style.display = 'none';
+        }
+        
+        document.getElementById('extLinkModalTitle').innerText = 'Sửa Liên Kết Ngoài';
+        document.getElementById('externalLinkModal').style.display = 'flex';
+    },
+
+    closeModal() {
+        document.getElementById('externalLinkModal').style.display = 'none';
+    },
+
+    deleteItem(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa liên kết này?')) {
+            this.items = this.items.filter(x => x.id !== id);
+            this.renderList();
+        }
+    },
+
+    async uploadImage(type) {
+        const fileInput = document.getElementById(type === 'logo' ? 'extLinkLogoFile' : 'extLinkBgFile');
+        if (!fileInput.files || fileInput.files.length === 0) return;
+        
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success && data.fileUrl) {
+                if (type === 'logo') {
+                    document.getElementById('extLinkLogoUrl').value = data.fileUrl;
+                    document.getElementById('extLinkLogoPreview').style.display = 'block';
+                    document.getElementById('extLinkLogoPreview').querySelector('img').src = data.fileUrl;
+                } else {
+                    document.getElementById('extLinkBgUrl').value = data.fileUrl;
+                    document.getElementById('extLinkBgPreview').style.display = 'block';
+                    document.getElementById('extLinkBgPreview').querySelector('img').src = data.fileUrl;
+                }
+            } else {
+                showAlert('Tải ảnh thất bại', false);
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert('Lỗi tải ảnh', false);
+        }
+    },
+
+    saveExtLink() {
+        const idVal = document.getElementById('extLinkId').value;
+        const newItem = {
+            id: idVal || Date.now().toString(),
+            name: document.getElementById('extLinkName').value,
+            url: document.getElementById('extLinkUrl').value,
+            color: document.getElementById('extLinkColor').value,
+            logoUrl: document.getElementById('extLinkLogoUrl').value,
+            bgUrl: document.getElementById('extLinkBgUrl').value
+        };
+
+        if (idVal) {
+            const idx = this.items.findIndex(x => x.id === idVal);
+            if (idx > -1) this.items[idx] = newItem;
+        } else {
+            this.items.push(newItem);
+        }
+        
+        this.renderList();
+        this.closeModal();
+    }
+};
 
 
 document.addEventListener('DOMContentLoaded', () => {
     multimediaApp.init();
+    externalLinksApp.init();
 });
 
 // ========================================
@@ -3251,3 +3513,27 @@ const infoUtilityApp = {
     }
 };
 
+async function handleFooterImageUpload(input, targetInputId) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${API_BASE}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            document.getElementById(targetInputId).value = result.fileUrl;
+            showAlert('Tải ảnh thành công!');
+        } else {
+            showAlert('Lỗi tải ảnh: ' + (result.message || ''), false);
+        }
+    } catch (e) {
+        console.error(e);
+        showAlert('Lỗi kết nối khi tải ảnh', false);
+    }
+    input.value = ''; // Reset input
+}

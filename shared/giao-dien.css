@@ -1081,9 +1081,15 @@ body.is-sticky .nav-wrapper {
 
 .footer-main {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 40px;
     padding-bottom: 40px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .footer-brand {
@@ -1138,11 +1144,7 @@ body.is-sticky .nav-wrapper {
     text-decoration: underline;
 }
 
-.footer-right {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
+/* Removed .footer-right as it is replaced by .footer-column */
 
 .cert-badge {
     margin-bottom: 8px;

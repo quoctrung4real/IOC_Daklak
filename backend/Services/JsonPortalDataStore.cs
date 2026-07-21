@@ -235,7 +235,17 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
     public Task<List<DocumentTypeDto>> GetDocumentTypesAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new List<DocumentTypeDto>());
+        var types = new List<DocumentTypeDto>
+        {
+            new DocumentTypeDto { Id = 1, Code = "cong-van", Name = "Công văn", DisplayOrder = 1 },
+            new DocumentTypeDto { Id = 2, Code = "bao-cao", Name = "Báo cáo", DisplayOrder = 2 },
+            new DocumentTypeDto { Id = 3, Code = "ke-hoach", Name = "Kế hoạch", DisplayOrder = 3 },
+            new DocumentTypeDto { Id = 4, Code = "quyet-dinh", Name = "Quyết định", DisplayOrder = 4 },
+            new DocumentTypeDto { Id = 5, Code = "huong-dan", Name = "Hướng dẫn", DisplayOrder = 5 },
+            new DocumentTypeDto { Id = 6, Code = "chuong-trinh", Name = "Chương trình", DisplayOrder = 6 },
+            new DocumentTypeDto { Id = 7, Code = "tap-huan", Name = "Tập huấn", DisplayOrder = 7 }
+        };
+        return Task.FromResult(types);
     }
 
     private async Task<List<DocumentDto>> ReadDocumentsAsync(CancellationToken cancellationToken)
