@@ -4,12 +4,12 @@
   "headerTextColor": "#ffffff",
   "headerFontMain": "\u0027Inter\u0027, sans-serif",
   "headerFontSub": "\u0027Inter\u0027, sans-serif",
-  "logoUrl": "http://localhost:5000/uploads/217d9292-10d3-49ca-b8a8-226fd22879ee.png",
+  "logoUrl": "",
   "faviconUrl": "",
   "bannerUrl": "",
   "menuBarBgColor": "#497fbf",
-  "welcomeText": "CH\u00C0O M\u1EEANG \u0110\u1EBEN V\u1EDAI TRANG TH\u00D4NG TIN \u0110I\u1EC6N T\u1EEC TRUNG T\u00C2M IOC T\u1EC8NH \u0110\u1EAEK L\u1EAEK \u2605 \u0110\u1EA8Y M\u1EA0NH CHUY\u1EC2N \u0110\u1ED4I S\u1ED0 TRONG C\u01A0 QUAN NH\u00C0 N\u01AF\u1EDAC ",
-  "welcomeBgColor": "#134cbe",
+  "welcomeText": "CH\u00C0O M\u1EEANG \u0110\u1EBEN V\u1EDAI TRANG TH\u00D4NG TIN \u0110I\u1EC6N T\u1EEC TRUNG T\u00C2M IOC T\u1EC8NH \u0110\u1EAEK L\u1EAEK \u2605 \u0110\u1EA8Y M\u1EA0NH CHUY\u1EC2N \u0110\u1ED4I S\u1ED0 TRONG C\u01A0 QUAN NH\u00C0 N\u01AF\u1EDAC",
+  "welcomeBgColor": "#1322bc",
   "welcomeTextColor": "#ffffff",
   "tickerLabelText": "TIN N\u1ED4I B\u1EACT",
   "tickerLabelColor": "#1322bc",
@@ -29,13 +29,19 @@
   "primaryDarkColor": "#1a3a5c",
   "accentOrangeColor": "#f1592b",
   "accentRedColor": "#da251d",
-  "bodyBgColor": "#1322bc",
-  "newsSectionBgColor": "#ffffff",
+  "bodyBgColor": "#f5fafe",
+  "newsSectionBgColor": "#eef4fa",
   "infoUtilityBgColor": "#ffffff",
   "bgImageUrl": "",
   "footerBgColor": "#1a3a5c",
   "techSolutionsFont": "\u0027Inter\u0027, sans-serif",
   "techSolutionsColor": "#0a59ab",
+  "boKhcnLink": "",
+  "ubndLink": "",
+  "csdlVbqpplLink": "",
+  "khcnTwLink": "",
+  "khcnDpLink": "",
+  "agencyLinksColor": "#0a59ab",
   "tickerItems": [
     {
       "title": "\u0110\u1EAFk L\u1EAFk s\u1EB5n s\u00E0ng cho H\u1ED9i ngh\u1ECB C\u00F4ng b\u1ED1 Quy ho\u1EA1ch v\u00E0 X\u00FAc ti\u1EBFn \u0111\u1EA7u t\u01B0 n\u0103m 2026",
@@ -76,9 +82,161 @@
       "image": ""
     }
   ],
-  "boKhcnLink": "https://mst.gov.vn/van-ban-phap-luat.htm",
-  "ubndLink": "https://daklak.gov.vn/van-ban-dia-phuong",
-  "khcnTwLink": "https://skhcn.daklak.gov.vn/van-ban/khcn-trung-uong-185.html",
-  "khcnDpLink": "https://skhcn.daklak.gov.vn/van-ban/khcn-dia-phuong-75.html",
-  "vbLuatLink": "https://skhcn.daklak.gov.vn/van-ban/van-ban-luat-193.html"
+  "agencyLinksGroups": [
+    {
+      "title": "B\u1ED9 / Ng\u00E0nh Trung \u01B0\u01A1ng",
+      "links": [
+        {
+          "text": "B\u1ED9 Khoa h\u1ECDc v\u00E0 C\u00F4ng ngh\u1EC7",
+          "url": "https://mst.gov.vn/"
+        },
+        {
+          "text": "B\u1ED9 Gi\u00E1o d\u1EE5c v\u00E0 \u0110\u00E0o t\u1EA1o",
+          "url": "#"
+        },
+        {
+          "text": "B\u1ED9 T\u00E0i ch\u00EDnh",
+          "url": "#"
+        },
+        {
+          "text": "B\u1ED9 Y t\u1EBF",
+          "url": "#"
+        }
+      ]
+    },
+    {
+      "title": "S\u1EDF / Ban ng\u00E0nh",
+      "links": [
+        {
+          "text": "S\u1EDF Khoa h\u1ECDc v\u00E0 C\u00F4ng ngh\u1EC7",
+          "url": "#"
+        },
+        {
+          "text": "S\u1EDF N\u00F4ng nghi\u1EC7p v\u00E0 Ph\u00E1t tri\u1EC3n n\u00F4ng th\u00F4n",
+          "url": "#"
+        },
+        {
+          "text": "S\u1EDF C\u00F4ng th\u01B0\u01A1ng",
+          "url": "#"
+        },
+        {
+          "text": "S\u1EDF T\u00E0i ch\u00EDnh",
+          "url": "#"
+        },
+        {
+          "text": "S\u1EDF T\u01B0 ph\u00E1p",
+          "url": "#"
+        }
+      ]
+    },
+    {
+      "title": "Ubnd X\u00E3 / Ph\u01B0\u1EDDng",
+      "links": [
+        {
+          "text": "Ph\u01B0\u1EDDng Bu\u00F4n Ma Thu\u1ED9t",
+          "url": "#"
+        },
+        {
+          "text": "Ph\u01B0\u1EDDng B\u00ECnh Ki\u1EBFn",
+          "url": "#"
+        },
+        {
+          "text": "Ph\u01B0\u1EDDng Bu\u00F4n H\u1ED3",
+          "url": "#"
+        },
+        {
+          "text": "Ph\u01B0\u1EDDng Ph\u00FA Y\u00EAn",
+          "url": "#"
+        },
+        {
+          "text": "Ph\u01B0\u1EDDng Tuy Ho\u00E0",
+          "url": "#"
+        }
+      ]
+    },
+    {
+      "title": "C\u00E1c c\u01A1 quan kh\u00E1c",
+      "links": [
+        {
+          "text": "C\u1ED5ng th\u00F4ng tin ch\u00EDnh ph\u1EE7",
+          "url": "#"
+        },
+        {
+          "text": "B\u00E1o \u0111i\u1EC7n t\u1EED Ch\u00EDnh ph\u1EE7",
+          "url": "#"
+        },
+        {
+          "text": "\u0110\u00E0i ti\u1EBFng n\u00F3i Vi\u1EC7t Nam",
+          "url": "#"
+        },
+        {
+          "text": "Li\u00EAn \u0111o\u00E0n lao \u0111\u1ED9ng t\u1EC9nh",
+          "url": "#"
+        },
+        {
+          "text": "H\u1ED9i n\u00F4ng d\u00E2n",
+          "url": "#"
+        }
+      ]
+    }
+  ],
+  "featuredNewsIds": [
+    "1783997362554",
+    "1784194584598",
+    "1783908053403"
+  ],
+  "infoUtilityConfig": [
+    {
+      "id": 1,
+      "title": "TH\u00D4NG TIN TUY\u00CAN TRUY\u1EC0N",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 101,
+          "title": "C\u1ED5ng d\u1ECBch v\u1EE5 c\u00F4ng qu\u1ED1c gia",
+          "url": "https://dichvucong.gov.vn/",
+          "icon": "fa-solid fa-star",
+          "iconColor": "#e74c3c"
+        },
+        {
+          "id": 102,
+          "title": "Ph\u1EA3n \u00E1nh, ki\u1EBFn ngh\u1ECB v\u0103n b\u1EA3n QPPL",
+          "url": "#",
+          "icon": "fa-solid fa-folder-open",
+          "iconColor": "#f39c12"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "TH\u00D4NG TIN TRA C\u1EE8U",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 201,
+          "title": "C\u01A1 c\u1EA5u t\u1ED5 ch\u1EE9c",
+          "url": "#",
+          "icon": "fa-solid fa-sitemap",
+          "iconColor": "#27ae60"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "TIN C\u1EA6N BI\u1EBET",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 301,
+          "title": "D\u1EF1 b\u00E1o th\u1EDDi ti\u1EBFt",
+          "url": "#",
+          "icon": "fa-solid fa-cloud-sun-rain",
+          "iconColor": "#3498db"
+        }
+      ]
+    }
+  ]
 }

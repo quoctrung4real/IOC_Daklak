@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lấy ý kiến người dân - DakLakIOC</title>
+    <title>Văn bản dự thảo Sở KHCN - DakLakIOC</title>
     <meta name="description" content="Trung tâm Giám sát, Điều hành đô thị thông minh tỉnh Đăk Lăk - DakLakIOC">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,26 +40,6 @@
         .doc-table tr:hover {
             background-color: #fcfcfc;
         }
-        .download-btn, .action-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #0a59ab;
-            font-weight: 600;
-            text-decoration: none;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-        .download-btn:hover, .action-btn:hover {
-            text-decoration: underline;
-            background: #f1f5f9;
-        }
-        .action-btn.feedback-btn {
-            color: #e63946;
-        }
         .page-header {
             margin-bottom: 30px;
             padding-bottom: 15px;
@@ -82,7 +62,7 @@
     <section style="padding: 40px 0; background-color: #f4f6f9; min-height: 60vh;">
         <div class="container">
             <div class="page-header">
-                <h1 class="page-title">Lấy ý kiến người dân</h1>
+                <h1 class="page-title">Văn bản theo chủ đề: Văn bản dự thảo Sở KHCN</h1>
             </div>
 
             <div style="background: white; border-radius: 8px; padding: 20px; overflow-x: auto;">
@@ -90,17 +70,15 @@
                     <thead>
                         <tr>
                             <th width="5%">STT</th>
-                            <th width="15%">Số kí hiệu</th>
-                            <th width="40%">Trích yếu</th>
-                            <th width="15%">File đính kèm</th>
-                            <th width="15%">Thời hạn</th>
-                            <th width="10%">Gửi góp ý</th>
+                            <th width="20%">Số kí hiệu</th>
+                            <th width="20%">Ngày ban hành</th>
+                            <th width="55%">Trích yếu</th>
                         </tr>
                     </thead>
                     <tbody id="drafts-table-body">
                         <!-- Dynamic rows will be rendered here -->
                         <tr>
-                            <td colspan="6" class="text-center" style="padding: 30px;">Đang tải dữ liệu...</td>
+                            <td colspan="4" class="text-center" style="padding: 30px;">Đang tải dữ liệu...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -112,7 +90,7 @@
 
     <script>window.BASE_URL = "../../";</script>
     <script src="../../shared/components.js"></script>
-    <script src="danh-sach.js"></script>
+    <script src="so-khcn.js"></script>
     <script src="../../auth/xac-thuc.js"></script>
 </body>
 
