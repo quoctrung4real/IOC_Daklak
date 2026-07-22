@@ -97,8 +97,6 @@ IF OBJECT_ID('SmartCity.CitizenFeedbacks',  'U') IS NOT NULL DROP TABLE SmartCit
 IF OBJECT_ID('Emergency.DisasterPosts',    'U') IS NOT NULL DROP TABLE Emergency.DisasterPosts;
 
 -- Gov schema
-IF OBJECT_ID('Gov.OpinionFeedbacks',       'U') IS NOT NULL DROP TABLE Gov.OpinionFeedbacks;
-IF OBJECT_ID('Gov.DraftOpinions',          'U') IS NOT NULL DROP TABLE Gov.DraftOpinions;
 IF OBJECT_ID('Gov.Documents',              'U') IS NOT NULL DROP TABLE Gov.Documents;
 IF OBJECT_ID('Gov.DocumentTypes',          'U') IS NOT NULL DROP TABLE Gov.DocumentTypes;
 IF OBJECT_ID('Gov.Announcements',          'U') IS NOT NULL DROP TABLE Gov.Announcements;
@@ -310,15 +308,9 @@ CREATE TABLE Cms.Articles (
     Slug            VARCHAR(500)                    NULL,
     Summary         NVARCHAR(1000)                  NULL,
     Content         NVARCHAR(MAX)                   NOT NULL,
-    ImageUrl        NVARCHAR(MAX)                   NULL,
+    ImageUrl        VARCHAR(500)                    NULL,
     Source          NVARCHAR(250)                   NULL,
     Author          NVARCHAR(150)                   NULL,
-    LinkUrl         NVARCHAR(1000)                  NULL,
-    LinkText        NVARCHAR(255)                   NULL,
-    VideoUrl        NVARCHAR(1000)                  NULL,
-    MultimediaType  VARCHAR(20)                     NULL,
-    AttachmentUrl   NVARCHAR(1000)                  NULL,
-    AttachmentName  NVARCHAR(255)                   NULL,
     PublishedAt     DATETIME2(7)                    NULL,
     IsFeatured      BIT                             NOT NULL    CONSTRAINT DF_Articles_IsFeatured DEFAULT (0),
     ViewCount       INT                             NOT NULL    CONSTRAINT DF_Articles_ViewCount  DEFAULT (0),
@@ -449,15 +441,11 @@ GO
 CREATE TABLE Gov.Documents (
     Id              INT             IDENTITY(1,1)   NOT NULL,
     DocumentTypeId  INT                             NOT NULL,
-    DocumentNumber  VARCHAR(50)                     NULL,       -- Số ký hiệu, vd: '29/CT-UBND'
-    PublishedAt     DATETIME2(7)                    NULL,       -- Ngày ban hành
+    DocumentNumber  VARCHAR(50)                     NOT NULL,   -- Số ký hiệu, vd: '29/CT-UBND'
+    PublishedAt     DATETIME2(7)                    NOT NULL,   -- Ngày ban hành
     Title           NVARCHAR(500)                   NOT NULL,   -- Nội dung trích yếu
-    FileUrl         NVARCHAR(1000)                  NULL,       -- Đường dẫn file đính kèm
-    OriginalFileName NVARCHAR(255)                  NULL,
+    FileUrl         VARCHAR(500)                    NOT NULL,   -- Đường dẫn file đính kèm
     IssuingAuthority NVARCHAR(200)                  NULL,       -- Cơ quan ban hành
-    EffectiveDate   NVARCHAR(50)                    NULL,
-    Domain          NVARCHAR(150)                   NULL,
-    Signer          NVARCHAR(150)                   NULL,
     IsActive        BIT                             NOT NULL    CONSTRAINT DF_Documents_IsActive   DEFAULT (1),
     IsDeleted       BIT                             NOT NULL    CONSTRAINT DF_Documents_IsDeleted  DEFAULT (0),
     CreatedAt       DATETIME2(7)                    NOT NULL    CONSTRAINT DF_Documents_CreatedAt  DEFAULT (SYSUTCDATETIME()),
@@ -885,43 +873,6 @@ GO
 IF COL_LENGTH('Portal.SystemConfigs', 'ConfigValue') IS NOT NULL
 BEGIN
     ALTER TABLE Portal.SystemConfigs ALTER COLUMN ConfigValue NVARCHAR(MAX) NULL;
-END
-GO
-
--- Hỏi đáp: FAQ và câu hỏi do người dân gửi
-IF OBJECT_ID('Portal.Faqs', 'U') IS NULL
-BEGIN
-    CREATE TABLE Portal.Faqs (
-        Id INT NOT NULL PRIMARY KEY,
-        Question NVARCHAR(1000) NOT NULL,
-        Answer NVARCHAR(MAX) NOT NULL,
-        DisplayOrder INT NOT NULL DEFAULT 0,
-        IsDeleted BIT NOT NULL DEFAULT 0,
-        CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        UpdatedAt DATETIME2 NULL
-    );
-END
-GO
-
-IF OBJECT_ID('Portal.UserQuestions', 'U') IS NULL
-BEGIN
-    CREATE TABLE Portal.UserQuestions (
-        Id INT NOT NULL PRIMARY KEY,
-        Topic NVARCHAR(255) NULL,
-        Title NVARCHAR(500) NULL,
-        SenderName NVARCHAR(255) NULL,
-        SenderEmail NVARCHAR(255) NULL,
-        SenderPhone NVARCHAR(50) NULL,
-        Address NVARCHAR(500) NULL,
-        Content NVARCHAR(MAX) NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        Status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        Answer NVARCHAR(MAX) NULL,
-        IsPublic BIT NOT NULL DEFAULT 0,
-        IsDeleted BIT NOT NULL DEFAULT 0,
-        UpdatedAt DATETIME2 NULL,
-        CONSTRAINT CK_UserQuestions_Status CHECK (Status IN ('pending', 'answered'))
-    );
 END
 GO
 

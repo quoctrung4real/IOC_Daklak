@@ -116,11 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const accessToken = localStorage.getItem('accessToken');
-                    const tokenType = localStorage.getItem('tokenType') || 'Bearer';
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/dislike`, {
-                        method: 'POST', headers: { 'Authorization': `${tokenType} ${accessToken}` }
-                    });
+                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/dislike`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
                         e.currentTarget.querySelector('.dislike-count').textContent = data.dislikes;
@@ -142,11 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const accessToken = localStorage.getItem('accessToken');
-                    const tokenType = localStorage.getItem('tokenType') || 'Bearer';
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/like`, {
-                        method: 'POST', headers: { 'Authorization': `${tokenType} ${accessToken}` }
-                    });
+                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/like`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
                         e.currentTarget.querySelector('.like-count').textContent = data.likes;
@@ -169,12 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const accessToken = localStorage.getItem('accessToken');
-                    const tokenType = localStorage.getItem('tokenType') || 'Bearer';
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `${tokenType} ${accessToken}` }
-                    });
+                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}?username=${encodeURIComponent(currentUser)}`, { method: 'DELETE' });
                     const data = await res.json();
                     if (data.success) {
                         fetchComments();
@@ -204,19 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!text) return;
         
         const currentUser = localStorage.getItem('currentUser');
-        const accessToken = localStorage.getItem('accessToken');
-        const tokenType = localStorage.getItem('tokenType') || 'Bearer';
-        if (!currentUser || !accessToken) return;
+        if (!currentUser) return;
         
         try {
             const res = await fetch('http://localhost:5100/api/binh-luan', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `${tokenType} ${accessToken}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     PageId: PAGE_ID,
+                    Username: currentUser,
                     Content: text
                 })
             });
