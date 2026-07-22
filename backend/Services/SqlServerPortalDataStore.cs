@@ -106,7 +106,8 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         var page = new CategoryPageDto { Title = category.Title };
 
         await using var command = new SqlCommand("""
-            SELECT Id, Title, ImageUrl, Source, Content, CreatedAt, LegacyId
+            SELECT Id, Title, ImageUrl, Source, Content, CreatedAt, LegacyId,
+                   Author, LinkUrl, LinkText, VideoUrl, MultimediaType, AttachmentUrl, AttachmentName, IsFeatured, ViewCount
             FROM Cms.Articles
             WHERE CategoryId = @CategoryId AND IsDeleted = 0
             ORDER BY COALESCE(PublishedAt, CreatedAt) DESC
@@ -123,7 +124,16 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                 ImageUrl = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                 Source = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                 Content = reader.GetString(4),
-                CreatedAt = FormatDateTime(reader.GetDateTime(5))
+                CreatedAt = FormatDateTime(reader.GetDateTime(5)),
+                Author = reader.IsDBNull(7) ? null : reader.GetString(7),
+                LinkUrl = reader.IsDBNull(8) ? null : reader.GetString(8),
+                LinkText = reader.IsDBNull(9) ? null : reader.GetString(9),
+                VideoUrl = reader.IsDBNull(10) ? null : reader.GetString(10),
+                MultimediaType = reader.IsDBNull(11) ? null : reader.GetString(11),
+                AttachmentUrl = reader.IsDBNull(12) ? null : reader.GetString(12),
+                AttachmentName = reader.IsDBNull(13) ? null : reader.GetString(13),
+                IsFeatured = reader.GetBoolean(14),
+                Views = reader.GetInt32(15)
             });
         }
 
@@ -156,7 +166,8 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand("""
-            SELECT TOP (50) Id, Title, ImageUrl, Source, Content, CreatedAt, LegacyId
+            SELECT TOP (50) Id, Title, ImageUrl, Source, Content, CreatedAt, LegacyId,
+                   Author, LinkUrl, LinkText, VideoUrl, MultimediaType, AttachmentUrl, AttachmentName, IsFeatured, ViewCount
             FROM Cms.Articles
             WHERE IsFeatured = 1 AND IsDeleted = 0 AND IsActive = 1
             ORDER BY COALESCE(PublishedAt, CreatedAt) DESC
@@ -173,7 +184,16 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                 ImageUrl = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                 Source = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                 Content = reader.GetString(4),
-                CreatedAt = FormatDateTime(reader.GetDateTime(5))
+                CreatedAt = FormatDateTime(reader.GetDateTime(5)),
+                Author = reader.IsDBNull(7) ? null : reader.GetString(7),
+                LinkUrl = reader.IsDBNull(8) ? null : reader.GetString(8),
+                LinkText = reader.IsDBNull(9) ? null : reader.GetString(9),
+                VideoUrl = reader.IsDBNull(10) ? null : reader.GetString(10),
+                MultimediaType = reader.IsDBNull(11) ? null : reader.GetString(11),
+                AttachmentUrl = reader.IsDBNull(12) ? null : reader.GetString(12),
+                AttachmentName = reader.IsDBNull(13) ? null : reader.GetString(13),
+                IsFeatured = reader.GetBoolean(14),
+                Views = reader.GetInt32(15)
             });
         }
 
@@ -429,6 +449,23 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         command.Parameters.AddWithValue("@Id", commentId);
         var value = await command.ExecuteScalarAsync(cancellationToken);
         return value is null ? null : Convert.ToInt32(value, CultureInfo.InvariantCulture);
+    }
+
+    public async Task<bool> DeleteCommentAsync(string id, string username, bool isAdmin, CancellationToken cancellationToken)
+    {
+        if (!int.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var commentId)) return false;
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand("""
+            UPDATE c
+            SET IsDeleted = 1, DeletedAt = SYSUTCDATETIME()
+            FROM Cms.Comments c
+            INNER JOIN Auth.Users u ON u.Id = c.UserId
+            WHERE c.Id = @Id AND c.IsDeleted = 0 AND (@IsAdmin = 1 OR u.Username = @Username)
+            """, connection);
+        command.Parameters.AddWithValue("@Id", commentId);
+        command.Parameters.AddWithValue("@IsAdmin", isAdmin);
+        command.Parameters.AddWithValue("@Username", username);
+        return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
     }
 
     public async Task<(bool Success, string Message)> DeleteCommentAsync(string id, string username, CancellationToken cancellationToken)
@@ -825,12 +862,12 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         var hasLegacyId = await HasColumnAsync(connection, "Cms", "Articles", "LegacyId", cancellationToken);
         var sql = hasLegacyId
             ? """
-              INSERT INTO Cms.Articles (CategoryId, Title, Summary, Content, ImageUrl, Source, PublishedAt, IsFeatured, CreatedAt, LegacyId)
-              VALUES (@CategoryId, @Title, @Summary, @Content, @ImageUrl, @Source, @PublishedAt, @IsFeatured, @CreatedAt, @LegacyId)
+              INSERT INTO Cms.Articles (CategoryId, Title, Summary, Content, ImageUrl, Source, Author, LinkUrl, LinkText, VideoUrl, MultimediaType, AttachmentUrl, AttachmentName, PublishedAt, IsFeatured, ViewCount, CreatedAt, LegacyId)
+              VALUES (@CategoryId, @Title, @Summary, @Content, @ImageUrl, @Source, @Author, @LinkUrl, @LinkText, @VideoUrl, @MultimediaType, @AttachmentUrl, @AttachmentName, @PublishedAt, @IsFeatured, @ViewCount, @CreatedAt, @LegacyId)
               """
             : """
-              INSERT INTO Cms.Articles (CategoryId, Title, Summary, Content, ImageUrl, Source, PublishedAt, IsFeatured, CreatedAt)
-              VALUES (@CategoryId, @Title, @Summary, @Content, @ImageUrl, @Source, @PublishedAt, @IsFeatured, @CreatedAt)
+              INSERT INTO Cms.Articles (CategoryId, Title, Summary, Content, ImageUrl, Source, Author, LinkUrl, LinkText, VideoUrl, MultimediaType, AttachmentUrl, AttachmentName, PublishedAt, IsFeatured, ViewCount, CreatedAt)
+              VALUES (@CategoryId, @Title, @Summary, @Content, @ImageUrl, @Source, @Author, @LinkUrl, @LinkText, @VideoUrl, @MultimediaType, @AttachmentUrl, @AttachmentName, @PublishedAt, @IsFeatured, @ViewCount, @CreatedAt)
               """;
 
         await using var command = new SqlCommand(sql, connection);
@@ -841,9 +878,17 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         command.Parameters.AddWithValue("@Content", EmptyIfNull(post.Content));
         command.Parameters.AddWithValue("@ImageUrl", DbValue(post.ImageUrl));
         command.Parameters.AddWithValue("@Source", DbValue(post.Source));
+        command.Parameters.AddWithValue("@Author", DbValue(post.Author));
+        command.Parameters.AddWithValue("@LinkUrl", DbValue(post.LinkUrl));
+        command.Parameters.AddWithValue("@LinkText", DbValue(post.LinkText));
+        command.Parameters.AddWithValue("@VideoUrl", DbValue(post.VideoUrl));
+        command.Parameters.AddWithValue("@MultimediaType", DbValue(post.MultimediaType));
+        command.Parameters.AddWithValue("@AttachmentUrl", DbValue(post.AttachmentUrl));
+        command.Parameters.AddWithValue("@AttachmentName", DbValue(post.AttachmentName));
         command.Parameters.AddWithValue("@PublishedAt", createdAt);
         command.Parameters.AddWithValue("@CreatedAt", createdAt);
         command.Parameters.AddWithValue("@IsFeatured", isFeatured);
+        command.Parameters.AddWithValue("@ViewCount", Math.Max(0, post.Views));
         if (hasLegacyId)
         {
             command.Parameters.AddWithValue("@LegacyId", DbValue(post.Id));
@@ -1159,6 +1204,118 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    public async Task<List<FaqDto>> GetFaqsAsync(CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        var items = new List<FaqDto>();
+        await using var command = new SqlCommand("SELECT Id, Question, Answer, DisplayOrder FROM Portal.Faqs WHERE IsDeleted = 0 ORDER BY DisplayOrder, Id", connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            items.Add(new FaqDto { Id = reader.GetInt32(0), Question = reader.GetString(1), Answer = reader.GetString(2), Order = reader.GetInt32(3) });
+        return items;
+    }
+
+    public async Task<FaqDto> SaveFaqAsync(int? id, FaqDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        payload.Id = id.GetValueOrDefault(payload.Id);
+        if (payload.Id <= 0)
+        {
+            await using var nextCommand = new SqlCommand("SELECT ISNULL(MAX(Id), 0) + 1 FROM Portal.Faqs", connection);
+            payload.Id = Convert.ToInt32(await nextCommand.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
+        }
+        await using var command = new SqlCommand(@"
+            MERGE Portal.Faqs AS target
+            USING (SELECT @Id Id, @Question Question, @Answer Answer, @DisplayOrder DisplayOrder) source ON target.Id = source.Id
+            WHEN MATCHED THEN UPDATE SET Question=source.Question, Answer=source.Answer, DisplayOrder=source.DisplayOrder, IsDeleted=0, UpdatedAt=SYSUTCDATETIME()
+            WHEN NOT MATCHED THEN INSERT (Id, Question, Answer, DisplayOrder) VALUES (source.Id, source.Question, source.Answer, source.DisplayOrder);", connection);
+        command.Parameters.AddWithValue("@Id", payload.Id);
+        command.Parameters.AddWithValue("@Question", EmptyIfNull(payload.Question));
+        command.Parameters.AddWithValue("@Answer", EmptyIfNull(payload.Answer));
+        command.Parameters.AddWithValue("@DisplayOrder", payload.Order);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        return payload;
+    }
+
+    public async Task DeleteFaqAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("UPDATE Portal.Faqs SET IsDeleted=1, UpdatedAt=SYSUTCDATETIME() WHERE Id=@Id", connection);
+        command.Parameters.AddWithValue("@Id", id);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<List<UserQuestionDto>> GetUserQuestionsAsync(bool publicOnly, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        var items = new List<UserQuestionDto>();
+        var filter = publicOnly ? " AND IsPublic=1 AND Status='answered'" : string.Empty;
+        await using var command = new SqlCommand($"SELECT Id, Topic, Title, SenderName, SenderEmail, SenderPhone, Address, Content, CreatedAt, Status, Answer, IsPublic FROM Portal.UserQuestions WHERE IsDeleted=0{filter} ORDER BY CreatedAt DESC", connection);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            items.Add(new UserQuestionDto {
+                Id=reader.GetInt32(0), Topic=reader.IsDBNull(1)?null:reader.GetString(1), Title=reader.IsDBNull(2)?null:reader.GetString(2),
+                SenderName=reader.IsDBNull(3)?null:reader.GetString(3), SenderEmail=reader.IsDBNull(4)?null:reader.GetString(4), SenderPhone=reader.IsDBNull(5)?null:reader.GetString(5),
+                Address=reader.IsDBNull(6)?null:reader.GetString(6), Content=reader.IsDBNull(7)?null:reader.GetString(7), CreatedAt=FormatDateTime(reader.GetDateTime(8)),
+                Status=reader.GetString(9), Answer=reader.IsDBNull(10)?null:reader.GetString(10), IsPublic=reader.GetBoolean(11)
+            });
+        }
+        return items;
+    }
+
+    public async Task<UserQuestionDto> AddUserQuestionAsync(UserQuestionDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        if (payload.Id <= 0)
+        {
+            await using var nextCommand = new SqlCommand("SELECT ISNULL(MAX(Id), 0) + 1 FROM Portal.UserQuestions", connection);
+            payload.Id = Convert.ToInt32(await nextCommand.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
+        }
+        await using var command = new SqlCommand(@"
+            MERGE Portal.UserQuestions AS target USING (SELECT @Id Id) source ON target.Id=source.Id
+            WHEN MATCHED THEN UPDATE SET Topic=@Topic,Title=@Title,SenderName=@SenderName,SenderEmail=@SenderEmail,SenderPhone=@SenderPhone,Address=@Address,Content=@Content,CreatedAt=@CreatedAt,Status=@Status,Answer=@Answer,IsPublic=@IsPublic,IsDeleted=0
+            WHEN NOT MATCHED THEN INSERT (Id,Topic,Title,SenderName,SenderEmail,SenderPhone,Address,Content,CreatedAt,Status,Answer,IsPublic) VALUES (@Id,@Topic,@Title,@SenderName,@SenderEmail,@SenderPhone,@Address,@Content,@CreatedAt,@Status,@Answer,@IsPublic);", connection);
+        command.Parameters.AddWithValue("@Id", payload.Id); command.Parameters.AddWithValue("@Topic", DbValue(payload.Topic)); command.Parameters.AddWithValue("@Title", DbValue(payload.Title));
+        command.Parameters.AddWithValue("@SenderName", DbValue(payload.SenderName)); command.Parameters.AddWithValue("@SenderEmail", DbValue(payload.SenderEmail)); command.Parameters.AddWithValue("@SenderPhone", DbValue(payload.SenderPhone));
+        command.Parameters.AddWithValue("@Address", DbValue(payload.Address)); command.Parameters.AddWithValue("@Content", DbValue(payload.Content)); command.Parameters.AddWithValue("@CreatedAt", DateTimeValue(payload.CreatedAt) is DBNull ? DateTime.UtcNow : DateTimeValue(payload.CreatedAt));
+        command.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(payload.Status)?"pending":payload.Status); command.Parameters.AddWithValue("@Answer", DbValue(payload.Answer)); command.Parameters.AddWithValue("@IsPublic", payload.IsPublic);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        payload.CreatedAt ??= DateTime.UtcNow.ToString("O");
+        return payload;
+    }
+
+    public async Task<UserQuestionDto> UpdateUserQuestionAsync(int id, UserQuestionDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("UPDATE Portal.UserQuestions SET Answer=@Answer,IsPublic=@IsPublic,Status=@Status,UpdatedAt=SYSUTCDATETIME() WHERE Id=@Id AND IsDeleted=0", connection);
+        command.Parameters.AddWithValue("@Id", id); command.Parameters.AddWithValue("@Answer", DbValue(payload.Answer)); command.Parameters.AddWithValue("@IsPublic", payload.IsPublic); command.Parameters.AddWithValue("@Status", string.IsNullOrWhiteSpace(payload.Status)?"answered":payload.Status);
+        if (await command.ExecuteNonQueryAsync(cancellationToken) == 0) throw new KeyNotFoundException("Không tìm thấy câu hỏi.");
+        return (await GetUserQuestionsAsync(false, cancellationToken)).First(item => item.Id == id);
+    }
+
+    public async Task DeleteUserQuestionAsync(int id, CancellationToken cancellationToken)
+    {
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await EnsureQnaTablesAsync(connection, cancellationToken);
+        await using var command = new SqlCommand("UPDATE Portal.UserQuestions SET IsDeleted=1,UpdatedAt=SYSUTCDATETIME() WHERE Id=@Id", connection);
+        command.Parameters.AddWithValue("@Id", id); await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task EnsureQnaTablesAsync(SqlConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(@"
+            IF OBJECT_ID('Portal.Faqs','U') IS NULL CREATE TABLE Portal.Faqs (Id INT NOT NULL PRIMARY KEY, Question NVARCHAR(1000) NOT NULL, Answer NVARCHAR(MAX) NOT NULL, DisplayOrder INT NOT NULL DEFAULT 0, IsDeleted BIT NOT NULL DEFAULT 0, CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(), UpdatedAt DATETIME2 NULL);
+            IF OBJECT_ID('Portal.UserQuestions','U') IS NULL CREATE TABLE Portal.UserQuestions (Id INT NOT NULL PRIMARY KEY, Topic NVARCHAR(255) NULL, Title NVARCHAR(500) NULL, SenderName NVARCHAR(255) NULL, SenderEmail NVARCHAR(255) NULL, SenderPhone NVARCHAR(50) NULL, Address NVARCHAR(500) NULL, Content NVARCHAR(MAX) NULL, CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(), Status VARCHAR(20) NOT NULL DEFAULT 'pending', Answer NVARCHAR(MAX) NULL, IsPublic BIT NOT NULL DEFAULT 0, IsDeleted BIT NOT NULL DEFAULT 0, UpdatedAt DATETIME2 NULL);", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private static async Task EnsureDraftTablesAsync(SqlConnection connection, CancellationToken cancellationToken)
     {
         await using var command = new SqlCommand(@"
@@ -1181,6 +1338,11 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                     IsDeleted BIT NOT NULL DEFAULT 0
                 );
             END
+
+            IF COL_LENGTH('Gov.DraftOpinions', 'OriginalFileName') IS NULL
+                ALTER TABLE Gov.DraftOpinions ADD OriginalFileName NVARCHAR(255) NULL;
+            IF COL_LENGTH('Gov.DraftOpinions', 'Category') IS NULL
+                ALTER TABLE Gov.DraftOpinions ADD Category NVARCHAR(255) NULL;
 
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'OpinionFeedbacks')
             BEGIN

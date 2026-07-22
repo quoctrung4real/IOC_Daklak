@@ -228,6 +228,17 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return isLike ? comment.Likes : comment.Dislikes;
     }
 
+    public async Task<bool> DeleteCommentAsync(string id, string username, bool isAdmin, CancellationToken cancellationToken)
+    {
+        var comments = await ReadCommentsAsync(cancellationToken);
+        var removed = comments.RemoveAll(comment =>
+            string.Equals(comment.Id, id, StringComparison.OrdinalIgnoreCase) &&
+            (isAdmin || string.Equals(comment.Username, username, StringComparison.OrdinalIgnoreCase)));
+        if (removed == 0) return false;
+        await WriteFileAsync("danh-sach-binh-luan.json", JsonSerializer.Serialize(comments, _jsonOptions), cancellationToken);
+        return true;
+    }
+
     public async Task<(bool Success, string Message)> DeleteCommentAsync(string id, string username, CancellationToken cancellationToken)
     {
         var comments = await ReadCommentsAsync(cancellationToken);
@@ -559,6 +570,79 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         {
             await WriteFeedbacksAsync(feedbacks, cancellationToken);
         }
+    }
+
+    public async Task<List<FaqDto>> GetFaqsAsync(CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("faq.json", "[]", cancellationToken);
+        var items = JsonSerializer.Deserialize<List<FaqDto>>(json, _jsonOptions) ?? [];
+        return items.OrderBy(item => item.Order).ThenBy(item => item.Id).ToList();
+    }
+
+    public async Task<FaqDto> SaveFaqAsync(int? id, FaqDto payload, CancellationToken cancellationToken)
+    {
+        var items = await GetFaqsAsync(cancellationToken);
+        var existing = id.HasValue ? items.FirstOrDefault(item => item.Id == id.Value) : null;
+        if (existing is null)
+        {
+            payload.Id = id.GetValueOrDefault(items.Count == 0 ? 1 : items.Max(item => item.Id) + 1);
+            items.Add(payload);
+        }
+        else
+        {
+            existing.Question = payload.Question;
+            existing.Answer = payload.Answer;
+            existing.Order = payload.Order;
+            payload = existing;
+        }
+        await WriteFileAsync("faq.json", JsonSerializer.Serialize(items, _jsonOptions), cancellationToken);
+        return payload;
+    }
+
+    public async Task DeleteFaqAsync(int id, CancellationToken cancellationToken)
+    {
+        var items = await GetFaqsAsync(cancellationToken);
+        if (items.RemoveAll(item => item.Id == id) > 0)
+            await WriteFileAsync("faq.json", JsonSerializer.Serialize(items, _jsonOptions), cancellationToken);
+    }
+
+    public async Task<List<UserQuestionDto>> GetUserQuestionsAsync(bool publicOnly, CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("cau-hoi-nguoi-dan.json", "[]", cancellationToken);
+        var items = JsonSerializer.Deserialize<List<UserQuestionDto>>(json, _jsonOptions) ?? [];
+        if (publicOnly)
+            items = items.Where(item => item.IsPublic && item.Status == "answered").ToList();
+        return items.OrderByDescending(item => item.CreatedAt).ToList();
+    }
+
+    public async Task<UserQuestionDto> AddUserQuestionAsync(UserQuestionDto payload, CancellationToken cancellationToken)
+    {
+        var items = await GetUserQuestionsAsync(false, cancellationToken);
+        payload.Id = payload.Id > 0 ? payload.Id : (items.Count == 0 ? 1 : items.Max(item => item.Id) + 1);
+        payload.CreatedAt ??= DateTime.UtcNow.ToString("O");
+        payload.Status = string.IsNullOrWhiteSpace(payload.Status) ? "pending" : payload.Status;
+        items.Add(payload);
+        await WriteFileAsync("cau-hoi-nguoi-dan.json", JsonSerializer.Serialize(items, _jsonOptions), cancellationToken);
+        return payload;
+    }
+
+    public async Task<UserQuestionDto> UpdateUserQuestionAsync(int id, UserQuestionDto payload, CancellationToken cancellationToken)
+    {
+        var items = await GetUserQuestionsAsync(false, cancellationToken);
+        var existing = items.FirstOrDefault(item => item.Id == id)
+            ?? throw new KeyNotFoundException("Không tìm thấy câu hỏi.");
+        existing.Answer = payload.Answer;
+        existing.IsPublic = payload.IsPublic;
+        existing.Status = string.IsNullOrWhiteSpace(payload.Status) ? existing.Status : payload.Status;
+        await WriteFileAsync("cau-hoi-nguoi-dan.json", JsonSerializer.Serialize(items, _jsonOptions), cancellationToken);
+        return existing;
+    }
+
+    public async Task DeleteUserQuestionAsync(int id, CancellationToken cancellationToken)
+    {
+        var items = await GetUserQuestionsAsync(false, cancellationToken);
+        if (items.RemoveAll(item => item.Id == id) > 0)
+            await WriteFileAsync("cau-hoi-nguoi-dan.json", JsonSerializer.Serialize(items, _jsonOptions), cancellationToken);
     }
 
     private async Task<List<UserDto>> ReadUsersAsync(CancellationToken cancellationToken)
