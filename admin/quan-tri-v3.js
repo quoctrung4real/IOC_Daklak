@@ -1201,6 +1201,14 @@ function updateHeaderPreview() {
         subText.style.fontFamily = document.getElementById('headerFontSub')?.value || "'Inter', sans-serif";
         subText.style.color = document.getElementById('headerTextColor')?.value || '#ffffff';
     }
+    if (bgPreview) {
+        const bannerUrl = document.getElementById('bannerUrl')?.value;
+        if (bannerUrl) {
+            bgPreview.style.backgroundImage = `url('${bannerUrl}')`;
+        } else {
+            bgPreview.style.backgroundImage = 'none';
+        }
+    }
 }
 document.getElementById('headerTextMain')?.addEventListener('input', updateHeaderPreview);
 document.getElementById('headerTextSub')?.addEventListener('input', updateHeaderPreview);
@@ -1214,7 +1222,7 @@ function updateMenuBarPreview() {
     const preview = document.getElementById('menuBarPreview');
     const bgColor = document.getElementById('menuBarBgColor')?.value;
     if (preview && bgColor) {
-        preview.style.backgroundColor = bgColor;
+        preview.style.background = bgColor;
     }
 }
 document.getElementById('menuBarBgColor')?.addEventListener('input', updateMenuBarPreview);
@@ -1229,7 +1237,7 @@ function updateWelcomeBannerPreview() {
     const bgColor = document.getElementById('welcomeBgColor')?.value;
     const textColor = document.getElementById('welcomeTextColor')?.value;
     
-    if(preview && bgColor) preview.style.backgroundColor = bgColor;
+    if(preview && bgColor) preview.style.background = bgColor;
     if(track) {
         if (text !== undefined) track.innerHTML = text.replace(/★/g, '<i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: #f1592b;"></i>');
         if (textColor) track.style.color = textColor;
@@ -1261,7 +1269,7 @@ function updateHeroPreview() {
     const imageUrl = document.getElementById('heroImageUrl')?.value;
     const buttonTextEl = document.getElementById('heroButtonTextPreview');
 
-    if(container && bgColor) container.style.backgroundColor = bgColor;
+    if(container && bgColor) container.style.background = bgColor;
     if(titleEl) {
         titleEl.textContent = title;
         if (titleFont) titleEl.style.fontFamily = titleFont;
@@ -1279,7 +1287,7 @@ function updateHeroPreview() {
             btn.style.fontFamily = buttonFont;
         }
         if (buttonBgColor) {
-            btn.style.backgroundColor = buttonBgColor;
+            btn.style.background = buttonBgColor;
         }
     }
     if (imageEl && placeholderEl) {
@@ -1721,7 +1729,7 @@ function updateTickerPreview() {
     const labelEl = document.getElementById('tickerLabelPreview');
     const labelArrowEl = document.getElementById('tickerLabelArrowPreview');
     const labelTextEl = document.getElementById('tickerLabelTextPreview');
-    if(labelEl) labelEl.style.backgroundColor = labelColor;
+    if(labelEl) labelEl.style.background = labelColor;
     if(labelArrowEl) labelArrowEl.style.borderLeftColor = labelColor;
     if(labelTextEl) labelTextEl.textContent = labelText;
     
@@ -1965,11 +1973,14 @@ let currentCropTarget = null;
 let currentCropInput = null;
 let currentCropFileType = null;
 
+let currentCropFileName = '';
+
 function openCropper(input, target) {
     if (input.files && input.files[0]) {
         currentCropTarget = target;
         currentCropInput = input;
         currentCropFileType = input.files[0].type;
+        currentCropFileName = input.files[0].name;
         
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -2109,6 +2120,22 @@ function saveCrop() {
         }
     }
     
+    if (currentCropInput) {
+        let namePreview = currentCropInput.nextElementSibling;
+        if (!namePreview || !namePreview.classList.contains('file-name-preview')) {
+            namePreview = document.createElement('div');
+            namePreview.className = 'file-name-preview';
+            namePreview.style.fontSize = '13px';
+            namePreview.style.color = '#10b981';
+            namePreview.style.marginTop = '6px';
+            namePreview.style.fontStyle = 'italic';
+            namePreview.style.fontWeight = '500';
+            currentCropInput.parentNode.insertBefore(namePreview, currentCropInput.nextSibling);
+        }
+        namePreview.innerHTML = '<i class="fa-solid fa-image"></i> Đã sẵn sàng: ' + currentCropFileName;
+        namePreview.style.display = 'block';
+    }
+
     closeCropperModal();
 }
 
