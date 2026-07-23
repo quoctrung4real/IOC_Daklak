@@ -231,7 +231,11 @@ async function loadConfig() {
         if (config.welcomeBgColor) {
             const welcomeBanner = document.querySelector('.welcome-banner');
             if (welcomeBanner) {
-                welcomeBanner.style.background = config.welcomeBgColor; // Overrides linear-gradient too
+                if (config.welcomeBgColor.toLowerCase() === '#1322bc') {
+                    welcomeBanner.style.background = ''; // Fallback to CSS gradient
+                } else {
+                    welcomeBanner.style.background = config.welcomeBgColor; // Overrides linear-gradient too
+                }
             }
         }
         if (config.welcomeTextColor) {

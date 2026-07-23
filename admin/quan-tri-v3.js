@@ -1206,7 +1206,7 @@ function updateHeaderPreview() {
         if (bannerUrl) {
             bgPreview.style.backgroundImage = `url('${bannerUrl}')`;
         } else {
-            bgPreview.style.backgroundImage = 'none';
+            bgPreview.style.backgroundImage = '';
         }
     }
 }
@@ -1237,7 +1237,16 @@ function updateWelcomeBannerPreview() {
     const bgColor = document.getElementById('welcomeBgColor')?.value;
     const textColor = document.getElementById('welcomeTextColor')?.value;
     
-    if(preview && bgColor) preview.style.background = bgColor;
+    if(preview && bgColor) {
+        if (bgColor.toLowerCase() === '#1322bc') {
+            preview.style.background = '';
+        } else {
+            preview.style.background = bgColor;
+        }
+    } else if (preview) {
+        preview.style.background = '';
+    }
+    
     if(track) {
         if (text !== undefined) track.innerHTML = text.replace(/★/g, '<i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: #f1592b;"></i>');
         if (textColor) track.style.color = textColor;
@@ -3746,8 +3755,8 @@ async function applySystemTheme(themeId) {
     } else {
         config.primaryColor = '#0a59ab';
         config.menuBarBgColor = '#0a59ab';
-        config.welcomeBgColor = '#facc15';
-        config.welcomeTextColor = '#dc2626';
+        config.welcomeBgColor = '#1322bc';
+        config.welcomeTextColor = '#ffffff';
     }
 
     try {
