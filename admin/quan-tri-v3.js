@@ -2062,7 +2062,7 @@ function openCropper(input, target) {
                 aspectRatio = 1;
                 if (shapeSelector) shapeSelector.style.display = 'block';
             } else if (target === 'banner') {
-                aspectRatio = 21 / 9;
+                aspectRatio = NaN; // Cho phép crop tự do (rất cần cho banner siêu dài)
             } else if (target === 'hero') {
                 aspectRatio = 16 / 9;
             }
