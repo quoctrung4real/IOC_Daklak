@@ -249,6 +249,7 @@ body.is-sticky .nav-wrapper {
     padding: 8px 0;
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transform: translateY(10px);
     transition: all var(--transition);
     z-index: 50;
@@ -257,6 +258,7 @@ body.is-sticky .nav-wrapper {
 .nav-item.has-dropdown:hover>.dropdown {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transform: translateY(0);
 }
 
@@ -1609,6 +1611,7 @@ body.is-sticky .nav-wrapper {
         position: static;
         opacity: 1;
         visibility: visible;
+        pointer-events: auto;
         transform: none;
         box-shadow: none;
         padding: 0 0 0 16px;
@@ -1806,6 +1809,7 @@ body.is-sticky .nav-wrapper {
 .dropdown-submenu:hover>.dropdown {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transform: translateY(0);
 }
 

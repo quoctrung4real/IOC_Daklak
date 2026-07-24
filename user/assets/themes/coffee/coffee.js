@@ -36,9 +36,6 @@
     // Simple SVG Elephant silhouette + Coffee Cart
     elephant.innerHTML = `
         <svg width="250" height="140" viewBox="-30 -40 250 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Rope -->
-            <path d="M90 60 C 110 70, 130 70, 140 65" stroke="#451a03" stroke-width="2" fill="none" stroke-dasharray="4 2"/>
-
             <!-- Elephant -->
             <g class="elephant-body">
                 <!-- Background Legs -->
@@ -73,31 +70,60 @@
                 <path d="M93 83 L97 90 L92 90 Z" fill="#78350f"/>
             </g>
 
+            <!-- Harness and Rope (drawn over elephant) -->
+            <g class="harness-rope">
+                <!-- Harness band around chest/body -->
+                <path d="M30 45 C45 35, 75 40, 90 55" stroke="#dc2626" stroke-width="3" fill="none"/>
+                <!-- Vertical strap -->
+                <path d="M60 40 L65 75" stroke="#dc2626" stroke-width="3" fill="none"/>
+                <!-- Tow Rope -->
+                <path d="M65 60 C 90 85, 115 85, 135 78" stroke="#dc2626" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </g>
+
             <!-- Coffee Cart -->
             <g transform="translate(140, 35)">
                 <g class="coffee-cart">
                     <!-- Cart Base -->
-                    <rect x="0" y="45" width="50" height="8" rx="2" fill="#451a03"/>
+                    <rect x="-5" y="45" width="60" height="8" rx="3" fill="#8b4513"/>
+                    <rect x="-5" y="45" width="60" height="3" rx="1" fill="#a0522d"/>
+                    
                     <!-- Wheels -->
-                    <circle cx="10" cy="55" r="6" fill="#1c1917"/>
-                    <circle cx="10" cy="55" r="2" fill="#78350f"/>
-                    <circle cx="40" cy="55" r="6" fill="#1c1917"/>
-                    <circle cx="40" cy="55" r="2" fill="#78350f"/>
+                    <circle cx="5" cy="55" r="8" fill="#292524"/>
+                    <circle cx="5" cy="55" r="4" fill="#a8a29e"/>
+                    <circle cx="45" cy="55" r="8" fill="#292524"/>
+                    <circle cx="45" cy="55" r="4" fill="#a8a29e"/>
                     
-                    <!-- Coffee Cup -->
-                    <path d="M10 15 C10 45, 40 45, 40 15 Z" fill="#fef3c7"/>
-                    <path d="M10 15 L40 15" stroke="#fcd34d" stroke-width="4" stroke-linecap="round"/>
-                    <!-- Cup Handle -->
-                    <path d="M40 20 C50 20, 50 35, 38 35" stroke="#fef3c7" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <!-- Traditional Phin Coffee -->
+                    <!-- Glass Cup -->
+                    <path d="M10 15 L15 42 C15 44, 35 44, 35 42 L40 15 Z" fill="#e5e7eb" fill-opacity="0.5"/>
+                    <path d="M10 15 L15 42 C15 44, 35 44, 35 42 L40 15 Z" stroke="#ffffff" stroke-width="1.5" fill="none"/>
                     
-                    <!-- Coffee Logo/Bean -->
-                    <path d="M25 22 C28 22, 30 25, 30 28 C30 31, 28 34, 25 34 C22 34, 20 31, 20 28 C20 25, 22 22, 25 22 Z" fill="#78350f"/>
-                    <path d="M23 28 C25 25, 27 25, 27 28" stroke="#451a03" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <!-- Condensed Milk -->
+                    <path d="M13.5 32 L15.2 41 C15.5 42.5, 34.5 42.5, 34.8 41 L36.5 32 Z" fill="#fef3c7"/>
+                    
+                    <!-- Black Coffee -->
+                    <path d="M11 20 L13.5 32 L36.5 32 L39 20 Z" fill="#291206"/>
+                    <ellipse cx="25" cy="20" rx="14" ry="1.5" fill="#3e1c09"/> <!-- Coffee surface -->
+
+                    <!-- Spoon -->
+                    <path d="M35 5 L28 42" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Phin Filter Base -->
+                    <rect x="5" y="13" width="40" height="2" rx="1" fill="#9ca3af"/>
+                    
+                    <!-- Phin Body -->
+                    <path d="M12 -2 L12 13 L38 13 L38 -2 Z" fill="#e5e7eb"/>
+                    <rect x="11" y="-4" width="28" height="2" rx="0.5" fill="#d1d5db"/> <!-- Phin Rim -->
+                    
+                    <!-- Phin Lid -->
+                    <ellipse cx="25" cy="-4" rx="15" ry="2" fill="#9ca3af"/>
+                    <ellipse cx="25" cy="-5" rx="14" ry="2" fill="#f3f4f6"/>
+                    <path d="M22 -6 L28 -6 L26 -10 L24 -10 Z" fill="#d1d5db"/> <!-- Lid Knob -->
 
                     <!-- Smoke -->
                     <g class="smoke-group">
-                        <path class="smoke smoke-1" d="M20 5 C15 -5, 25 -15, 20 -25" stroke="#e5e7eb" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
-                        <path class="smoke smoke-2" d="M30 0 C35 -10, 25 -20, 30 -30" stroke="#e5e7eb" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
+                        <path class="smoke smoke-1" d="M25 -10 C20 -20, 35 -30, 25 -40" stroke="#d1d5db" stroke-width="2" fill="none" stroke-linecap="round" opacity="0"/>
+                        <path class="smoke smoke-2" d="M15 -5 C5 -15, 20 -25, 15 -35" stroke="#d1d5db" stroke-width="2" fill="none" stroke-linecap="round" opacity="0"/>
                     </g>
                 </g>
             </g>

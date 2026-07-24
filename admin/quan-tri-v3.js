@@ -2168,7 +2168,8 @@ function saveCrop() {
         }
         if (typeof updateHeroPreview === 'function') updateHeroPreview();
     } else if (currentCropTarget === 'partnerLinkBg') {
-        document.getElementById('pl-bgImage').value = base64Image;
+        document.getElementById('pl-bg-url').value = base64Image;
+        document.getElementById('pl-remove-bg-btn').style.display = 'inline-block';
         if (typeof partnerLinksApp !== 'undefined') {
             partnerLinksApp.updatePreview();
         }
@@ -2761,8 +2762,8 @@ const partnerLinksApp = {
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <button type="button" onclick="partnerLinksApp.editItem(${item.id})" style="background-color: #f59e0b; padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" onclick="partnerLinksApp.deleteItem(${item.id})" style="background-color: #ef4444; padding: 6px 10px;"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" onclick="partnerLinksApp.editItem('${item.id}')" style="background-color: #f59e0b; padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" onclick="partnerLinksApp.deleteItem('${item.id}')" style="background-color: #ef4444; padding: 6px 10px;"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             listContainer.appendChild(div);
@@ -2777,16 +2778,19 @@ const partnerLinksApp = {
         document.getElementById('pl-color1').value = '#2e8b57';
         document.getElementById('pl-color2').value = '#3cb371';
         document.getElementById('pl-icon').value = 'fa-solid fa-rocket';
-        document.getElementById('pl-bgImage').value = '';
-        document.getElementById('pl-bgOpacity').value = '0.2';
-        document.getElementById('pl-bgOpacity-val').textContent = '0.2';
+        document.getElementById('pl-bg-url').value = '';
+        document.getElementById('pl-remove-bg-btn').style.display = 'none';
+        if (document.getElementById('pl-bgOpacity')) {
+            document.getElementById('pl-bgOpacity').value = '0.2';
+            document.getElementById('pl-bgOpacity-val').textContent = '0.2';
+        }
         
         document.getElementById('partner-links-form-container').style.display = 'block';
         this.updatePreview();
     },
 
     editItem(id) {
-        const item = this.links.find(x => x.id === id);
+        const item = this.links.find(x => String(x.id) === String(id));
         if (!item) return;
 
         document.getElementById('partner-links-form-title').textContent = 'Chỉnh Sửa Liên Kết';
@@ -2796,9 +2800,12 @@ const partnerLinksApp = {
         document.getElementById('pl-color1').value = item.color1;
         document.getElementById('pl-color2').value = item.color2;
         document.getElementById('pl-icon').value = item.icon;
-        document.getElementById('pl-bgImage').value = item.bgImage || '';
-        document.getElementById('pl-bgOpacity').value = item.bgOpacity !== undefined ? item.bgOpacity : 0.2;
-        document.getElementById('pl-bgOpacity-val').textContent = item.bgOpacity !== undefined ? item.bgOpacity : 0.2;
+        document.getElementById('pl-bg-url').value = item.bgImage || '';
+        document.getElementById('pl-remove-bg-btn').style.display = item.bgImage ? 'inline-block' : 'none';
+        if (document.getElementById('pl-bgOpacity')) {
+            document.getElementById('pl-bgOpacity').value = item.bgOpacity !== undefined ? item.bgOpacity : 0.2;
+            document.getElementById('pl-bgOpacity-val').textContent = item.bgOpacity !== undefined ? item.bgOpacity : 0.2;
+        }
         
         document.getElementById('partner-links-form-container').style.display = 'block';
         this.updatePreview();
@@ -2806,7 +2813,7 @@ const partnerLinksApp = {
 
     deleteItem(id) {
         if (confirm('Bạn có chắc chắn muốn xóa liên kết này?')) {
-            this.links = this.links.filter(x => x.id !== id);
+            this.links = this.links.filter(x => String(x.id) !== String(id));
             this.renderList();
         }
     },
@@ -2818,15 +2825,18 @@ const partnerLinksApp = {
         const color1 = document.getElementById('pl-color1').value;
         const color2 = document.getElementById('pl-color2').value;
         const icon = document.getElementById('pl-icon').value;
-        const bgImage = document.getElementById('pl-bgImage').value;
-        const bgOpacity = parseFloat(document.getElementById('pl-bgOpacity').value);
+        const bgImage = document.getElementById('pl-bg-url').value;
+        let bgOpacity = 0.2;
+        if (document.getElementById('pl-bgOpacity')) {
+            bgOpacity = parseFloat(document.getElementById('pl-bgOpacity').value);
+        }
 
         if (idVal) {
             // Edit
-            const id = parseInt(idVal);
-            const index = this.links.findIndex(x => x.id === id);
+            const index = this.links.findIndex(x => String(x.id) === String(idVal));
             if (index > -1) {
-                this.links[index] = { id, title, url, color1, color2, icon, bgImage, bgOpacity };
+                const originalId = this.links[index].id;
+                this.links[index] = { id: originalId, title, url, color1, color2, icon, bgImage, bgOpacity };
             }
         } else {
             // Add
@@ -2878,6 +2888,25 @@ const partnerLinksApp = {
         document.getElementById('pl-icon').value = iconClass;
         this.updatePreview();
         document.getElementById('icon-modal').style.display = 'none';
+    },
+
+    handleBgUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('pl-bg-url').value = e.target.result;
+                document.getElementById('pl-remove-bg-btn').style.display = 'inline-block';
+                this.updatePreview();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    },
+
+    removeBg() {
+        document.getElementById('pl-bg-url').value = '';
+        document.getElementById('pl-bg-file').value = '';
+        document.getElementById('pl-remove-bg-btn').style.display = 'none';
+        this.updatePreview();
     },
 
     async saveAllToServer() {

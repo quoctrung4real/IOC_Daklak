@@ -993,6 +993,10 @@
                                 </div>
                                 <button type="button" onclick="partnerLinksApp.removeBg()" id="pl-remove-bg-btn" style="display: none; background: #ef4444; padding: 10px; white-space: nowrap;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>
                             </div>
+                            <div style="margin-top: 10px;">
+                                <label style="font-size: 13px; color: #64748b;">Độ mờ ảnh nền: <span id="pl-bgOpacity-val">0.2</span></label>
+                                <input type="range" id="pl-bgOpacity" min="0" max="1" step="0.1" value="0.2" oninput="document.getElementById('pl-bgOpacity-val').textContent = this.value; partnerLinksApp.updatePreview()" style="width: 100%;">
+                            </div>
                         </div>
 
                         <div class="action-buttons" style="justify-content: flex-start;">
