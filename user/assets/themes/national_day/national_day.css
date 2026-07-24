@@ -91,60 +91,44 @@ body {
     100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
 
-/* Waving flag in background */
-.waving-flag-container {
+/* Crowd scene waving flags - bottom left corner */
+.flag-crowd-scene {
     position: fixed;
-    bottom: -50px;
-    left: -50px;
-    width: 300px;
-    height: 200px;
-    z-index: 0;
-    opacity: 0.15;
+    bottom: -300px;
+    left: -15px;
+    width: 260px;
+    height: 300px;
+    z-index: 9;
     pointer-events: none;
-    transform: rotate(15deg);
+    filter: drop-shadow(3px 5px 8px rgba(0,0,0,0.3));
+    animation: crowdAppear 12s ease-in-out infinite;
 }
 
-.waving-flag {
+/* Rise up, stay visible waving, lower back down, stay hidden */
+@keyframes crowdAppear {
+    0%   { bottom: -300px; opacity: 0;   }
+    8%   { bottom: -130px; opacity: 0.9; }
+    45%  { bottom: -130px; opacity: 0.9; }
+    55%  { bottom: -300px; opacity: 0;   }
+    100% { bottom: -300px; opacity: 0;   }
+}
+
+.crowd-svg {
     width: 100%;
     height: 100%;
-    background: #da251d;
-    position: relative;
-    transform-origin: left center;
-    /* Organic waving via SVG displacement filter */
-    filter: url('#wave-filter');
-    animation: 
-        realisticWave 4s ease-in-out infinite alternate;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
 }
 
-.waving-flag::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 25%, rgba(0,0,0,0.2) 50%, rgba(255,255,255,0.25) 75%, rgba(255,255,255,0) 100%);
-    background-size: 200% 100%;
-    animation: flagShadow 1.5s linear infinite;
-    z-index: 1;
+/* Gentle sway for the whole scene */
+.person-group {
+    transform-origin: center bottom;
+    animation: crowdSway 3s ease-in-out infinite alternate;
 }
-.waving-flag::after {
-    content: '★';
-    color: #ffff00;
-    font-size: 80px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-}
+.person-group:nth-child(2) { animation-delay: -1s; animation-duration: 2.5s; }
+.person-group:nth-child(3) { animation-delay: -0.5s; animation-duration: 3.5s; }
 
-@keyframes realisticWave {
-    0% { transform: perspective(800px) rotateY(-5deg) rotateX(2deg) skewY(-1deg); }
-    100% { transform: perspective(800px) rotateY(10deg) rotateX(-1deg) skewY(1deg); }
-}
-
-@keyframes flagShadow {
-    0% { background-position: 100% 0; }
-    100% { background-position: -100% 0; }
+@keyframes crowdSway {
+    0%   { transform: rotate(-2deg); }
+    100% { transform: rotate(2deg);  }
 }
 
 /* =========================================
@@ -201,4 +185,17 @@ body {
 }
 .sidebar-accordion .accordion-content a {
     color: var(--national-dark) !important;
+}
+
+/* Sync tech solutions with theme */
+.solution-content h3 { color: var(--national-dark) !important; }
+.solution-content a.solution-link { color: var(--national-red) !important; }
+.solution-content a.solution-link svg path { stroke: var(--national-red) !important; }
+
+/* Update info utility boxes for national day theme */
+.iu-card-blue {
+    background-color: var(--national-red) !important;
+}
+.iu-card-gradient {
+    background: linear-gradient(to bottom, var(--national-dark), var(--national-red)) !important;
 }

@@ -455,6 +455,7 @@ body.is-sticky .nav-wrapper {
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2055,6 +2056,7 @@ body.is-sticky .nav-wrapper {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    margin-top: 50px;
 }
 
 .iu-card {
@@ -2387,6 +2389,7 @@ body.is-sticky .nav-wrapper {
     margin-bottom: 5px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     flex: 1;
@@ -2779,6 +2782,7 @@ body.is-sticky .nav-wrapper {
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

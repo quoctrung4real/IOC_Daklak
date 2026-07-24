@@ -385,10 +385,21 @@ async function loadConfig() {
                     
                     const imgHtml = item.image ? `<img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` : `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="20" width="80" height="100" rx="8" fill="#d4e5f7" /><rect x="70" y="30" width="60" height="40" rx="4" fill="#a8c4db" /><circle cx="100" cy="100" r="8" fill="#8fb3ce" /></svg>`;
 
+                    let cardStyle = '';
+                    if (item.bgImage) {
+                        cardStyle += `background-image: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('${item.bgImage}'); background-size: cover; background-position: center;`;
+                    } else if (item.bgColor) {
+                        cardStyle += `background-color: ${item.bgColor};`;
+                    }
+
+                    const titleHtml = item.icon 
+                        ? `<i class="${item.icon}" style="margin-right: 8px;"></i>${escapeHtml(item.title)}`
+                        : escapeHtml(item.title);
+
                     html += `
-                        <div class="solution-card">
+                        <div class="solution-card" style="${cardStyle}">
                             <div class="solution-content">
-                                <h3 style="${titleStyle}">${escapeHtml(item.title)}</h3>
+                                <h3 style="${titleStyle}">${titleHtml}</h3>
                                 <p style="${pStyle}">${escapeHtml(item.desc)}</p>
                                 <a href="${item.link}" class="solution-link" style="${aStyle}">
                                     <span>Xem thêm</span>
@@ -1352,12 +1363,19 @@ function renderInfoUtility(config) {
 
             let linksHtml = '';
             if (group.links && group.links.length > 0) {
-                linksHtml = group.links.map(link => `
+                linksHtml = group.links.map(link => {
+                    let iconOrLogo = '';
+                    if (link.logo) {
+                        iconOrLogo = `<div class="iu-icon" style="background: none;"><img src="${link.logo}" style="width: 24px; height: 24px; object-fit: contain;"></div>`;
+                    } else {
+                        iconOrLogo = `<div class="iu-icon" style="color: ${link.iconColor || '#333'};"><i class="${link.icon || 'fa-solid fa-star'}"></i></div>`;
+                    }
+                    return `
                     <a href="${link.url}" target="_blank" class="iu-grid-item">
-                        <div class="iu-icon" style="color: ${link.iconColor || '#333'};"><i class="${link.icon || 'fa-solid fa-star'}"></i></div>
+                        ${iconOrLogo}
                         <span>${link.title}</span>
                     </a>
-                `).join('');
+                `}).join('');
             }
 
             const cardHtml = `
@@ -1614,7 +1632,7 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
 
     // Render Agency Groups as Bento Cards with Popover menu or Direct Link
     if (agencyGroups && agencyGroups.length > 0) {
-        const agColor = bgColor || '#0a59ab';
+        const globalAgColor = bgColor || '#0a59ab';
         agencyGroups.forEach((group, index) => {
             let linksHtml = '';
             if (group.links && group.links.length > 0) {
@@ -1626,32 +1644,49 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
             }
             
             const startNewRowStyle = index === 0 ? ' grid-column-start: 1;' : '';
+            const agColor = group.bgColor || globalAgColor;
+            
+            let iconHtml = '';
+            if (group.logo) {
+                iconHtml = `<img src="${group.logo}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+            } else {
+                iconHtml = `<i class="${group.icon || 'fa-solid fa-building-columns'}"></i>`;
+            }
+
+            let bgImageStyle = '';
+            let bgOverlay = '';
+            if (group.bgImage) {
+                bgImageStyle = `background-image: url('${group.bgImage}'); background-size: cover; background-position: center;`;
+                bgOverlay = `<div class="bento-bg-overlay"></div>`;
+            }
 
             if (group.url && group.url.trim() !== '') {
                 // Render as direct link
                 html += `
-                    <a href="${group.url}" target="_blank" class="bento-card bento-card-small" style="text-decoration: none;${startNewRowStyle}">
-                        <div class="bento-icon" style="background: ${agColor}15; color: ${agColor};">
-                            <i class="fa-solid fa-building-columns"></i>
+                    <a href="${group.url}" target="_blank" class="bento-card bento-card-small" style="text-decoration: none; ${startNewRowStyle} ${bgImageStyle}">
+                        ${bgOverlay}
+                        <div class="bento-icon" style="background: ${agColor}15; color: ${agColor}; z-index: 1;">
+                            ${iconHtml}
                         </div>
-                        <span class="bento-title">${group.title}</span>
+                        <span class="bento-title" style="z-index: 1;">${group.title}</span>
                     </a>
                 `;
             } else {
                 // Render as popover
                 html += `
-                    <div class="bento-card bento-card-dropdown" tabindex="0" style="${startNewRowStyle}" onclick="
+                    <div class="bento-card bento-card-dropdown" tabindex="0" style="${startNewRowStyle} ${bgImageStyle}" onclick="
                         // Đóng tất cả các menu khác
                         document.querySelectorAll('.bento-card-dropdown.active').forEach(el => {
                             if(el !== this) el.classList.remove('active');
                         });
                         this.classList.toggle('active');
                     ">
-                        <div class="bento-icon" style="background: ${agColor}15; color: ${agColor};">
-                            <i class="fa-solid fa-building-columns"></i>
+                        ${bgOverlay}
+                        <div class="bento-icon" style="background: ${agColor}15; color: ${agColor}; z-index: 1;">
+                            ${iconHtml}
                         </div>
-                        <span class="bento-title">${group.title}</span>
-                        ${linksHtml ? `<i class="fa-solid fa-chevron-down bento-chevron"></i>` : ''}
+                        <span class="bento-title" style="z-index: 1;">${group.title}</span>
+                        ${linksHtml ? `<i class="fa-solid fa-chevron-down bento-chevron" style="z-index: 1;"></i>` : ''}
                         
                         ${linksHtml ? `
                         <div class="bento-popover" onclick="event.stopPropagation()">

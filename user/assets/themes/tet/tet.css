@@ -198,3 +198,16 @@ body {
 .sidebar-accordion .accordion-content a {
     color: var(--tet-red) !important;
 }
+
+/* Sync tech solutions with theme */
+.solution-content h3 { color: var(--tet-red) !important; }
+.solution-content a.solution-link { color: var(--tet-gold) !important; }
+.solution-content a.solution-link svg path { stroke: var(--tet-gold) !important; }
+
+/* Update info utility boxes for tet theme */
+.iu-card-blue {
+    background-color: var(--tet-red) !important;
+}
+.iu-card-gradient {
+    background: linear-gradient(to bottom, var(--tet-red), var(--tet-gold)) !important;
+}

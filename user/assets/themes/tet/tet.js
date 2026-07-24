@@ -109,4 +109,31 @@
         }
     }, 1000);
 
+    // OVERRIDE WELCOME BANNER TEXT
+    const updateWelcomeText = () => {
+        const track = document.querySelector('.welcome-track');
+        if (track && track.dataset.theme !== 'tet') {
+            track.dataset.theme = 'tet';
+            const text = "Trung tâm IOC tỉnh Đăklăk chúc mừng năm mới";
+            let html = '';
+            for (let i = 0; i < 4; i++) {
+                html += `<span>${text}</span>`;
+                if (i < 3) html += `<span style="display: inline-block; margin: 0 20px; vertical-align: middle;">
+                    <svg width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="15" cy="7" r="6.5" fill="#fde047" />
+                        <circle cx="23" cy="13" r="6.5" fill="#fde047" />
+                        <circle cx="20" cy="22" r="6.5" fill="#fde047" />
+                        <circle cx="10" cy="22" r="6.5" fill="#fde047" />
+                        <circle cx="7" cy="13" r="6.5" fill="#fde047" />
+                        <circle cx="15" cy="15" r="4.5" fill="#eab308" />
+                        <circle cx="15" cy="15" r="2" fill="#ea580c" />
+                    </svg>
+                </span>`;
+            }
+            track.innerHTML = html;
+        }
+    };
+    updateWelcomeText();
+    setInterval(updateWelcomeText, 500);
+
 })();

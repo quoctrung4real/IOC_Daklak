@@ -1,5 +1,120 @@
 const API_BASE = 'http://localhost:5100/api';
 
+const GLOBAL_ICON_LIBRARY = [
+    'fa-solid fa-house', 'fa-solid fa-user', 'fa-solid fa-envelope', 'fa-solid fa-phone', 'fa-solid fa-globe', 
+    'fa-solid fa-location-dot', 'fa-solid fa-building', 'fa-solid fa-newspaper', 'fa-solid fa-scale-balanced', 
+    'fa-solid fa-briefcase', 'fa-solid fa-graduation-cap', 'fa-solid fa-hospital', 'fa-solid fa-landmark', 
+    'fa-solid fa-gavel', 'fa-solid fa-bullhorn', 'fa-solid fa-users', 'fa-solid fa-comments', 'fa-solid fa-magnifying-glass', 
+    'fa-solid fa-circle-info', 'fa-solid fa-chart-line', 'fa-solid fa-file-lines', 'fa-solid fa-folder-open', 
+    'fa-solid fa-pen-to-square', 'fa-solid fa-star', 'fa-solid fa-rocket', 'fa-solid fa-lightbulb', 'fa-solid fa-calendar-days', 
+    'fa-solid fa-microchip', 'fa-solid fa-network-wired', 'fa-solid fa-handshake', 'fa-solid fa-shield-halved', 
+    'fa-solid fa-server', 'fa-solid fa-mobile-screen', 'fa-solid fa-laptop-code', 'fa-solid fa-database', 'fa-solid fa-cloud', 
+    'fa-solid fa-code', 'fa-solid fa-gears', 'fa-solid fa-bolt', 'fa-solid fa-book', 'fa-solid fa-building-columns', 
+    'fa-solid fa-leaf', 'fa-solid fa-droplet', 'fa-solid fa-wind', 'fa-solid fa-seedling', 'fa-solid fa-heart-pulse', 
+    'fa-solid fa-truck-fast', 'fa-solid fa-envelope-open-text', 'fa-solid fa-mug-hot', 'fa-solid fa-house-chimney', 
+    'fa-solid fa-file-signature', 'fa-solid fa-sitemap', 'fa-solid fa-list-check', 'fa-solid fa-clipboard-list', 
+    'fa-solid fa-file-invoice-dollar', 'fa-solid fa-cloud-sun-rain', 'fa-solid fa-coins', 'fa-solid fa-money-bill-transfer',
+    'fa-solid fa-circle-check', 'fa-solid fa-circle-xmark', 'fa-solid fa-triangle-exclamation', 'fa-solid fa-bell', 
+    'fa-solid fa-map', 'fa-solid fa-compass', 'fa-solid fa-camera', 'fa-solid fa-image', 'fa-solid fa-video', 
+    'fa-solid fa-music', 'fa-solid fa-microphone', 'fa-solid fa-headphones', 'fa-solid fa-play', 'fa-solid fa-pause', 
+    'fa-solid fa-stop', 'fa-solid fa-forward', 'fa-solid fa-backward', 'fa-solid fa-volume-high', 'fa-solid fa-volume-low', 
+    'fa-solid fa-volume-xmark', 'fa-solid fa-magnifying-glass-plus', 'fa-solid fa-magnifying-glass-minus', 'fa-solid fa-wrench', 
+    'fa-solid fa-hammer', 'fa-solid fa-screwdriver-wrench', 'fa-solid fa-filter', 'fa-solid fa-sort', 'fa-solid fa-sort-up', 
+    'fa-solid fa-sort-down', 'fa-solid fa-arrow-up', 'fa-solid fa-arrow-down', 'fa-solid fa-arrow-left', 'fa-solid fa-arrow-right', 
+    'fa-solid fa-arrow-right-from-bracket', 'fa-solid fa-arrow-right-to-bracket', 'fa-solid fa-download', 'fa-solid fa-upload', 
+    'fa-solid fa-cloud-arrow-up', 'fa-solid fa-cloud-arrow-down', 'fa-solid fa-share-nodes', 'fa-solid fa-link', 
+    'fa-solid fa-paperclip', 'fa-solid fa-print', 'fa-solid fa-file-pdf', 'fa-solid fa-file-word', 'fa-solid fa-file-excel', 
+    'fa-solid fa-file-powerpoint', 'fa-solid fa-file-image', 'fa-solid fa-file-audio', 'fa-solid fa-file-video', 
+    'fa-solid fa-file-zipper', 'fa-solid fa-file-code', 'fa-solid fa-trash', 'fa-solid fa-trash-can', 'fa-solid fa-pen', 
+    'fa-solid fa-pencil', 'fa-solid fa-eraser', 'fa-solid fa-scissors', 'fa-solid fa-copy', 'fa-solid fa-paste', 
+    'fa-solid fa-clipboard', 'fa-solid fa-list-ul', 'fa-solid fa-list-ol', 'fa-solid fa-table', 'fa-solid fa-table-cells', 
+    'fa-solid fa-table-columns', 'fa-solid fa-table-list', 'fa-solid fa-chart-pie', 'fa-solid fa-chart-bar', 
+    'fa-solid fa-chart-area', 'fa-solid fa-eye', 'fa-solid fa-eye-slash', 'fa-solid fa-lock', 'fa-solid fa-lock-open', 
+    'fa-solid fa-key', 'fa-solid fa-shield', 'fa-solid fa-shield-cat', 'fa-solid fa-shield-dog', 'fa-solid fa-user-shield', 
+    'fa-solid fa-user-secret', 'fa-solid fa-user-ninja', 'fa-solid fa-user-astronaut', 'fa-solid fa-user-tie', 
+    'fa-solid fa-user-graduate', 'fa-solid fa-user-doctor', 'fa-solid fa-user-nurse', 'fa-solid fa-users-gear', 
+    'fa-solid fa-users-rectangle', 'fa-solid fa-address-card', 'fa-solid fa-address-book', 'fa-solid fa-id-card', 
+    'fa-solid fa-id-badge', 'fa-solid fa-business-time', 'fa-solid fa-calendar', 'fa-solid fa-calendar-check', 
+    'fa-solid fa-calendar-xmark', 'fa-solid fa-calendar-plus', 'fa-solid fa-calendar-minus', 'fa-solid fa-clock', 
+    'fa-solid fa-hourglass-start', 'fa-solid fa-hourglass-half', 'fa-solid fa-hourglass-end', 'fa-solid fa-stopwatch', 
+    'fa-solid fa-timer', 'fa-solid fa-bell-slash', 'fa-solid fa-bullseye', 'fa-solid fa-flag', 'fa-solid fa-flag-checkered', 
+    'fa-brands fa-facebook', 'fa-brands fa-twitter', 'fa-brands fa-instagram', 'fa-brands fa-linkedin', 'fa-brands fa-youtube', 
+    'fa-brands fa-tiktok', 'fa-brands fa-whatsapp', 'fa-brands fa-telegram', 'fa-brands fa-viber', 'fa-brands fa-skype', 
+    'fa-brands fa-discord', 'fa-brands fa-github', 'fa-brands fa-gitlab', 'fa-brands fa-bitbucket', 'fa-brands fa-google', 
+    'fa-brands fa-apple', 'fa-brands fa-microsoft', 'fa-brands fa-windows', 'fa-brands fa-linux', 'fa-brands fa-android', 
+    'fa-solid fa-desktop', 'fa-solid fa-laptop', 'fa-solid fa-tablet', 'fa-solid fa-mobile', 'fa-solid fa-tv', 
+    'fa-solid fa-keyboard', 'fa-solid fa-mouse', 'fa-solid fa-camera-retro', 'fa-solid fa-gamepad', 'fa-solid fa-wifi', 
+    'fa-solid fa-bluetooth', 'fa-solid fa-battery-full', 'fa-solid fa-battery-half', 'fa-solid fa-battery-empty', 
+    'fa-solid fa-plug', 'fa-solid fa-power-off', 'fa-solid fa-car', 'fa-solid fa-bus', 'fa-solid fa-train', 
+    'fa-solid fa-subway', 'fa-solid fa-plane', 'fa-solid fa-ship', 'fa-solid fa-bicycle', 'fa-solid fa-motorcycle', 
+    'fa-solid fa-wheelchair', 'fa-solid fa-gas-pump', 'fa-solid fa-charging-station', 'fa-solid fa-traffic-light', 
+    'fa-solid fa-road', 'fa-solid fa-bridge', 'fa-solid fa-tree', 'fa-solid fa-mountain', 'fa-solid fa-water', 
+    'fa-solid fa-fire', 'fa-solid fa-snowflake', 'fa-solid fa-sun', 'fa-solid fa-moon', 'fa-solid fa-cloud-sun', 
+    'fa-solid fa-cloud-moon', 'fa-solid fa-cloud-showers-heavy', 'fa-solid fa-cloud-bolt', 'fa-solid fa-poo', 
+    'fa-solid fa-face-smile', 'fa-solid fa-face-sad-tear', 'fa-solid fa-face-angry', 'fa-solid fa-face-surprise', 
+    'fa-solid fa-face-laugh', 'fa-solid fa-face-grin', 'fa-solid fa-heart', 'fa-solid fa-star-half-stroke', 
+    'fa-solid fa-thumbs-up', 'fa-solid fa-thumbs-down', 'fa-solid fa-hand-point-up', 'fa-solid fa-hand-point-down', 
+    'fa-solid fa-hand-point-left', 'fa-solid fa-hand-point-right', 'fa-solid fa-handshake-angle', 'fa-solid fa-hand-holding-heart', 
+    'fa-solid fa-hand-holding-dollar', 'fa-solid fa-hand-holding-medical', 'fa-solid fa-hand-holding-droplet', 
+    'fa-solid fa-stethoscope', 'fa-solid fa-syringe', 'fa-solid fa-pills', 'fa-solid fa-prescription', 'fa-solid fa-dna', 
+    'fa-solid fa-vial', 'fa-solid fa-vials', 'fa-solid fa-flask', 'fa-solid fa-tooth', 'fa-solid fa-bone', 
+    'fa-solid fa-crutch', 'fa-solid fa-bed-pulse', 'fa-solid fa-weight-scale', 'fa-solid fa-wheelchair-move', 
+    'fa-solid fa-truck-medical', 'fa-solid fa-truck-front', 'fa-solid fa-tractor', 'fa-solid fa-plane-up', 
+    'fa-solid fa-plane-arrival', 'fa-solid fa-plane-departure', 'fa-solid fa-passport', 'fa-solid fa-ticket', 
+    'fa-solid fa-plane-slash', 'fa-solid fa-basket-shopping', 'fa-solid fa-cart-shopping', 'fa-solid fa-bag-shopping', 
+    'fa-solid fa-credit-card', 'fa-solid fa-wallet', 'fa-solid fa-money-bill', 'fa-solid fa-money-check', 
+    'fa-solid fa-money-check-dollar', 'fa-solid fa-receipt', 'fa-solid fa-tag', 'fa-solid fa-tags', 'fa-solid fa-gift', 
+    'fa-solid fa-barcode', 'fa-solid fa-qrcode', 'fa-solid fa-store', 'fa-solid fa-shop', 'fa-solid fa-cart-plus', 
+    'fa-solid fa-cart-arrow-down', 'fa-solid fa-cash-register', 'fa-solid fa-shirt', 'fa-solid fa-socks', 
+    'fa-solid fa-shoe-prints', 'fa-solid fa-glasses', 'fa-solid fa-hat-cowboy', 'fa-solid fa-hat-wizard', 'fa-solid fa-crown', 
+    'fa-solid fa-ring', 'fa-solid fa-gem', 'fa-solid fa-medal', 'fa-solid fa-trophy', 'fa-solid fa-award', 
+    'fa-solid fa-ribbon', 'fa-solid fa-person', 'fa-solid fa-person-dress', 'fa-solid fa-person-walking', 
+    'fa-solid fa-person-running', 'fa-solid fa-person-swimming', 'fa-solid fa-person-skating', 'fa-solid fa-person-snowboarding', 
+    'fa-solid fa-person-skiing', 'fa-solid fa-person-biking', 'fa-solid fa-person-hiking', 'fa-solid fa-baby', 
+    'fa-solid fa-child', 'fa-solid fa-child-dress', 'fa-solid fa-children', 'fa-solid fa-hands-clapping', 
+    'fa-solid fa-handshake-simple', 'fa-solid fa-person-praying', 'fa-solid fa-cross', 'fa-solid fa-star-of-david', 
+    'fa-solid fa-dharmachakra', 'fa-solid fa-yin-yang', 'fa-solid fa-om', 'fa-solid fa-peace', 'fa-solid fa-ankh', 
+    'fa-solid fa-khanda', 'fa-solid fa-jedi', 'fa-solid fa-spaghetti-monster-flying', 'fa-solid fa-utensils', 
+    'fa-solid fa-fork-knife', 'fa-solid fa-spoon', 'fa-solid fa-bowl-food', 'fa-solid fa-bowl-rice', 'fa-solid fa-burger', 
+    'fa-solid fa-hotdog', 'fa-solid fa-pizza-slice', 'fa-solid fa-cheese', 'fa-solid fa-bread-slice', 'fa-solid fa-drumstick-bite', 
+    'fa-solid fa-egg', 'fa-solid fa-bacon', 'fa-solid fa-apple-whole', 'fa-solid fa-carrot', 'fa-solid fa-lemon', 
+    'fa-solid fa-pepper-hot', 'fa-solid fa-candy-cane', 'fa-solid fa-cookie', 'fa-solid fa-cookie-bite', 
+    'fa-solid fa-ice-cream', 'fa-solid fa-cake-candles', 'fa-solid fa-wine-glass', 'fa-solid fa-wine-glass-empty', 
+    'fa-solid fa-beer-mug-empty', 'fa-solid fa-martini-glass', 'fa-solid fa-martini-glass-empty', 'fa-solid fa-martini-glass-citrus', 
+    'fa-solid fa-glass-water', 'fa-solid fa-glass-water-droplet', 'fa-solid fa-bottle-water', 'fa-solid fa-jug-detergent', 
+    'fa-solid fa-brush', 'fa-solid fa-paint-roller', 'fa-solid fa-palette', 'fa-solid fa-pen-nib', 'fa-solid fa-highlighter', 
+    'fa-solid fa-marker', 'fa-solid fa-ruler', 'fa-solid fa-ruler-combined', 'fa-solid fa-ruler-horizontal', 
+    'fa-solid fa-ruler-vertical', 'fa-solid fa-compass-drafting', 'fa-solid fa-square-root-variable', 'fa-solid fa-xmark', 
+    'fa-solid fa-check', 'fa-solid fa-plus', 'fa-solid fa-minus', 'fa-solid fa-equals', 'fa-solid fa-divide', 
+    'fa-solid fa-percentage', 'fa-solid fa-infinity', 'fa-solid fa-calculator', 'fa-solid fa-square', 'fa-solid fa-circle', 
+    'fa-solid fa-triangle', 'fa-solid fa-draw-polygon', 'fa-solid fa-shapes', 'fa-solid fa-cube', 'fa-solid fa-cubes', 
+    'fa-solid fa-puzzle-piece', 'fa-solid fa-chess', 'fa-solid fa-chess-king', 'fa-solid fa-chess-queen', 
+    'fa-solid fa-chess-rook', 'fa-solid fa-chess-bishop', 'fa-solid fa-chess-knight', 'fa-solid fa-chess-pawn', 
+    'fa-solid fa-chess-board', 'fa-solid fa-dice', 'fa-solid fa-dice-one', 'fa-solid fa-dice-two', 'fa-solid fa-dice-three', 
+    'fa-solid fa-dice-four', 'fa-solid fa-dice-five', 'fa-solid fa-dice-six', 'fa-solid fa-dice-d20', 'fa-solid fa-bowling-ball', 
+    'fa-solid fa-table-tennis-paddle-ball', 'fa-solid fa-volleyball', 'fa-solid fa-basketball', 'fa-solid fa-baseball', 
+    'fa-solid fa-baseball-bat-ball', 'fa-solid fa-football', 'fa-solid fa-golf-ball-tee', 'fa-solid fa-hockey-puck', 
+    'fa-solid fa-dumbbell', 'fa-solid fa-person-skiing-nordic', 'fa-solid fa-person-sledding', 'fa-solid fa-campground', 
+    'fa-solid fa-fire-burner', 'fa-solid fa-fire-flame-curved', 'fa-solid fa-fire-flame-simple', 'fa-solid fa-droplet-slash', 
+    'fa-solid fa-tornado', 'fa-solid fa-volcano', 'fa-solid fa-mountain-sun', 'fa-solid fa-mountain-city', 
+    'fa-solid fa-tree-city', 'fa-solid fa-plant-wilt', 'fa-solid fa-cannabis', 'fa-solid fa-bug', 'fa-solid fa-bug-slash', 
+    'fa-solid fa-mosquito', 'fa-solid fa-locust', 'fa-solid fa-spider-web', 'fa-solid fa-frog', 'fa-solid fa-worm', 
+    'fa-solid fa-cow', 'fa-solid fa-horse', 'fa-solid fa-horse-head', 'fa-solid fa-dog', 'fa-solid fa-cat', 
+    'fa-solid fa-kiwi-bird', 'fa-solid fa-crow', 'fa-solid fa-dove', 'fa-solid fa-dragon', 'fa-solid fa-fish', 
+    'fa-solid fa-fish-fins', 'fa-solid fa-otter', 'fa-solid fa-hippo', 'fa-solid fa-shrimp', 'fa-solid fa-shield-heart', 
+    'fa-solid fa-shield-virus', 'fa-solid fa-virus', 'fa-solid fa-virus-covid', 'fa-solid fa-virus-covid-slash', 
+    'fa-solid fa-viruses', 'fa-solid fa-mask', 'fa-solid fa-mask-face', 'fa-solid fa-mask-ventilator', 
+    'fa-solid fa-head-side-mask', 'fa-solid fa-head-side-virus', 'fa-solid fa-head-side-cough', 'fa-solid fa-head-side-cough-slash', 
+    'fa-solid fa-lungs', 'fa-solid fa-lungs-virus', 'fa-solid fa-pump-medical', 'fa-solid fa-pump-soap', 'fa-solid fa-soap', 
+    'fa-solid fa-sink', 'fa-solid fa-toilet', 'fa-solid fa-toilet-paper', 'fa-solid fa-toilet-paper-slash', 'fa-solid fa-bath', 
+    'fa-solid fa-shower', 'fa-solid fa-bed', 'fa-solid fa-mattress-pilla', 'fa-solid fa-restroom', 'fa-solid fa-briefcase-medical', 
+    'fa-solid fa-star-of-life', 'fa-solid fa-kit-medical', 'fa-solid fa-crutches', 'fa-solid fa-prescription-bottle', 
+    'fa-solid fa-prescription-bottle-medical', 'fa-solid fa-tablets', 'fa-solid fa-capsules', 'fa-solid fa-vial-virus', 
+    'fa-solid fa-vial-circle-check', 'fa-solid fa-flask-vial', 'fa-solid fa-microscope', 'fa-solid fa-brain', 
+    'fa-solid fa-heart-crack', 'fa-solid fa-x-ray', 'fa-solid fa-bones', 'fa-solid fa-skull', 'fa-solid fa-skull-crossbones', 
+    'fa-solid fa-biohazard', 'fa-solid fa-radiation'
+];
+
 function getAuthHeaders(extraHeaders = {}) {
     const token = localStorage.getItem('accessToken');
     const tokenType = localStorage.getItem('tokenType') || 'Bearer';
@@ -1493,7 +1608,7 @@ const multimediaApp = {
                         <label style="display: flex; gap: 10px; margin-bottom: 10px; cursor: pointer; align-items: flex-start;">
                             <input type="checkbox" value="${news.id}" 
                                    onchange="multimediaApp.updateSecondary(this.value, this.checked)"
-                                   ${secondaryIds.includes(news.id) || secondaryIds.includes(news.id.toString()) ? 'checked' : ''}
+                                   ${secondaryIds.some(id => id == news.id) ? 'checked' : ''}
                                    style="margin-top: 3px;">
                             <span style="font-size: 14px; color: #334155; line-height: 1.4;">${news.title}</span>
                         </label>
@@ -1600,19 +1715,25 @@ const externalLinksApp = {
         }
 
         listEl.innerHTML = this.items.map(item => `
-            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; position: relative;">
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                    <div style="width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: ${item.color || '#0a59ab'}; color: white;">
-                        ${item.logoUrl ? `<img src="${item.logoUrl}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '<i class="fa-solid fa-link"></i>'}
-                    </div>
-                    <div style="font-weight: 600; color: #1e293b; flex: 1; word-break: break-word;">${item.name || ''}</div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
+                ${item.bgUrl ? `<div style="position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: -1;"></div>` : ''}
+                
+                <div style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'}; z-index: 2; position: relative; flex-shrink: 0;">
+                    ${item.logoUrl 
+                        ? `<img src="${item.logoUrl}" style="max-width:32px; max-height:32px; object-fit:contain;">` 
+                        : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+                            <circle cx="24" cy="24" r="18" fill="currentColor" opacity="0.15" />
+                            <text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="${item.logoText && item.logoText.length > 3 ? '8' : '10'}" font-weight="700" font-family="sans-serif">${item.logoText ? item.logoText : (item.name ? item.name.substring(0,3).toUpperCase() : 'LNK')}</text>
+                           </svg>`}
                 </div>
-                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; word-break: break-all;">
-                    ${item.url || ''}
+                
+                <div style="z-index: 2; position: relative; flex: 1; padding-right: 30px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                    <div style="font-weight: 600; color: #1e293b; font-size: 16px; text-align: left; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.name || ''}</div>
                 </div>
-                <div style="display: flex; gap: 5px;">
-                    <button type="button" onclick="externalLinksApp.openEditModal('${item.id}')" style="flex: 1; background: #f1f5f9; border: none; padding: 5px; border-radius: 4px; cursor: pointer; color: #0a59ab;"><i class="fa-solid fa-edit"></i> Sửa</button>
-                    <button type="button" onclick="externalLinksApp.deleteItem('${item.id}')" style="flex: 1; background: #fef2f2; border: none; padding: 5px; border-radius: 4px; cursor: pointer; color: #ef4444;"><i class="fa-solid fa-trash"></i> Xóa</button>
+                
+                <div style="display: flex; flex-direction: column; gap: 5px; position: absolute; top: 10px; right: 10px; z-index: 3;">
+                    <button type="button" onclick="externalLinksApp.openEditModal('${item.id}')" style="background: rgba(255,255,255,0.9); border: 1px solid #e2e8f0; padding: 6px 8px; border-radius: 4px; cursor: pointer; color: #0a59ab; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"><i class="fa-solid fa-edit"></i></button>
+                    <button type="button" onclick="externalLinksApp.deleteItem('${item.id}')" style="background: rgba(255,255,255,0.9); border: 1px solid #e2e8f0; padding: 6px 8px; border-radius: 4px; cursor: pointer; color: #ef4444; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
         `).join('');
@@ -1622,6 +1743,7 @@ const externalLinksApp = {
         document.getElementById('extLinkForm').reset();
         document.getElementById('extLinkId').value = '';
         document.getElementById('extLinkLogoUrl').value = '';
+        document.getElementById('extLinkLogoText').value = '';
         document.getElementById('extLinkBgUrl').value = '';
         document.getElementById('extLinkLogoPreview').style.display = 'none';
         document.getElementById('extLinkBgPreview').style.display = 'none';
@@ -1638,6 +1760,7 @@ const externalLinksApp = {
         document.getElementById('extLinkUrl').value = item.url || '';
         document.getElementById('extLinkColor').value = item.color || '#0a59ab';
         
+        document.getElementById('extLinkLogoText').value = item.logoText || '';
         document.getElementById('extLinkLogoUrl').value = item.logoUrl || '';
         if (item.logoUrl) {
             document.getElementById('extLinkLogoPreview').style.display = 'block';
@@ -1706,6 +1829,7 @@ const externalLinksApp = {
             name: document.getElementById('extLinkName').value,
             url: document.getElementById('extLinkUrl').value,
             color: document.getElementById('extLinkColor').value,
+            logoText: document.getElementById('extLinkLogoText').value,
             logoUrl: document.getElementById('extLinkLogoUrl').value,
             bgUrl: document.getElementById('extLinkBgUrl').value
         };
@@ -1861,11 +1985,26 @@ function renderTechSolutionsItems() {
                 <label>Link nút "Xem thêm"</label>
                 <input type="text" value="${item.link}" oninput="updateTechSolutionItem(${index}, 'link', this.value)">
             </div>
+            <div class="form-group">
+                <label>Icon FontAwesome (Vd: fa-solid fa-star)</label>
+                <input type="text" value="${item.icon || ''}" oninput="updateTechSolutionItem(${index}, 'icon', this.value)" placeholder="fa-solid fa-star">
+            </div>
+            <div class="form-group">
+                <label>Màu nền (tuỳ chọn)</label>
+                <input type="color" value="${item.bgColor || '#ffffff'}" oninput="updateTechSolutionItem(${index}, 'bgColor', this.value)" style="width: 50px; height: 30px; padding: 0;">
+            </div>
             <div class="form-group" style="margin-bottom: 0;">
-                <label>Upload Hình Ảnh Banner (Thay thế hình SVG mặc định)</label>
+                <label>Upload Hình Ảnh Banner (Bên phải)</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionImage(${index}, this)">
                     ${item.image ? `<button type="button" onclick="removeTechSolutionImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>` : ''}
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                <label>Upload Ảnh Nền (Background) cho Box</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionBgImage(${index}, this)">
+                    ${item.bgImage ? `<button type="button" onclick="removeTechSolutionBgImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa nền</button>` : ''}
                 </div>
             </div>
         `;
@@ -1892,6 +2031,22 @@ function uploadTechSolutionImage(index, input) {
 
 function removeTechSolutionImage(index) {
     techSolutionsItems[index].image = '';
+    renderTechSolutionsItems();
+}
+
+function uploadTechSolutionBgImage(index, input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            techSolutionsItems[index].bgImage = e.target.result;
+            renderTechSolutionsItems();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeTechSolutionBgImage(index) {
+    techSolutionsItems[index].bgImage = '';
     renderTechSolutionsItems();
 }
 
@@ -2568,11 +2723,39 @@ function renderAgencyLinksGroups() {
         
         groupDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
-                <input type="text" value="${group.title}" oninput="updateAgencyGroupTitle(${groupIndex}, this.value)" style="font-weight: 600; color: #475569; font-size: 15px; border: none; outline: none; background: transparent; width: 80%;" placeholder="Tên nhóm cơ quan (VD: Sở / Ban ngành)">
+                <input type="text" value="${group.title}" oninput="agencyLinksGroups[${groupIndex}].title = this.value; updateAgencyLinksPreview()" style="font-weight: 600; color: #475569; font-size: 15px; border: none; outline: none; background: transparent; width: 80%;" placeholder="Tên nhóm cơ quan (VD: Sở / Ban ngành)">
                 <button type="button" onclick="removeAgencyGroup(${groupIndex})" style="background: transparent; color: #ef4444; border: none; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa Nhóm</button>
             </div>
             <div style="margin-bottom: 15px;">
-                <input type="text" value="${group.url || ''}" oninput="updateAgencyGroupUrl(${groupIndex}, this.value)" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;" placeholder="Đường link của cả ô (Tùy chọn: Nhấn vào ô sẽ mở link này thay vì mở danh sách con)">
+                <input type="text" value="${group.url || ''}" oninput="agencyLinksGroups[${groupIndex}].url = this.value; updateAgencyLinksPreview()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;" placeholder="Đường link của cả ô (Tùy chọn: Nhấn vào ô sẽ mở link này thay vì mở danh sách con)">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 13px;">Màu Nền Riêng</label>
+                    <input type="color" value="${group.bgColor || '#ffffff'}" onchange="updateAgencyGroupField(${groupIndex}, 'bgColor', this.value)" style="width: 100%; height: 36px; padding: 2px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 13px;">Icon (FontAwesome)</label>
+                    <input type="text" value="${group.icon || ''}" oninput="updateAgencyGroupField(${groupIndex}, 'icon', this.value, false)" placeholder="VD: fa-solid fa-building-columns" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 13px;">Logo Ảnh (thay thế Icon)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${group.logo ? `<img src="${group.logo}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
+                        <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'logo')" style="font-size: 12px; max-width: 150px;">
+                        ${group.logo ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'logo', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 13px;">Ảnh nền (Background)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${group.bgImage ? `<img src="${group.bgImage}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
+                        <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'bgImage')" style="font-size: 12px; max-width: 150px;">
+                        ${group.bgImage ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'bgImage', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </div>
+                </div>
             </div>
             <div style="margin-bottom: 10px;">
                 <label style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Danh sách liên kết</label>
@@ -2585,14 +2768,22 @@ function renderAgencyLinksGroups() {
     updateAgencyLinksPreview();
 }
 
-function updateAgencyGroupTitle(groupIndex, title) {
-    agencyLinksGroups[groupIndex].title = title;
+function updateAgencyGroupField(groupIndex, key, value, reRender = true) {
+    agencyLinksGroups[groupIndex][key] = value;
     updateAgencyLinksPreview();
+    if (reRender) renderAgencyLinksGroups();
 }
 
-function updateAgencyGroupUrl(groupIndex, url) {
-    agencyLinksGroups[groupIndex].url = url;
-    updateAgencyLinksPreview();
+function uploadAgencyGroupImage(input, groupIndex, key) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            agencyLinksGroups[groupIndex][key] = e.target.result;
+            updateAgencyLinksPreview();
+            renderAgencyLinksGroups();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
 function updateAgencyLink(groupIndex, linkIndex, key, value) {
@@ -2626,7 +2817,7 @@ function updateAgencyLinksPreview() {
     const container = document.getElementById('agencyLinksPreviewContainer');
     if (!container) return;
     
-    const bgColor = document.getElementById('agencyLinksColor')?.value || '#0a59ab';
+    const globalBgColor = document.getElementById('agencyLinksColor')?.value || '#0a59ab';
     
     container.innerHTML = '';
     // Use the actual Bento Grid styles for the preview
@@ -2637,15 +2828,33 @@ function updateAgencyLinksPreview() {
             linksHtml += `<div style="padding: 8px 12px; color: #334155; font-size: 13px; font-weight: 500; border-bottom: 1px solid #f1f5f9;"><i class="fa-solid fa-angle-right" style="margin-right: 6px;"></i> ${link.text}</div>`;
         });
         
+        let bgColor = group.bgColor || globalBgColor;
+        
+        let iconHtml = '';
+        if (group.logo) {
+            iconHtml = `<img src="${group.logo}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        } else {
+            iconHtml = `<i class="${group.icon || 'fa-solid fa-building-columns'}"></i>`;
+        }
+
+        let bgImageStyle = '';
+        let bgOverlay = '';
+        if (group.bgImage) {
+            bgImageStyle = `background-image: url('${group.bgImage}'); background-size: cover; background-position: center;`;
+            // Add a white overlay like the user frontend
+            bgOverlay = `<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.85); border-radius: 12px; z-index: 0;"></div>`;
+        }
+        
         container.innerHTML += `
-            <div style="background: #fff; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center; min-height: 110px;">
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: ${bgColor}15; color: ${bgColor}; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 18px;">
-                    <i class="fa-solid fa-building-columns"></i>
+            <div style="background: #fff; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center; min-height: 110px; ${bgImageStyle}">
+                ${bgOverlay}
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: ${bgColor}15; color: ${bgColor}; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 18px; z-index: 1;">
+                    ${iconHtml}
                 </div>
-                <span style="font-weight: 600; font-size: 13px; color: #1e293b; line-height: 1.3;">${group.title}</span>
-                <i class="fa-solid fa-chevron-down" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 10px;"></i>
+                <span style="font-weight: 600; font-size: 13px; color: #1e293b; line-height: 1.3; z-index: 1;">${group.title}</span>
+                <i class="fa-solid fa-chevron-down" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 10px; z-index: 1;"></i>
                 
-                <div style="margin-top: 15px; width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px; text-align: left; display: none;">
+                <div style="margin-top: 15px; width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px; text-align: left; display: none; z-index: 1;">
                     ${linksHtml}
                 </div>
             </div>
@@ -2660,53 +2869,7 @@ function updateAgencyLinksPreview() {
 const partnerLinksApp = {
     links: [],
     
-    // Some popular FontAwesome icons for the library
-    iconLibrary: [
-        'fa-solid fa-rocket',
-        'fa-solid fa-lightbulb',
-        'fa-solid fa-calendar-days',
-        'fa-solid fa-microchip',
-        'fa-solid fa-network-wired',
-        'fa-solid fa-globe',
-        'fa-solid fa-users',
-        'fa-solid fa-handshake',
-        'fa-solid fa-chart-line',
-        'fa-solid fa-shield-halved',
-        'fa-solid fa-server',
-        'fa-solid fa-mobile-screen',
-        'fa-solid fa-laptop-code',
-        'fa-solid fa-database',
-        'fa-solid fa-cloud',
-        'fa-solid fa-code',
-        'fa-solid fa-gears',
-        'fa-solid fa-bolt',
-        'fa-solid fa-bullhorn',
-        'fa-solid fa-book',
-        'fa-solid fa-graduation-cap',
-        'fa-solid fa-building-columns',
-        'fa-solid fa-landmark',
-        'fa-solid fa-scale-balanced',
-        'fa-solid fa-leaf',
-        'fa-solid fa-droplet',
-        'fa-solid fa-wind',
-        'fa-solid fa-seedling',
-        'fa-solid fa-heart-pulse',
-        'fa-solid fa-truck-fast',
-        'fa-solid fa-star',
-        'fa-solid fa-folder-open',
-        'fa-solid fa-envelope-open-text',
-        'fa-solid fa-mug-hot',
-        'fa-solid fa-house-chimney',
-        'fa-solid fa-file-signature',
-        'fa-solid fa-sitemap',
-        'fa-solid fa-list-check',
-        'fa-solid fa-file-lines',
-        'fa-solid fa-clipboard-list',
-        'fa-solid fa-file-invoice-dollar',
-        'fa-solid fa-cloud-sun-rain',
-        'fa-solid fa-coins',
-        'fa-solid fa-money-bill-transfer'
-    ],
+    iconLibrary: GLOBAL_ICON_LIBRARY,
 
     async init() {
         // Render icon library
@@ -2749,21 +2912,47 @@ const partnerLinksApp = {
         listContainer.innerHTML = '';
         this.links.forEach(item => {
             const div = document.createElement('div');
-            div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: white;';
+            div.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 28px 20px;
+                border-radius: 12px;
+                color: white;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+                background: linear-gradient(135deg, ${item.color1}, ${item.color2});
+                min-height: 140px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            `;
+
+            let iconHtml = '';
+            if (item.icon && item.icon.includes('<svg')) {
+                iconHtml = item.icon;
+            } else {
+                iconHtml = `<i class="${item.icon || 'fa-solid fa-link'}" style="font-size: 32px; color: white; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));"></i>`;
+            }
+
+            let bgHtml = '';
+            if (item.bgImage) {
+                bgHtml = `<div style="position: absolute; inset: 0; background-image: url(${item.bgImage}); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>`;
+            }
+
             div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, ${item.color1}, ${item.color2}); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; position: relative; overflow: hidden;">
-                        ${item.bgImage ? `<div style="position: absolute; inset: 0; background-image: url(${item.bgImage}); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
-                        <i class="${item.icon}" style="position: relative; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,0.6);"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: #1e293b;">${item.title}</div>
-                        <div style="font-size: 12px; color: #64748b;">${item.url}</div>
-                    </div>
+                ${bgHtml}
+                <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%); z-index: 1;"></div>
+                
+                <div style="margin-bottom: 12px; position: relative; z-index: 2;">
+                    ${iconHtml}
                 </div>
-                <div class="action-buttons">
-                    <button type="button" onclick="partnerLinksApp.editItem('${item.id}')" style="background-color: #f59e0b; padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" onclick="partnerLinksApp.deleteItem('${item.id}')" style="background-color: #ef4444; padding: 6px 10px;"><i class="fa-solid fa-trash"></i></button>
+                <span style="font-size: 0.95rem; font-weight: 600; position: relative; z-index: 2; margin-bottom: 8px; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">${item.title}</span>
+                <i class="fa-solid fa-arrow-right" style="font-size: 0.8rem; position: relative; z-index: 2; opacity: 0.9; text-shadow: 0 1px 4px rgba(0,0,0,0.8);"></i>
+
+                <div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 5px;">
+                    <button type="button" onclick="partnerLinksApp.editItem('${item.id}')" style="background-color: rgba(255,255,255,0.25); border: none; color: white; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);" title="Sửa" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.4)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.25)'"><i class="fa-solid fa-pen" style="font-size: 12px;"></i></button>
+                    <button type="button" onclick="partnerLinksApp.deleteItem('${item.id}')" style="background-color: rgba(239, 68, 68, 0.8); border: none; color: white; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Xóa" onmouseover="this.style.backgroundColor='rgba(239, 68, 68, 1)'" onmouseout="this.style.backgroundColor='rgba(239, 68, 68, 0.8)'"><i class="fa-solid fa-trash" style="font-size: 12px;"></i></button>
                 </div>
             `;
             listContainer.appendChild(div);
@@ -2953,60 +3142,7 @@ const partnerLinksApp = {
 
 const sidebarBannersApp = {
     banners: [],
-    iconLibrary: [
-        'fa-solid fa-house',
-        'fa-solid fa-user',
-        'fa-solid fa-envelope',
-        'fa-solid fa-phone',
-        'fa-solid fa-globe',
-        'fa-solid fa-location-dot',
-        'fa-solid fa-building',
-        'fa-solid fa-newspaper',
-        'fa-solid fa-scale-balanced',
-        'fa-solid fa-briefcase',
-        'fa-solid fa-graduation-cap',
-        'fa-solid fa-hospital',
-        'fa-solid fa-landmark',
-        'fa-solid fa-gavel',
-        'fa-solid fa-bullhorn',
-        'fa-solid fa-users',
-        'fa-solid fa-comments',
-        'fa-solid fa-magnifying-glass',
-        'fa-solid fa-circle-info',
-        'fa-solid fa-chart-line',
-        'fa-solid fa-file-lines',
-        'fa-solid fa-folder-open',
-        'fa-solid fa-pen-to-square',
-        'fa-solid fa-star',
-        'fa-solid fa-heart',
-        'fa-solid fa-check',
-        'fa-solid fa-shield-halved',
-        'fa-solid fa-gear',
-        'fa-brands fa-facebook',
-        'fa-brands fa-youtube',
-        'fa-brands fa-twitter',
-        'fa-brands fa-tiktok',
-        'fa-brands fa-instagram',
-        'fa-brands fa-linkedin',
-        'fa-brands fa-github',
-        'fa-brands fa-android',
-        'fa-brands fa-apple',
-        'fa-brands fa-windows',
-        'fa-solid fa-cloud',
-        'fa-solid fa-wifi',
-        'fa-solid fa-envelope-open-text',
-        'fa-solid fa-mug-hot',
-        'fa-solid fa-house-chimney',
-        'fa-solid fa-file-signature',
-        'fa-solid fa-sitemap',
-        'fa-solid fa-list-check',
-        'fa-solid fa-clipboard-list',
-        'fa-solid fa-file-invoice-dollar',
-        'fa-solid fa-cloud-sun-rain',
-        'fa-solid fa-seedling',
-        'fa-solid fa-coins',
-        'fa-solid fa-money-bill-transfer'
-    ],
+    iconLibrary: GLOBAL_ICON_LIBRARY,
     
     async init() {
         try {
@@ -3079,8 +3215,8 @@ const sidebarBannersApp = {
             if (item.style === 'image_right') {
                 previewHtml = `
                     <div style="width: 150px; height: 50px; border-radius: 8px; background-color: ${item.color}; display: flex; align-items: center; color: white; padding: 0 10px; position: relative; overflow: hidden;">
-                        <i class="${item.icon || 'fa-solid fa-star'}" style="margin-right: 8px; z-index: 2; font-size: 14px;"></i>
-                        <span style="position: relative; z-index: 2; font-size: 10px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
+                        <i class="${item.icon || 'fa-solid fa-star'}" style="margin-right: 8px; z-index: 2; font-size: 14px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>
+                        <span style="position: relative; z-index: 2; font-size: 10px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${item.title}</span>
                         ${item.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 60%; background-image: url(${item.bgImage}); background-size: cover; background-position: center left; mask-image: linear-gradient(to right, transparent 0%, black 50%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%); z-index: 1;"></div>` : ''}
                     </div>
                 `;
@@ -3088,8 +3224,8 @@ const sidebarBannersApp = {
                 previewHtml = `
                     <div style="width: 150px; height: 50px; border-radius: 8px; background-color: ${item.color}; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600; text-align: center; padding: 5px; position: relative; overflow: hidden;">
                         ${item.bgImage ? `<div style="position: absolute; inset: 0; background-image: url(${item.bgImage}); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
-                        ${item.icon ? `<i class="${item.icon}" style="margin-right: 5px; z-index: 2;"></i>` : ''}
-                        <span style="position: relative; z-index: 2;">${item.title}</span>
+                        ${item.icon ? `<i class="${item.icon}" style="margin-right: 5px; z-index: 2; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
+                        <span style="position: relative; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${item.title}</span>
                     </div>
                 `;
             }
@@ -3203,8 +3339,8 @@ const sidebarBannersApp = {
                 previewContainer.innerHTML = `
                     <div style="width: 100%; height: 100%; background-color: ${color}; display: flex; align-items: center; color: white; padding: 0 15px; position: absolute; inset: 0; box-sizing: border-box;">
                         <div style="display: flex; align-items: center; gap: 10px; z-index: 2; width: 30%;">
-                            ${icon ? `<i class="${icon}" style="font-size: 24px; flex-shrink: 0;"></i>` : ''}
-                            <span style="font-weight: 600; font-family: Inter; text-align: left; line-height: 1.3; font-size: 14px; word-wrap: break-word;">${title}</span>
+                            ${icon ? `<i class="${icon}" style="font-size: 24px; flex-shrink: 0; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
+                            <span style="font-weight: 600; font-family: Inter; text-align: left; line-height: 1.3; font-size: 14px; word-wrap: break-word; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${title}</span>
                         </div>
                         ${bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url(${bgImage}); background-size: cover; background-position: center right; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%); z-index: 1;"></div>` : ''}
                     </div>
@@ -3214,8 +3350,8 @@ const sidebarBannersApp = {
                     <div style="width: 100%; height: 100%; background-color: ${color}; display: flex; align-items: center; justify-content: center; color: white; padding: 15px; position: absolute; inset: 0;">
                         ${bgImage ? `<div style="position: absolute; inset: 0; background-image: url(${bgImage}); background-size: cover; background-position: center; opacity: ${bgOpacity}; z-index: 1;"></div>` : ''}
                         <div style="z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                            ${icon ? `<i class="${icon}" style="font-size: 24px;"></i>` : ''}
-                            <span style="font-weight: 600; font-family: Inter; text-align: center;">${title}</span>
+                            ${icon ? `<i class="${icon}" style="font-size: 24px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
+                            <span style="font-weight: 600; font-family: Inter; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${title}</span>
                         </div>
                     </div>
                 `;
@@ -3316,7 +3452,7 @@ function renderFeaturedNewsList() {
     }
     
     allNewsCache.forEach(post => {
-        const isChecked = featuredNewsSelections.includes(post.id);
+        const isChecked = featuredNewsSelections.some(id => id == post.id);
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="padding: 10px 15px; text-align: center; border-bottom: 1px solid #e2e8f0;">
@@ -3467,7 +3603,7 @@ const infoUtilityApp = {
                 linksHtml = '<ul style="list-style: none; padding: 0; margin: 0; margin-top: 10px;">' + group.links.map(link => `
                     <li style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #f1f5f9; background: white;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <i class="${link.icon || 'fa-solid fa-star'}" style="color: ${link.iconColor || '#333'}; font-size: 16px; width: 20px; text-align: center;"></i>
+                            ${link.logo ? `<img src="${link.logo}" style="width: 20px; height: 20px; object-fit: contain;">` : `<i class="${link.icon || 'fa-solid fa-star'}" style="color: ${link.iconColor || '#333'}; font-size: 16px; width: 20px; text-align: center;"></i>`}
                             <a href="${link.url}" target="_blank" style="text-decoration: none; color: #333; font-size: 14px;">${link.title}</a>
                         </div>
                         <div style="display: flex; gap: 5px;">
@@ -3576,6 +3712,9 @@ const infoUtilityApp = {
         document.getElementById('iu-link-url').value = '#';
         document.getElementById('iu-link-icon').value = 'fa-solid fa-star';
         document.getElementById('iu-link-iconColor').value = '#e74c3c';
+        document.getElementById('iu-link-logo').value = '';
+        document.getElementById('iu-link-logoPreview').src = '';
+        document.getElementById('iu-link-logoPreview').style.display = 'none';
         
         document.getElementById('iu-link-form-container').style.display = 'block';
         document.getElementById('iu-group-form-container').style.display = 'none';
@@ -3594,6 +3733,16 @@ const infoUtilityApp = {
         document.getElementById('iu-link-url').value = link.url;
         document.getElementById('iu-link-icon').value = link.icon || 'fa-solid fa-star';
         document.getElementById('iu-link-iconColor').value = link.iconColor || '#e74c3c';
+        document.getElementById('iu-link-logo').value = link.logo || '';
+        
+        const logoPreview = document.getElementById('iu-link-logoPreview');
+        if (link.logo) {
+            logoPreview.src = link.logo;
+            logoPreview.style.display = 'block';
+        } else {
+            logoPreview.src = '';
+            logoPreview.style.display = 'none';
+        }
         
         document.getElementById('iu-link-form-container').style.display = 'block';
         document.getElementById('iu-group-form-container').style.display = 'none';
@@ -3617,6 +3766,7 @@ const infoUtilityApp = {
         const url = document.getElementById('iu-link-url').value || '#';
         const icon = document.getElementById('iu-link-icon').value;
         const iconColor = document.getElementById('iu-link-iconColor').value;
+        const logo = document.getElementById('iu-link-logo').value;
 
         const group = this.groups.find(x => x.id === groupId);
         if (group) {
@@ -3624,7 +3774,7 @@ const infoUtilityApp = {
                 const linkId = parseInt(linkIdVal);
                 const lIdx = group.links.findIndex(x => x.id === linkId);
                 if (lIdx >= 0) {
-                    group.links[lIdx] = { ...group.links[lIdx], title, url, icon, iconColor };
+                    group.links[lIdx] = { ...group.links[lIdx], title, url, icon, iconColor, logo };
                 }
             } else {
                 group.links.push({
@@ -3632,7 +3782,8 @@ const infoUtilityApp = {
                     title,
                     url,
                     icon,
-                    iconColor
+                    iconColor,
+                    logo
                 });
             }
             this.renderList();
@@ -3783,7 +3934,7 @@ async function renderThemesAndPresets() {
                  onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)';"
                  onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
                 <div style="height: 100px; background: ${theme.gradient}; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid ${theme.icon}" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
+                    <i class="fa-solid ${theme.icon}" style="font-size: 40px; color: ${theme.id === 'national_day' ? '#ffff00' : 'rgba(255,255,255,0.9)'};"></i>
                 </div>
                 <div style="padding: 20px;">
                     <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e293b; font-weight: 700;">${theme.name}</h3>

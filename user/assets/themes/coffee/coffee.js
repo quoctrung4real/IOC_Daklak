@@ -10,9 +10,15 @@
         
         // Hạt cà phê SVG
         bean.innerHTML = `
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="#78350f"/>
-                <path d="M7 12C8 9 12 7 16 9C17.5 9.75 18 12 16.5 13.5C14.5 15.5 10.5 16.5 8 15C6.5 14.1 6 13.5 7 12Z" fill="#451a03"/>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g transform="rotate(-20 12 12)">
+                    <!-- Left half (Darker) -->
+                    <path d="M12 1 C7 1, 3 6, 3 12 C3 18, 7 23, 12 23 C17 17, 7 7, 12 1 Z" fill="#4a2e1b"/>
+                    <!-- Right half (Lighter) -->
+                    <path d="M12 1 C7 7, 17 17, 12 23 C17 23, 21 18, 21 12 C21 6, 17 1, 12 1 Z" fill="#68422a"/>
+                    <!-- Crease shadow -->
+                    <path d="M12 1 C7 7, 17 17, 12 23" stroke="#1f110a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </g>
             </svg>
         `;
         
@@ -72,12 +78,26 @@
 
             <!-- Harness and Rope (drawn over elephant) -->
             <g class="harness-rope">
-                <!-- Harness band around chest/body -->
-                <path d="M30 45 C45 35, 75 40, 90 55" stroke="#dc2626" stroke-width="3" fill="none"/>
-                <!-- Vertical strap -->
-                <path d="M60 40 L65 75" stroke="#dc2626" stroke-width="3" fill="none"/>
-                <!-- Tow Rope -->
-                <path d="M65 60 C 90 85, 115 85, 135 78" stroke="#dc2626" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <!-- Leather Back Pad -->
+                <path d="M50 22 C65 18, 75 22, 85 32 L80 40 C70 30, 55 26, 45 32 Z" fill="#8b4513" stroke="#5c2e0b" stroke-width="1"/>
+                
+                <!-- Main Harness Straps (Milky White / Off-white) -->
+                <!-- Neck/Chest strap -->
+                <path d="M28 42 C40 38, 55 35, 60 40" stroke="#f3f4f6" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <path d="M28 42 C40 38, 55 35, 60 40" stroke="#d1d5db" stroke-width="1" fill="none"/>
+                
+                <!-- Girth strap (Belly) -->
+                <path d="M60 40 L65 75" stroke="#f3f4f6" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <path d="M60 40 L65 75" stroke="#d1d5db" stroke-width="1" fill="none"/>
+
+                <!-- Harness Ring (where straps and rope meet) -->
+                <circle cx="63" cy="55" r="4" fill="none" stroke="#9ca3af" stroke-width="2.5"/>
+
+                <!-- Tow Rope (Thick twisted rope effect - Milky White) -->
+                <path d="M67 55 C 90 75, 115 82, 135 78" stroke="#f3f4f6" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <path d="M67 55 C 90 75, 115 82, 135 78" stroke="#d1d5db" stroke-width="5" fill="none" stroke-dasharray="5,3" stroke-linecap="round"/>
+                <!-- Rope core line for realism -->
+                <path d="M67 55 C 90 75, 115 82, 135 78" stroke="#9ca3af" stroke-width="1" fill="none" stroke-dasharray="2,6"/>
             </g>
 
             <!-- Coffee Cart -->
@@ -146,5 +166,30 @@
 
     // Sau đó lặp lại mỗi 20s
     setInterval(walkElephant, 20000);
+
+    // OVERRIDE WELCOME BANNER TEXT
+    const updateWelcomeText = () => {
+        const track = document.querySelector('.welcome-track');
+        if (track && track.dataset.theme !== 'coffee') {
+            track.dataset.theme = 'coffee';
+            const text = "Chào mừng ngày Lễ hội cà phê Buôn Ma Thuột - Coffe Festival";
+            let html = '';
+            for (let i = 0; i < 4; i++) {
+                html += `<span>${text}</span>`;
+                if (i < 3) html += `<span style="display: inline-block; margin: 0 20px; vertical-align: middle;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="rotate(-20 12 12)">
+                            <path d="M12 1 C7 1, 3 6, 3 12 C3 18, 7 23, 12 23 C17 17, 7 7, 12 1 Z" fill="#4a2e1b"/>
+                            <path d="M12 1 C7 7, 17 17, 12 23 C17 23, 21 18, 21 12 C21 6, 17 1, 12 1 Z" fill="#68422a"/>
+                            <path d="M12 1 C7 7, 17 17, 12 23" stroke="#1f110a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        </g>
+                    </svg>
+                </span>`;
+            }
+            track.innerHTML = html;
+        }
+    };
+    updateWelcomeText();
+    setInterval(updateWelcomeText, 500);
 
 })();

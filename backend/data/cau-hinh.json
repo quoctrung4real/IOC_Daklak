@@ -171,18 +171,26 @@
     }
   ],
   "featuredNewsIds": [
-    "1783997362554"
+    "1783997362554",
+    "thong_bao_test_4",
+    "thong_bao_test_3",
+    "thong_bao_test_2"
   ],
   "multimediaBgColor": "#0a59ab",
   "multimediaPriorityVideoId": "1784634640218",
   "multimediaSecondaryVideoIds": [
     "111",
-    "222"
+    "222",
+    1784634640218
   ],
   "multimediaPriorityImageId": "1784637216428",
   "multimediaPriorityInfographicId": "1784637217428",
-  "multimediaSecondaryImageIds": [],
-  "multimediaSecondaryInfographicIds": [],
+  "multimediaSecondaryImageIds": [
+    1784637216428
+  ],
+  "multimediaSecondaryInfographicIds": [
+    1784637217428
+  ],
   "externalLinks": [
     {
       "id": "ext2",
@@ -267,6 +275,158 @@
       "color1": "#1a5276",
       "color2": "#2980b9",
       "icon": "fa-solid fa-microchip"
+    }
+  ],
+  "infoUtilityConfig": [
+    {
+      "id": 1,
+      "title": "TH\u00D4NG TIN TUY\u00CAN TRUY\u1EC0N",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 101,
+          "title": "C\u1ED5ng d\u1ECBch v\u1EE5 c\u00F4ng qu\u1ED1c gia",
+          "url": "https://dichvucong.gov.vn/",
+          "icon": "fa-solid fa-star",
+          "iconColor": "#e74c3c"
+        },
+        {
+          "id": 102,
+          "title": "Ph\u1EA3n \u00E1nh, ki\u1EBFn ngh\u1ECB v\u0103n b\u1EA3n QPPL",
+          "url": "#",
+          "icon": "fa-solid fa-folder-open",
+          "iconColor": "#f39c12"
+        },
+        {
+          "id": 103,
+          "title": "C\u00F4ng b\u00E1o \u0111i\u1EC7n t\u1EED",
+          "url": "#",
+          "icon": "fa-solid fa-newspaper",
+          "iconColor": "#3498db"
+        },
+        {
+          "id": 104,
+          "title": "L\u1EC5 h\u1ED9i c\u00E0 ph\u00EA Bu\u00F4n Ma Thu\u1ED9t",
+          "url": "#",
+          "icon": "fa-solid fa-mug-hot",
+          "iconColor": "#8e44ad"
+        },
+        {
+          "id": 105,
+          "title": "N\u00F4ng th\u00F4n m\u1EDBi",
+          "url": "#",
+          "icon": "fa-solid fa-house-chimney",
+          "iconColor": "#2ecc71"
+        },
+        {
+          "id": 106,
+          "title": "C\u1EA3i c\u00E1ch th\u1EE7 t\u1EE5c h\u00E0nh ch\u00EDnh",
+          "url": "#",
+          "icon": "fa-solid fa-file-signature",
+          "iconColor": "#f1c40f"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "TH\u00D4NG TIN TRA C\u1EE8U",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 201,
+          "title": "C\u01A1 c\u1EA5u t\u1ED5 ch\u1EE9c",
+          "url": "#",
+          "icon": "fa-solid fa-sitemap",
+          "iconColor": "#27ae60"
+        },
+        {
+          "id": 202,
+          "title": "Danh s\u00E1ch t\u00E0i li\u1EC7u tham kh\u1EA3o",
+          "url": "#",
+          "icon": "fa-solid fa-list-check",
+          "iconColor": "#2980b9"
+        },
+        {
+          "id": 203,
+          "title": "Ti\u1EBFp nh\u1EADn \u1EE9ng c\u1EE9u s\u1EF1 c\u1ED1 an to\u00E0n th\u00F4ng tin m\u1EA1ng",
+          "url": "#",
+          "icon": "fa-solid fa-shield-halved",
+          "iconColor": "#e67e22"
+        },
+        {
+          "id": 204,
+          "title": "Danh s\u00E1ch bi\u1EC3u m\u1EABu h\u00E0nh ch\u00EDnh",
+          "url": "#",
+          "icon": "fa-solid fa-file-lines",
+          "iconColor": "#16a085"
+        },
+        {
+          "id": 205,
+          "title": "D\u1EF1 th\u1EA3o v\u0103n b\u1EA3n",
+          "url": "#",
+          "icon": "fa-solid fa-file-pen",
+          "iconColor": "#d35400"
+        },
+        {
+          "id": 206,
+          "title": "C\u00F4ng khai ng\u00E2n s\u00E1ch nh\u00E0 n\u01B0\u1EDBc",
+          "url": "#",
+          "icon": "fa-solid fa-sack-dollar",
+          "iconColor": "#c0392b"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "TIN C\u1EA6N BI\u1EBET",
+      "bgColor": "",
+      "bgImage": "",
+      "links": [
+        {
+          "id": 301,
+          "title": "D\u1EF0 B\u00C1O TH\u1EDCI TI\u1EBFT",
+          "url": "#",
+          "icon": "fa-solid fa-cloud-sun-rain",
+          "iconColor": "#f1c40f"
+        },
+        {
+          "id": 302,
+          "title": "GI\u00C1 C\u00C0 PH\u00CA",
+          "url": "#",
+          "icon": "fa-solid fa-mug-hot",
+          "iconColor": "#f1c40f"
+        },
+        {
+          "id": 303,
+          "title": "GI\u00C1 TI\u00CAU",
+          "url": "#",
+          "icon": "fa-solid fa-seedling",
+          "iconColor": "#f1c40f"
+        },
+        {
+          "id": 304,
+          "title": "T\u1EF6 GI\u00C1 V\u00C0NG",
+          "url": "#",
+          "icon": "fa-solid fa-coins",
+          "iconColor": "#f1c40f"
+        },
+        {
+          "id": 305,
+          "title": "T\u1EF6 GI\u00C1 NGO\u1EA0I T\u1EC6",
+          "url": "#",
+          "icon": "fa-solid fa-money-bill-transfer",
+          "iconColor": "#f1c40f"
+        },
+        {
+          "id": 306,
+          "title": "CH\u1EE8NG KHO\u00C1N",
+          "url": "#",
+          "icon": "fa-solid fa-chart-line",
+          "iconColor": "#f1c40f"
+        }
+      ]
     }
   ]
 }

@@ -98,9 +98,9 @@ body {
 
 .coffee-elephant {
     position: fixed;
-    bottom: 20px;
+    bottom: -15px;
     right: -300px; /* Fully hidden off screen */
-    z-index: 100;
+    z-index: 50;
     pointer-events: none;
     filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
 }
@@ -225,4 +225,17 @@ body {
 }
 .sidebar-accordion .accordion-content a {
     color: var(--coffee-dark) !important;
+}
+
+/* Sync tech solutions with theme */
+.solution-content h3 { color: var(--coffee-dark) !important; }
+.solution-content a.solution-link { color: var(--coffee-accent) !important; }
+.solution-content a.solution-link svg path { stroke: var(--coffee-accent) !important; }
+
+/* Update info utility boxes for coffee theme */
+.iu-card-blue {
+    background-color: var(--coffee-primary) !important;
+}
+.iu-card-gradient {
+    background: linear-gradient(to bottom, var(--coffee-dark), var(--coffee-accent)) !important;
 }
