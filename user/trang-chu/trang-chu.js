@@ -1640,7 +1640,13 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
             } else {
                 // Render as popover
                 html += `
-                    <div class="bento-card bento-card-dropdown" tabindex="0" style="${startNewRowStyle}">
+                    <div class="bento-card bento-card-dropdown" tabindex="0" style="${startNewRowStyle}" onclick="
+                        // Đóng tất cả các menu khác
+                        document.querySelectorAll('.bento-card-dropdown.active').forEach(el => {
+                            if(el !== this) el.classList.remove('active');
+                        });
+                        this.classList.toggle('active');
+                    ">
                         <div class="bento-icon" style="background: ${agColor}15; color: ${agColor};">
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
@@ -1648,7 +1654,7 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
                         ${linksHtml ? `<i class="fa-solid fa-chevron-down bento-chevron"></i>` : ''}
                         
                         ${linksHtml ? `
-                        <div class="bento-popover">
+                        <div class="bento-popover" onclick="event.stopPropagation()">
                             <div class="bento-popover-content">
                                 ${linksHtml}
                             </div>
@@ -1662,3 +1668,12 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
 
     grid.innerHTML = html;
 }
+
+// Global click listener to close Bento Grid dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.bento-card-dropdown')) {
+        document.querySelectorAll('.bento-card-dropdown.active').forEach(el => {
+            el.classList.remove('active');
+        });
+    }
+});

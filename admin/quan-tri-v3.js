@@ -2642,7 +2642,7 @@ function updateAgencyLinksPreview() {
                     <i class="fa-solid fa-building-columns"></i>
                 </div>
                 <span style="font-weight: 600; font-size: 13px; color: #1e293b; line-height: 1.3;">${group.title}</span>
-                <i class="fa-solid fa-chevron-down" style="position: absolute; bottom: 8px; color: #94a3b8; font-size: 10px;"></i>
+                <i class="fa-solid fa-chevron-down" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 10px;"></i>
                 
                 <div style="margin-top: 15px; width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px; text-align: left; display: none;">
                     ${linksHtml}

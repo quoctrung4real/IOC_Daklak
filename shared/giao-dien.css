@@ -2787,7 +2787,9 @@ body.is-sticky .nav-wrapper {
 
 .bento-chevron {
     position: absolute;
-    bottom: 10px;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
     color: #94a3b8;
     font-size: 10px;
     transition: transform 0.3s;
@@ -2851,16 +2853,14 @@ body.is-sticky .nav-wrapper {
     color: var(--primary);
 }
 
-.bento-card-dropdown:focus .bento-popover,
 .bento-card-dropdown.active .bento-popover {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
 }
 
-.bento-card-dropdown:focus .bento-chevron,
 .bento-card-dropdown.active .bento-chevron {
-    transform: rotate(180deg);
+    transform: translateX(-50%) rotate(180deg);
 }
 
 @media (max-width: 1024px) {
