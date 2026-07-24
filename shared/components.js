@@ -135,39 +135,25 @@ const commonComponents = {
                             </ul>
                         </li>
                     </ul>
-                    
-                    <div style="position: relative; margin-left: auto; display: flex; align-items: center;">
-                        <button class="search-btn" id="searchBtn" style="margin-left: 0;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21 21-4.34-4.34" />
-                                <circle cx="11" cy="11" r="8" />
-                            </svg>
-                        </button>
-                        <div class="search-form" id="searchForm">
-                            <form action="${window.BASE_URL || '../../'}user/tim-kiem/tim-kiem.html" method="GET">
-                                <input type="text" name="q" placeholder="Nhập tìm kiếm..." required
-                                    oninvalid="this.setCustomValidity('Vui lòng nhập từ khóa tìm kiếm')"
-                                    oninput="this.setCustomValidity('')" autocomplete="off">
-                                <button type="submit">
-                                    <svg style="pointer-events: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <path d="m21 21-4.34-4.34" />
-                                    </svg>
-                                </button>
-                                <button type="button" class="close-search" id="closeSearch">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M18 6 6 18" />
-                                        <path d="m6 6 12 12" />
-                                    </svg>
-                                </button>
-                            </form>
-                            <div class="live-search-results" id="liveSearchResults"></div>
-                        </div>
+                    <div class="modern-search-wrapper" style="margin-left: auto; display: flex; align-items: center; position: relative;">
+                        <form class="modern-search-form collapsed" id="searchForm" action="${window.BASE_URL || '../../'}user/tim-kiem/tim-kiem.html" method="GET">
+                            <div class="search-icon" id="searchToggleBtn" title="Tìm kiếm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.34-4.34"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="q" id="modernSearchInput" placeholder="Nhập từ khóa tìm kiếm..." required
+                                oninvalid="this.setCustomValidity('Vui lòng nhập từ khóa tìm kiếm')"
+                                oninput="this.setCustomValidity('')" autocomplete="off">
+                            <div class="close-search-btn" id="closeSearchBtn" title="Đóng">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18"></path>
+                                    <path d="m6 6 12 12"></path>
+                                </svg>
+                            </div>
+                        </form>
+                        <div class="live-search-results" id="liveSearchResults"></div>
                     </div>
                     <div class="lang-switcher" id="langSwitcher" style="margin-left: 15px; position: relative;">
                         <button id="langBtn" title="Chuyển đổi ngôn ngữ" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s;">
@@ -440,27 +426,44 @@ const commonComponents = {
         }
     }
     
-    // 4.5. Khởi tạo chức năng tìm kiếm chung
-    const searchBtn = document.getElementById('searchBtn');
+    // 4.5. Khởi tạo chức năng tìm kiếm chung (Modern Inline Search)
     const searchForm = document.getElementById('searchForm');
-    const closeSearch = document.getElementById('closeSearch');
-    const navList = document.querySelector('.nav-list');
     
-    if (searchBtn && searchForm) {
-        searchBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            searchForm.classList.add('active');
-            if (navList) navList.classList.add('search-active');
-            const navSmallLogo = document.querySelector('.nav-small-logo');
-            if (navSmallLogo) navSmallLogo.classList.add('search-active');
-            const input = searchForm.querySelector('input');
-            if (input) setTimeout(() => input.focus(), 50);
-        });
+    if (searchForm) {
+        const searchInput = document.getElementById('modernSearchInput');
+        const liveResultsBox = document.getElementById('liveSearchResults');
+        const toggleBtn = document.getElementById('searchToggleBtn');
+        const closeBtn = document.getElementById('closeSearchBtn');
 
-    
-        const searchInput = searchForm.querySelector('input');
-        const submitBtn = searchForm.querySelector('button[type="submit"]');
-        const liveResultsBox = searchForm.querySelector('#liveSearchResults');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                if (searchForm.classList.contains('collapsed')) {
+                    searchForm.classList.remove('collapsed');
+                    if (searchInput) searchInput.focus();
+                } else {
+                    // Nếu đã mở, click vào icon sẽ thực hiện search
+                    executeSearch();
+                }
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                searchForm.classList.add('collapsed');
+                if (searchInput) searchInput.value = '';
+                if (liveResultsBox) liveResultsBox.classList.remove('active');
+            });
+        }
+
+        // Shortcut Cmd+K / Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchForm.classList.remove('collapsed');
+                if (searchInput) searchInput.focus();
+            }
+        });
 
         const executeSearch = (e) => {
             if (e) e.preventDefault();
@@ -472,19 +475,11 @@ const commonComponents = {
                 searchInput.focus();
             }
         };
-
-        if (submitBtn) {
-            submitBtn.addEventListener('click', executeSearch);
-        }
         
+        searchForm.addEventListener('submit', executeSearch);
+
         let searchTimeout;
         if (searchInput) {
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    executeSearch(e);
-                }
-            });
-            
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
                 
@@ -541,37 +536,16 @@ const commonComponents = {
             });
         }
         
-        const formEl = searchForm.querySelector('form');
-        if (formEl) {
-            formEl.addEventListener('submit', executeSearch);
-        }
-
         // Đóng khi click ra ngoài
         document.addEventListener('click', (e) => {
-            if (liveResultsBox && liveResultsBox.classList.contains('active')) {
-                if (!searchForm.contains(e.target)) {
+            if (!searchForm.contains(e.target)) {
+                if (liveResultsBox && liveResultsBox.classList.contains('active')) {
                     liveResultsBox.classList.remove('active');
                 }
-            }
-            if (searchForm.classList.contains('active')) {
-                if (!searchForm.contains(e.target) && !searchBtn.contains(e.target)) {
-                    searchForm.classList.remove('active');
-                    if (navList) navList.classList.remove('search-active');
-                    const navSmallLogo = document.querySelector('.nav-small-logo');
-                    if (navSmallLogo) navSmallLogo.classList.remove('search-active');
-                    if (liveResultsBox) liveResultsBox.classList.remove('active');
+                if (!searchForm.classList.contains('collapsed')) {
+                    searchForm.classList.add('collapsed');
                 }
             }
-        });
-    }
-    
-    if (closeSearch && searchForm) {
-        closeSearch.addEventListener('click', (e) => {
-            e.stopPropagation();
-            searchForm.classList.remove('active');
-            if (navList) navList.classList.remove('search-active');
-            const navSmallLogo = document.querySelector('.nav-small-logo');
-            if (navSmallLogo) navSmallLogo.classList.remove('search-active');
         });
     }
 

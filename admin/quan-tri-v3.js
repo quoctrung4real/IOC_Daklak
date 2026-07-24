@@ -275,6 +275,26 @@ async function loadConfig() {
                 }
             });
 
+            // Add a helper to show file name preview
+            const showFileName = (inputId, text) => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    let namePreview = input.nextElementSibling;
+                    if (!namePreview || !namePreview.classList.contains('file-name-preview')) {
+                        namePreview = document.createElement('div');
+                        namePreview.className = 'file-name-preview';
+                        namePreview.style.fontSize = '13px';
+                        namePreview.style.color = '#10b981';
+                        namePreview.style.marginTop = '6px';
+                        namePreview.style.fontStyle = 'italic';
+                        namePreview.style.fontWeight = '500';
+                        input.parentNode.insertBefore(namePreview, input.nextSibling);
+                    }
+                    namePreview.innerHTML = '<i class="fa-solid fa-image"></i> Đã tải lên: ' + text;
+                    namePreview.style.display = 'block';
+                }
+            };
+
             // Specific previews
             if(config.heroImageUrl) {
                 const preview = document.getElementById('heroImagePreview');
@@ -284,6 +304,25 @@ async function loadConfig() {
                     preview.style.display = 'block';
                     placeholder.style.display = 'none';
                 }
+            }
+            if (config.logoUrl) {
+                const preview = document.getElementById('logoPreview');
+                if (preview) {
+                    preview.src = config.logoUrl;
+                    preview.style.display = 'block';
+                }
+                showFileName('logoImage', 'Logo hiện tại');
+            }
+            if (config.faviconUrl) {
+                const preview = document.getElementById('faviconPreview');
+                if (preview) {
+                    preview.src = config.faviconUrl;
+                    preview.style.display = 'block';
+                }
+                showFileName('faviconImage', 'Favicon hiện tại');
+            }
+            if (config.bannerUrl) {
+                showFileName('bannerImage', 'Banner hiện tại');
             }
 
             if (typeof updateWelcomeBannerPreview === 'function') updateWelcomeBannerPreview();
@@ -1190,6 +1229,7 @@ function updateHeaderPreview() {
     const mainText = document.getElementById('headerTextMainPreview');
     const subText = document.getElementById('headerTextSubPreview');
     const bgPreview = document.getElementById('headerBannerBgPreview');
+    const logoPreviewContainer = document.getElementById('headerLogoPreviewContainer');
     
     if (mainText) {
         mainText.textContent = document.getElementById('headerTextMain')?.value || '';
@@ -1207,6 +1247,14 @@ function updateHeaderPreview() {
             bgPreview.style.backgroundImage = `url('${bannerUrl}')`;
         } else {
             bgPreview.style.backgroundImage = '';
+        }
+    }
+    if (logoPreviewContainer) {
+        const logoUrl = document.getElementById('logoUrl')?.value;
+        if (logoUrl) {
+            logoPreviewContainer.innerHTML = `<img src="${logoUrl}" style="height: 60px; width: auto;">`;
+        } else {
+            logoPreviewContainer.innerHTML = `<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" /><circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></svg>`;
         }
     }
 }
@@ -1238,17 +1286,19 @@ function updateWelcomeBannerPreview() {
     const textColor = document.getElementById('welcomeTextColor')?.value;
     
     if(preview && bgColor) {
-        if (bgColor.toLowerCase() === '#1322bc') {
-            preview.style.background = '';
-        } else {
-            preview.style.background = bgColor;
-        }
-    } else if (preview) {
-        preview.style.background = '';
+        preview.style.backgroundColor = bgColor;
     }
     
     if(track) {
-        if (text !== undefined) track.innerHTML = text.replace(/★/g, '<i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: #f1592b;"></i>');
+        if (text !== undefined) {
+            // Ticker cần lặp lại nội dung để chạy liên tục
+            const formattedText = text.replace(/★/g, '<i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: #f1592b;"></i>');
+            track.innerHTML = `
+                <span>${formattedText}</span>
+                <i class="fa-solid fa-star" style="margin: 0 15px; font-size: 0.8em; color: transparent;"></i>
+                <span>${formattedText}</span>
+            `;
+        }
         if (textColor) track.style.color = textColor;
     }
 }

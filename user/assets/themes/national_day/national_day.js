@@ -39,4 +39,19 @@
     flagContainer.appendChild(flag);
     document.body.appendChild(flagContainer);
 
+    // 3. TẠO SVG FILTER CHO HIỆU ỨNG LÁ CỜ PHẤP PHỚI LƯỢN SÓNG
+    const svgFilter = document.createElement('div');
+    svgFilter.style.display = 'none';
+    svgFilter.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <filter id="wave-filter">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015 0.03" numOctaves="2" result="noise">
+                    <animate attributeName="baseFrequency" values="0.015 0.03; 0.025 0.06; 0.015 0.03" dur="2.5s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </svg>
+    `;
+    document.body.appendChild(svgFilter);
+
 })();

@@ -110,10 +110,10 @@ body {
     background: #da251d;
     position: relative;
     transform-origin: left center;
-    /* Soft 3D motion + realistic edge rippling */
+    /* Organic waving via SVG displacement filter */
+    filter: url('#wave-filter');
     animation: 
-        realisticWave 3s ease-in-out infinite alternate,
-        waveEdge 1.5s ease-in-out infinite;
+        realisticWave 4s ease-in-out infinite alternate;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
 }
 
@@ -137,15 +137,9 @@ body {
     z-index: 2;
 }
 
-@keyframes waveEdge {
-    0% { clip-path: polygon(0 0, 25% 4%, 50% 0, 75% 4%, 100% 0, 100% 96%, 75% 100%, 50% 96%, 25% 100%, 0 96%); }
-    50% { clip-path: polygon(0 4%, 25% 0, 50% 4%, 75% 0, 100% 4%, 100% 100%, 75% 96%, 50% 100%, 25% 96%, 0 100%); }
-    100% { clip-path: polygon(0 0, 25% 4%, 50% 0, 75% 4%, 100% 0, 100% 96%, 75% 100%, 50% 96%, 25% 100%, 0 96%); }
-}
-
 @keyframes realisticWave {
-    0% { transform: perspective(600px) rotateY(-5deg) rotateX(2deg) skewY(-1deg); }
-    100% { transform: perspective(600px) rotateY(15deg) rotateX(-2deg) skewY(1deg); }
+    0% { transform: perspective(800px) rotateY(-5deg) rotateX(2deg) skewY(-1deg); }
+    100% { transform: perspective(800px) rotateY(10deg) rotateX(-1deg) skewY(1deg); }
 }
 
 @keyframes flagShadow {
