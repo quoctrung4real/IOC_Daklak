@@ -210,7 +210,7 @@ function buildDownloadLink(doc) {
 
     const serverFile = doc.fileUrl.split('/').pop();
     const displayName = doc.originalFileName || serverFile;
-    return `<a href="${BACKEND_ORIGIN}/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank" class="download-btn"><i class="fa-solid fa-download"></i> Tải tập tin</a>`;
+     return `<a href="${window.location.origin}/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank" class="download-btn"><i class="fa-solid fa-download"></i> Tải tập tin</a>`;
 }
 
 function setText(id, value) {
