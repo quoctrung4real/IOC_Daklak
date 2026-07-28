@@ -29,8 +29,36 @@ async function fetchAndRenderDocuments() {
 
     if (type && titleMap[type]) {
         const titleEl = document.querySelector('.page-title');
-        if (titleEl) titleEl.textContent = titleMap[type];
+        if (titleEl) titleEl.textContent = titleMap[type].toUpperCase();
         document.title = `${titleMap[type]} - DakLakIOC`;
+
+        const breadcrumbContainer = document.getElementById('breadcrumb-container');
+        const level1 = document.getElementById('breadcrumb-level-1');
+        if (breadcrumbContainer && level1) {
+            level1.innerHTML = `<a href="../../user/van-ban/van-ban.html" style="color: #475569; text-decoration: none;">Văn bản</a>`;
+            
+            const separator1 = document.createElement('i');
+            separator1.className = 'fa-solid fa-caret-right';
+            separator1.style.fontSize = '12px';
+            separator1.style.color = '#94a3b8';
+            
+            const level2 = document.createElement('span');
+            level2.innerText = 'Văn bản Trung tâm IOC';
+            
+            const separator2 = document.createElement('i');
+            separator2.className = 'fa-solid fa-caret-right';
+            separator2.style.fontSize = '12px';
+            separator2.style.color = '#94a3b8';
+            
+            const level3 = document.createElement('span');
+            level3.style.color = '#475569';
+            level3.innerText = titleMap[type];
+            
+            breadcrumbContainer.appendChild(separator1);
+            breadcrumbContainer.appendChild(level2);
+            breadcrumbContainer.appendChild(separator2);
+            breadcrumbContainer.appendChild(level3);
+        }
     }
 
     try {
@@ -43,7 +71,7 @@ async function fetchAndRenderDocuments() {
         if (!documents || documents.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center" style="padding: 30px;">Chưa có văn bản nào.</td>
+                    <td colspan="6" class="text-center" style="padding: 30px;">Chưa có văn bản nào.</td>
                 </tr>
             `;
             return;
@@ -57,6 +85,7 @@ async function fetchAndRenderDocuments() {
                 <td class="text-center">${index + 1}</td>
                 <td>${escapeHtml(doc.documentNumber || '')}</td>
                 <td class="text-center">${escapeHtml(doc.publishedAt || '')}</td>
+                <td>${escapeHtml(doc.typeName || doc.typeCode || 'Đang cập nhật')}</td>
                 <td>
                     <button type="button" class="detail-btn" data-doc-id="${doc.id}">
                         ${escapeHtml(doc.title || '')}

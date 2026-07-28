@@ -84,8 +84,7 @@ const commonComponents = {
                             <a href="#">Văn bản <i class="fa-solid fa-angle-down"></i></a>
                             <ul class="dropdown">
                                 <li class="dropdown-submenu">
-                                    <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html">Văn bản Trung tâm IOC <i class="fa-solid fa-angle-right"
-                                            style="float: right; margin-top: 4px;"></i></a>
+                                    <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html"><span>Văn bản Trung tâm IOC</span> <i class="fa-solid fa-angle-right"></i></a>
                                     <ul class="dropdown">
                                         <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=cong-van">Công văn</a></li>
                                         <li><a href="${window.BASE_URL || ''}user/van-ban/van-ban.html?type=bao-cao">Báo cáo</a></li>
@@ -110,8 +109,7 @@ const commonComponents = {
                                 <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Lấy ý kiến người dân</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/so-khcn.html">Văn bản dự thảo Sở KHCN</a></li>
                                 <li class="dropdown-submenu">
-                                    <a href="${window.BASE_URL || ''}user/y-kien-du-thao/tt-ioc.html">Văn bản dự thảo Trung tâm IOC <i class="fa-solid fa-angle-right"
-                                            style="float: right; margin-top: 4px;"></i></a>
+                                    <a href="${window.BASE_URL || ''}user/y-kien-du-thao/tt-ioc.html"><span>Văn bản dự thảo Trung tâm IOC</span> <i class="fa-solid fa-angle-right"></i></a>
                                     <ul class="dropdown">
                                         <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/tt-ioc.html?category=Báo cáo">Báo cáo</a></li>
                                         <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/tt-ioc.html?category=Công văn">Công văn</a></li>
@@ -661,6 +659,167 @@ const commonComponents = {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+    // Ngăn cuộn trang chính khi cuộn chuột trong các menu dropdown (gắn trực tiếp vào từng dropdown)
+    document.querySelectorAll('.dropdown').forEach(function(dropdown) {
+        dropdown.addEventListener('wheel', function(e) {
+            if (window.innerWidth <= 768) return;
+            
+            // Chỉ chặn khi dropdown đang thực sự có thanh cuộn
+            const isScrollable = dropdown.scrollHeight > dropdown.clientHeight;
+            if (isScrollable) {
+                const atTop = dropdown.scrollTop === 0 && e.deltaY < 0;
+                const atBottom = dropdown.scrollTop + dropdown.clientHeight >= dropdown.scrollHeight && e.deltaY > 0;
+                
+                if (atTop || atBottom) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+    });
+
+    // Handle dynamic max-height for main dropdowns to prevent unnecessary scrollbars
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            const dropdown = item.querySelector(':scope > .dropdown');
+            if (!dropdown) return;
+            
+            dropdown.style.maxHeight = 'none';
+            dropdown.style.overflowY = 'hidden';
+            
+            const rect = item.getBoundingClientRect();
+            // Available height from the bottom of the nav item to the bottom of the window
+            const availableHeight = window.innerHeight - rect.bottom - 20; 
+            
+            if (dropdown.offsetHeight > availableHeight && availableHeight > 100) {
+                dropdown.style.maxHeight = availableHeight + 'px';
+                dropdown.style.overflowY = 'auto';
+            }
+        });
+    });
+
+    // 4.8. Xử lý Submenu bị tràn mép phải màn hình và khắc phục lỗi Safari cắt xén (clip)
+    document.querySelectorAll('.dropdown-submenu').forEach(function(item) {
+        const dropdown = item.querySelector(':scope > .dropdown'); // Chỉ lấy dropdown trực tiếp
+        if (!dropdown) return;
+        
+        const parentNavItem = item.closest('.nav-item.has-dropdown');
+        let timeout;
+        
+        const showDropdown = function() {
+            clearTimeout(timeout);
+            
+            if (dropdown.parentNode !== document.body) {
+                document.body.appendChild(dropdown);
+                dropdown.classList.add('dropdown-detached');
+            }
+            
+            // Giữ hiệu ứng hover cho menu cha bằng class keep-open
+            item.classList.add('keep-open');
+            if (parentNavItem) parentNavItem.classList.add('keep-open');
+
+            const rect = item.getBoundingClientRect();
+            
+            // Xóa inline style (để CSS class .show đảm nhiệm)
+            dropdown.style.opacity = '';
+            dropdown.style.visibility = '';
+            dropdown.style.pointerEvents = '';
+            
+            // Lấy kích thước của menu cha để canh lề chính xác (tránh lỗi li bị co kích thước)
+            let baseRight = rect.right;
+            let baseLeft = rect.left;
+            const parentDropdownForPos = item.closest('.dropdown');
+            if (parentDropdownForPos) {
+                const pRect = parentDropdownForPos.getBoundingClientRect();
+                baseRight = pRect.right;
+                baseLeft = pRect.left;
+            }
+
+            // Tính toán vị trí hiển thị submenu
+            let isLeft = false;
+            dropdown.style.right = 'auto';
+            dropdown.style.left = baseRight + 'px';
+            
+            const dropdownWidth = dropdown.offsetWidth || 240;
+            if (baseRight + dropdownWidth > window.innerWidth) {
+                // Đặt left lùi lại đúng bằng chiều rộng của chính nó từ mép trái menu cha
+                dropdown.style.right = 'auto';
+                dropdown.style.left = (baseLeft - dropdownWidth) + 'px';
+                isLeft = true;
+            }
+            
+            // Lấy tọa độ top thực tế, loại trừ sai số nếu thẻ cha đang trong quá trình animation translateY
+            let topPos = rect.top;
+            const parentDropdown = item.closest('.dropdown');
+            if (parentDropdown) {
+                const style = window.getComputedStyle(parentDropdown);
+                const transform = style.transform;
+                if (transform && transform !== 'none') {
+                    const matrix = transform.match(/^matrix\((.+)\)$/);
+                    if (matrix) {
+                        const values = matrix[1].split(',');
+                        if (values.length === 6) {
+                            const currentTranslateY = parseFloat(values[5]);
+                            if (!isNaN(currentTranslateY)) {
+                                topPos -= currentTranslateY;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            dropdown.style.maxHeight = 'none';
+            let dropdownHeight = dropdown.offsetHeight;
+            if (topPos + dropdownHeight > window.innerHeight - 20) {
+                topPos = window.innerHeight - dropdownHeight - 20;
+                if (topPos < 20) {
+                    topPos = 20;
+                    dropdown.style.maxHeight = (window.innerHeight - 40) + 'px';
+                    dropdown.style.overflowY = 'auto';
+                }
+            }
+            dropdown.style.top = topPos + 'px';
+            
+            // Cập nhật hướng hiển thị để áp dụng đúng hiệu ứng CSS transform
+            if (isLeft) {
+                dropdown.classList.add('open-left');
+            } else {
+                dropdown.classList.remove('open-left');
+            }
+            
+            // Đợi 1 frame để trình duyệt nhận DOM mới rồi mới add class .show để kích hoạt CSS transition
+            requestAnimationFrame(() => {
+                dropdown.classList.add('show');
+            });
+        };
+        
+        const hideDropdown = function() {
+            timeout = setTimeout(() => {
+                dropdown.classList.remove('show');
+                dropdown.classList.remove('open-left');
+                
+                item.classList.remove('keep-open');
+                if (parentNavItem) parentNavItem.classList.remove('keep-open');
+                
+                // Đợi CSS transition kết thúc (0.3s) rồi mới đưa DOM về vị trí cũ để không bị giật
+                setTimeout(() => {
+                    if (dropdown.parentNode === document.body && !dropdown.classList.contains('show')) {
+                        item.appendChild(dropdown);
+                        dropdown.classList.remove('dropdown-detached');
+                        dropdown.style.left = '';
+                        dropdown.style.right = '';
+                        dropdown.style.top = '';
+                        dropdown.style.maxHeight = '';
+                        dropdown.style.overflowY = '';
+                    }
+                }, 300);
+            }, 100);
+        };
+        
+        item.addEventListener('mouseenter', showDropdown);
+        item.addEventListener('mouseleave', hideDropdown);
+        dropdown.addEventListener('mouseenter', showDropdown);
+        dropdown.addEventListener('mouseleave', hideDropdown);
+    });
 
     // 5. Load dynamic config (e.g. Bo KHCN link)
     setTimeout(async () => {
@@ -836,11 +995,13 @@ window.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(zoomWidget);
 
         window.addEventListener('scroll', () => {
-            const contentDiv = document.getElementById('detail-content') || document.querySelector('.article-detail-content') || document.querySelector('.doc-detail-content');
+            const contentDiv = document.getElementById('detail-content') || document.querySelector('.article-detail-content') || document.querySelector('.doc-detail-meta-table');
             if (contentDiv && zoomWidget) {
                 const contentRect = contentDiv.getBoundingClientRect();
+                const widgetTop = window.innerHeight / 2;
                 // When the bottom of the article goes above the middle of the screen (where widget is), hide the widget
-                if (contentRect.bottom < (window.innerHeight / 2)) {
+                // Also hide if the top of the article is significantly below the widget (e.g. user is at the top banner)
+                if (contentRect.bottom < widgetTop || contentRect.top > (widgetTop + 150)) {
                     zoomWidget.style.opacity = '0';
                     zoomWidget.style.pointerEvents = 'none';
                 } else {
@@ -849,6 +1010,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        
+        // Trigger once on load
+        setTimeout(() => window.dispatchEvent(new Event('scroll')), 100);
     }
     
     // ===== CHATBOT POSITION OBSERVER =====

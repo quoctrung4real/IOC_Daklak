@@ -38,11 +38,7 @@ body {
     box-shadow: 0 10px 20px -5px rgba(69, 26, 3, 0.2) !important;
 }
 
-.nav-list > li > a {
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
+
 .nav-list > li > a::after {
     background: var(--coffee-light) !important;
 }
@@ -71,7 +67,6 @@ body {
     background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-accent) 100%) !important;
     color: #fff !important;
     border: none;
-    border-radius: 25px !important;
     box-shadow: 0 4px 15px rgba(120, 53, 15, 0.3) !important;
 }
 .btn-readmore:hover {
@@ -109,7 +104,7 @@ body {
 }
 @keyframes elephantWalk {
     0% { transform: translateX(0); }
-    100% { transform: translateX(calc(-100vw - 350px)); }
+    100% { transform: translateX(calc(-100% - 350px)); }
 }
 
 /* =========================================

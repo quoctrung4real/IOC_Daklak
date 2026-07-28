@@ -558,7 +558,7 @@ async function loadDynamicNews() {
                                         <span><i class="fa-regular fa-calendar"></i> ${featured.createdAt}</span>
                                         <span class="trending-badge"><i class="fa-solid fa-eye"></i> ${featured.views || 0} lượt xem</span>
                                     </span>
-                                    <h3><a href="${featured.linkUrl || `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${featured.categoryId || 'chi-dao-dieu-hanh'}&id=${featured.id}`}">${featured.title}</a></h3>
+                                    <h3><a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${featured.categoryId || 'chi-dao-dieu-hanh'}&id=${featured.id}">${featured.title}</a></h3>
                                 </div>
                             </div>
                         `;
@@ -570,7 +570,7 @@ async function loadDynamicNews() {
                         displayList.forEach(item => {
                             html += `
                                 <li>
-                                    <a href="${item.linkUrl || `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${item.categoryId || 'chi-dao-dieu-hanh'}&id=${item.id}`}">
+                                    <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${item.categoryId || 'chi-dao-dieu-hanh'}&id=${item.id}">
                                         <span class="news-list-date">${item.createdAt || ''} <span style="margin-left:8px; color: #64748b; font-size: 0.85em;"><i class="fa-solid fa-eye"></i> ${item.views || 0}</span></span>
                                         <span>${item.title || ''}</span>
                                     </a>
@@ -616,7 +616,7 @@ async function loadDynamicNews() {
                                     <span><i class="fa-regular fa-calendar"></i> ${featured.createdAt}</span>
                                     <span class="trending-badge"><i class="fa-solid fa-arrow-trend-up"></i> Mới nhất</span>
                                 </span>
-                                <h3><a href="${featured.linkUrl || `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${categoryId}&id=${featured.id}`}">${featured.title}</a></h3>
+                                <h3><a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${categoryId}&id=${featured.id}">${featured.title}</a></h3>
                             </div>
                         </div>
                     `;
@@ -628,7 +628,7 @@ async function loadDynamicNews() {
                     displayList.forEach(item => {
                         html += `
                             <li>
-                                <a href="${item.linkUrl || `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${item.categoryId || 'chi-dao-dieu-hanh'}&id=${item.id}`}">
+                                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${item.categoryId || 'chi-dao-dieu-hanh'}&id=${item.id}">
                                     <span class="news-list-date">${item.createdAt || ''}</span>
                                     <span>${item.title || ''}</span>
                                 </a>
@@ -1009,12 +1009,9 @@ async function loadCategoryNews() {
                     imageHtml = `<div class="baolu-img"><div class="no-image-placeholder">Không có hình ảnh</div></div>`;
                 }
                 
-                // Ưu tiên linkUrl nếu có, nếu không thì dùng trang chi tiết nội bộ
-                const detailLink = post.linkUrl ? post.linkUrl : `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${post.categoryId || categoryId}&id=${post.id}`;
+                // Dùng trang chi tiết nội bộ, nếu có linkUrl thì trang chi tiết sẽ hiển thị link đó
+                const detailLink = `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${post.categoryId || categoryId}&id=${post.id}`;
                 card.href = detailLink;
-                if (post.linkUrl) {
-                    card.target = '_blank';
-                }
                 
                 let attachmentHtml = '';
                 if (post.attachmentUrl) {
@@ -1227,8 +1224,7 @@ async function loadHomeAnnouncements() {
         topPosts.forEach(post => {
             const li = document.createElement('li');
             const a = document.createElement('a');
-            a.href = post.linkUrl ? post.linkUrl : `../tin-tuc/chi-tiet-tin-tuc.html?category=thong-bao&id=${post.id}`;
-            if (post.linkUrl) a.target = '_blank';
+            a.href = `../tin-tuc/chi-tiet-tin-tuc.html?category=thong-bao&id=${post.id}`;
             
             // Cắt tiêu đề nếu quá dài
             let titleText = post.title;

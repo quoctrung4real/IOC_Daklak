@@ -42,9 +42,6 @@ body {
 }
 
 .nav-list > li > a {
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
     position: relative;
 }
 
@@ -83,8 +80,6 @@ body {
     color: #fff !important;
     border: none;
     box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 .btn-readmore:hover {
     background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;

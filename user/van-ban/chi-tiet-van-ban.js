@@ -45,6 +45,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('detail-authority').innerText = doc.issuingAuthority || 'Đang cập nhật';
         document.getElementById('detail-signer').innerText = doc.signer || 'Đang cập nhật';
 
+        // Update breadcrumb
+        const breadcrumbContainer = document.getElementById('breadcrumb-container') || document.querySelector('.container > div[style*="clip-path"]');
+        if (breadcrumbContainer) {
+            const typeName = doc.typeName || doc.typeCode || 'Văn bản';
+            const typeFilter = doc.typeCode ? `?type=${encodeURIComponent(doc.typeCode.toLowerCase())}` : '';
+            
+            breadcrumbContainer.innerHTML = `
+                <i class="fa-solid fa-house" style="color: #64748b;"></i>
+                <span>Trang chủ</span>
+                <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
+                <a href="../../user/van-ban/van-ban.html" style="color: #475569; text-decoration: none;">Văn bản</a>
+                <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
+                <span style="color: #475569;">Văn bản Trung tâm IOC</span>
+                <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
+                <a href="../../user/van-ban/van-ban.html${typeFilter}" style="color: #475569; text-decoration: none;">${typeName}</a>
+                <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
+                <span style="color: #475569; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom;">Chi tiết văn bản ${typeName.toLowerCase()}</span>
+            `;
+        }
+        
+        const backBtn = document.getElementById('back-btn');
+        if (backBtn && doc.typeCode) {
+            backBtn.href = `van-ban.html?type=${encodeURIComponent(doc.typeCode.toLowerCase())}`;
+        }
+
         const fileAction = document.getElementById('detail-file-action');
         if (doc.fileUrl) {
             let serverFile = doc.fileUrl.split('/').pop();

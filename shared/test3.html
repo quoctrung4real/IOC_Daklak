@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.parent {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 200px;
+    height: 100px; /* Force overflow */
+    overflow-y: auto;
+    background: #eee;
+    opacity: 1; /* Stacking context */
+    /* z-index: 50; */
+}
+.child {
+    position: fixed;
+    top: 0;
+    left: 200px;
+    width: 150px;
+    height: 200px;
+    background: red;
+}
+</style>
+</head>
+<body>
+<div class="parent">
+  <div style="height: 50px;">Item 1</div>
+  <div style="height: 50px;">Item 2</div>
+  <div class="child">I am fixed</div>
+  <div style="height: 150px;">Item 3</div>
+</div>
+</body>
+</html>

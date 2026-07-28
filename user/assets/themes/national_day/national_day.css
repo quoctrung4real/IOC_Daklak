@@ -41,11 +41,7 @@ body {
     box-shadow: 0 10px 20px -5px rgba(218, 37, 29, 0.3) !important;
 }
 
-.nav-list > li > a {
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
+
 .nav-list > li > a::after {
     background: var(--national-yellow) !important;
 }
@@ -66,7 +62,6 @@ body {
     color: #fff !important;
     border: none;
     box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4) !important;
-    text-transform: uppercase;
 }
 .btn-readmore:hover {
     background: linear-gradient(135deg, var(--national-dark) 0%, #991b1b 100%) !important;

@@ -256,6 +256,18 @@ function toggleMenu(element) {
 document.querySelectorAll('.tab-link').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        // --- SAVE TAB STATE ---
+        const state = {
+            targetId: e.currentTarget.dataset.target,
+            isNews: e.currentTarget.classList.contains('news-category-link'),
+            isDoc: e.currentTarget.classList.contains('document-category-link'),
+            category: e.currentTarget.dataset.category || null,
+            text: e.currentTarget.textContent.trim()
+        };
+        sessionStorage.setItem('adminActiveTab', JSON.stringify(state));
+        // ----------------------
+        
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         e.currentTarget.classList.add('active');
@@ -1359,9 +1371,11 @@ function updateHeaderPreview() {
     if (bgPreview) {
         const bannerUrl = document.getElementById('bannerUrl')?.value;
         if (bannerUrl) {
-            bgPreview.style.backgroundImage = `url('${bannerUrl}')`;
+            bgPreview.style.background = `url('${bannerUrl}') center/cover no-repeat`;
         } else {
-            bgPreview.style.backgroundImage = '';
+            const pColor = document.getElementById('primaryColor')?.value || '#0a59ab';
+            const pDark = document.getElementById('primaryDarkColor')?.value || '#074180';
+            bgPreview.style.backgroundImage = `linear-gradient(135deg, ${pDark} 0%, ${pColor} 100%)`;
         }
     }
     if (logoPreviewContainer) {
@@ -1378,6 +1392,8 @@ document.getElementById('headerTextSub')?.addEventListener('input', updateHeader
 document.getElementById('headerTextColor')?.addEventListener('input', updateHeaderPreview);
 document.getElementById('headerFontMain')?.addEventListener('change', updateHeaderPreview);
 document.getElementById('headerFontSub')?.addEventListener('change', updateHeaderPreview);
+document.getElementById('primaryColor')?.addEventListener('input', updateHeaderPreview);
+document.getElementById('primaryDarkColor')?.addEventListener('input', updateHeaderPreview);
 setTimeout(updateHeaderPreview, 1000);
 
 // Menu Bar Preview Update
@@ -1789,6 +1805,7 @@ const externalLinksApp = {
         if (confirm('Bạn có chắc chắn muốn xóa liên kết này?')) {
             this.items = this.items.filter(x => x.id !== id);
             this.renderList();
+            showToast('Đã xóa liên kết', 'success');
         }
     },
 
@@ -1972,7 +1989,15 @@ function renderTechSolutionsItems() {
         itemDiv.style.border = '1px solid #e2e8f0';
         
         itemDiv.innerHTML = `
-            <h6 style="margin-top: 0; margin-bottom: 15px; color: #475569; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;"><i class="fa-solid fa-cube"></i> Box ${index + 1}</h6>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" onclick="techSolutionsItems[${index}].isExpanded = !techSolutionsItems[${index}].isExpanded; const c = this.closest('div').parentElement.nextElementSibling; const i = this.querySelector('i'); if(techSolutionsItems[${index}].isExpanded){c.style.display='block'; i.style.transform='rotate(0deg)';}else{c.style.display='none'; i.style.transform='rotate(-90deg)';}" style="background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; font-size: 14px;">
+                        <i class="fa-solid fa-chevron-down" style="transition: transform 0.2s; transform: rotate(${item.isExpanded ? '0deg' : '-90deg'});"></i>
+                    </button>
+                    <h6 style="margin: 0; color: #475569; font-size: 15px;"><i class="fa-solid fa-cube"></i> Box ${index + 1}</h6>
+                </div>
+            </div>
+            <div style="display: ${item.isExpanded ? 'block' : 'none'};">
             <div class="form-group">
                 <label>Tiêu đề</label>
                 <input type="text" value="${item.title}" oninput="updateTechSolutionItem(${index}, 'title', this.value)">
@@ -1985,13 +2010,10 @@ function renderTechSolutionsItems() {
                 <label>Link nút "Xem thêm"</label>
                 <input type="text" value="${item.link}" oninput="updateTechSolutionItem(${index}, 'link', this.value)">
             </div>
-            <div class="form-group">
-                <label>Icon FontAwesome (Vd: fa-solid fa-star)</label>
-                <input type="text" value="${item.icon || ''}" oninput="updateTechSolutionItem(${index}, 'icon', this.value)" placeholder="fa-solid fa-star">
-            </div>
+
             <div class="form-group">
                 <label>Màu nền (tuỳ chọn)</label>
-                <input type="color" value="${item.bgColor || '#ffffff'}" oninput="updateTechSolutionItem(${index}, 'bgColor', this.value)" style="width: 50px; height: 30px; padding: 0;">
+                <input type="color" value="${item.bgColor || '#ffffff'}" oninput="updateTechSolutionItem(${index}, 'bgColor', this.value)" style="width: 50px; height: 30px; padding: 0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label>Upload Hình Ảnh Banner (Bên phải)</label>
@@ -2006,6 +2028,7 @@ function renderTechSolutionsItems() {
                     <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionBgImage(${index}, this)">
                     ${item.bgImage ? `<button type="button" onclick="removeTechSolutionBgImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa nền</button>` : ''}
                 </div>
+            </div>
             </div>
         `;
         container.appendChild(itemDiv);
@@ -2024,6 +2047,7 @@ function uploadTechSolutionImage(index, input) {
         reader.onload = function(e) {
             techSolutionsItems[index].image = e.target.result;
             renderTechSolutionsItems();
+            showToast('Đã tải ảnh lên', 'success');
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -2032,6 +2056,7 @@ function uploadTechSolutionImage(index, input) {
 function removeTechSolutionImage(index) {
     techSolutionsItems[index].image = '';
     renderTechSolutionsItems();
+    showToast('Đã xóa ảnh', 'success');
 }
 
 function uploadTechSolutionBgImage(index, input) {
@@ -2040,6 +2065,7 @@ function uploadTechSolutionBgImage(index, input) {
         reader.onload = function(e) {
             techSolutionsItems[index].bgImage = e.target.result;
             renderTechSolutionsItems();
+            showToast('Đã tải ảnh nền lên', 'success');
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -2048,6 +2074,7 @@ function uploadTechSolutionBgImage(index, input) {
 function removeTechSolutionBgImage(index) {
     techSolutionsItems[index].bgImage = '';
     renderTechSolutionsItems();
+    showToast('Đã xóa ảnh nền', 'success');
 }
 
 function updateTechSolutionsPreview() {
@@ -2104,13 +2131,24 @@ function toggleConfigSection(headerEl) {
     
     if (contentEl.style.display === 'none') {
         contentEl.style.display = 'block';
-        iconEl.style.transform = 'rotate(0deg)';
+        if (iconEl) iconEl.style.transform = 'rotate(0deg)';
         if (textEl) textEl.textContent = 'Thu nhỏ';
     } else {
         contentEl.style.display = 'none';
-        iconEl.style.transform = 'rotate(180deg)';
+        if (iconEl) iconEl.style.transform = 'rotate(180deg)';
         if (textEl) textEl.textContent = 'Mở rộng';
     }
+    
+    // Save sections state
+    const openSections = [];
+    document.querySelectorAll('.config-section-header').forEach(header => {
+        const content = header.nextElementSibling;
+        if (content && content.style.display !== 'none') {
+            const h4 = header.querySelector('h4');
+            if (h4) openSections.push(h4.textContent.trim());
+        }
+    });
+    sessionStorage.setItem('adminOpenSections', JSON.stringify(openSections));
 }
 
 function toggleSidebar() {
@@ -2723,45 +2761,52 @@ function renderAgencyLinksGroups() {
         
         groupDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
-                <input type="text" value="${group.title}" oninput="agencyLinksGroups[${groupIndex}].title = this.value; updateAgencyLinksPreview()" style="font-weight: 600; color: #475569; font-size: 15px; border: none; outline: none; background: transparent; width: 80%;" placeholder="Tên nhóm cơ quan (VD: Sở / Ban ngành)">
+                <div style="display: flex; align-items: center; gap: 10px; width: 80%;">
+                    <button type="button" onclick="agencyLinksGroups[${groupIndex}].isExpanded = !agencyLinksGroups[${groupIndex}].isExpanded; const c = this.closest('div').parentElement.nextElementSibling; const i = this.querySelector('i'); if(agencyLinksGroups[${groupIndex}].isExpanded){c.style.display='block'; i.style.transform='rotate(0deg)';}else{c.style.display='none'; i.style.transform='rotate(-90deg)';}" style="background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; font-size: 14px;">
+                        <i class="fa-solid fa-chevron-down" style="transition: transform 0.2s; transform: rotate(${group.isExpanded ? '0deg' : '-90deg'});"></i>
+                    </button>
+                    <input type="text" value="${group.title}" oninput="agencyLinksGroups[${groupIndex}].title = this.value; updateAgencyLinksPreview()" style="font-weight: 600; color: #475569; font-size: 15px; border: none; outline: none; background: transparent; width: 100%;" placeholder="Tên nhóm cơ quan (VD: Sở / Ban ngành)">
+                </div>
                 <button type="button" onclick="removeAgencyGroup(${groupIndex})" style="background: transparent; color: #ef4444; border: none; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa Nhóm</button>
             </div>
-            <div style="margin-bottom: 15px;">
-                <input type="text" value="${group.url || ''}" oninput="agencyLinksGroups[${groupIndex}].url = this.value; updateAgencyLinksPreview()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;" placeholder="Đường link của cả ô (Tùy chọn: Nhấn vào ô sẽ mở link này thay vì mở danh sách con)">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 13px;">Màu Nền Riêng</label>
-                    <input type="color" value="${group.bgColor || '#ffffff'}" onchange="updateAgencyGroupField(${groupIndex}, 'bgColor', this.value)" style="width: 100%; height: 36px; padding: 2px;">
+            <div style="display: ${group.isExpanded ? 'block' : 'none'};">
+                <div style="margin-bottom: 15px;">
+                    <input type="text" value="${group.url || ''}" oninput="agencyLinksGroups[${groupIndex}].url = this.value; updateAgencyLinksPreview()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;" placeholder="Đường link của cả ô (Tùy chọn: Nhấn vào ô sẽ mở link này thay vì mở danh sách con)">
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 13px;">Icon (FontAwesome)</label>
-                    <input type="text" value="${group.icon || ''}" oninput="updateAgencyGroupField(${groupIndex}, 'icon', this.value, false)" placeholder="VD: fa-solid fa-building-columns" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 13px;">Logo Ảnh (thay thế Icon)</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        ${group.logo ? `<img src="${group.logo}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
-                        <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'logo')" style="font-size: 12px; max-width: 150px;">
-                        ${group.logo ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'logo', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 13px;">Màu Nền Riêng</label>
+                        <input type="color" value="${group.bgColor || '#ffffff'}" onchange="updateAgencyGroupField(${groupIndex}, 'bgColor', this.value)" style="width: 60px; height: 40px; padding: 0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 13px;">Icon (FontAwesome)</label>
+                        <input type="text" value="${group.icon || ''}" oninput="updateAgencyGroupField(${groupIndex}, 'icon', this.value, false)" placeholder="VD: fa-solid fa-building-columns" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
                     </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 13px;">Ảnh nền (Background)</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        ${group.bgImage ? `<img src="${group.bgImage}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
-                        <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'bgImage')" style="font-size: 12px; max-width: 150px;">
-                        ${group.bgImage ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'bgImage', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 13px;">Logo Ảnh (thay thế Icon)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            ${group.logo ? `<img src="${group.logo}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
+                            <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'logo')" style="font-size: 12px; max-width: 150px;">
+                            ${group.logo ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'logo', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 13px;">Ảnh nền (Background)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            ${group.bgImage ? `<img src="${group.bgImage}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
+                            <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'bgImage')" style="font-size: 12px; max-width: 150px;">
+                            ${group.bgImage ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'bgImage', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        </div>
                     </div>
                 </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Danh sách liên kết</label>
+                </div>
+                ${linksHtml}
+                <button type="button" onclick="addAgencyLink(${groupIndex})" style="background: #f1f5f9; color: #475569; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 6px 12px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 5px;"><i class="fa-solid fa-plus"></i> Thêm liên kết mới</button>
             </div>
-            <div style="margin-bottom: 10px;">
-                <label style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Danh sách liên kết</label>
-            </div>
-            ${linksHtml}
-            <button type="button" onclick="addAgencyLink(${groupIndex})" style="background: #f1f5f9; color: #475569; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 6px 12px; font-size: 13px; cursor: pointer; width: 100%; margin-top: 5px;"><i class="fa-solid fa-plus"></i> Thêm liên kết mới</button>
         `;
         container.appendChild(groupDiv);
     });
@@ -2781,6 +2826,7 @@ function uploadAgencyGroupImage(input, groupIndex, key) {
             agencyLinksGroups[groupIndex][key] = e.target.result;
             updateAgencyLinksPreview();
             renderAgencyLinksGroups();
+            showToast('Đã tải ảnh lên', 'success');
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -2800,6 +2846,7 @@ function removeAgencyGroup(groupIndex) {
     if(confirm("Bạn có chắc muốn xóa nhóm này không?")) {
         agencyLinksGroups.splice(groupIndex, 1);
         renderAgencyLinksGroups();
+        showToast('Đã xóa nhóm', 'success');
     }
 }
 
@@ -2811,6 +2858,7 @@ function addAgencyLink(groupIndex) {
 function removeAgencyLink(groupIndex, linkIndex) {
     agencyLinksGroups[groupIndex].links.splice(linkIndex, 1);
     renderAgencyLinksGroups();
+    showToast('Đã xóa liên kết', 'success');
 }
 
 function updateAgencyLinksPreview() {
@@ -3004,6 +3052,7 @@ const partnerLinksApp = {
         if (confirm('Bạn có chắc chắn muốn xóa liên kết này?')) {
             this.links = this.links.filter(x => String(x.id) !== String(id));
             this.renderList();
+            showToast('Đã xóa đối tác', 'success');
         }
     },
 
@@ -3035,6 +3084,7 @@ const partnerLinksApp = {
 
         this.renderList();
         document.getElementById('partner-links-form-container').style.display = 'none';
+        showToast('Đã lưu đối tác', 'success');
     },
 
     cancelEdit() {
@@ -3046,7 +3096,7 @@ const partnerLinksApp = {
         const color1 = document.getElementById('pl-color1').value || '#2e8b57';
         const color2 = document.getElementById('pl-color2').value || '#3cb371';
         const icon = document.getElementById('pl-icon').value || 'fa-solid fa-rocket';
-        const bgImage = document.getElementById('pl-bgImage').value;
+        const bgImage = document.getElementById('pl-bg-url') ? document.getElementById('pl-bg-url').value : '';
         const bgOpacity = document.getElementById('pl-bgOpacity').value;
 
         const previewContainer = document.getElementById('pl-preview');
@@ -3077,6 +3127,7 @@ const partnerLinksApp = {
         document.getElementById('pl-icon').value = iconClass;
         this.updatePreview();
         document.getElementById('icon-modal').style.display = 'none';
+        showToast('Đã thay đổi icon thành công!', 'success');
     },
 
     handleBgUpload(input) {
@@ -3183,6 +3234,7 @@ const sidebarBannersApp = {
         document.getElementById('sb-icon').value = iconClass;
         this.updatePreview();
         document.getElementById('icon-modal').style.display = 'none';
+        showToast('Đã thay đổi icon thành công!', 'success');
         
         // Restore icon modal back to partner links if needed
         if (typeof partnerLinksApp !== 'undefined' && partnerLinksApp.iconLibrary) {
@@ -3290,6 +3342,7 @@ const sidebarBannersApp = {
         if (confirm('Bạn có chắc chắn muốn xóa banner này?')) {
             this.banners = this.banners.filter(x => x.id !== id);
             this.renderList();
+            showToast('Đã xóa banner', 'success');
         }
     },
 
@@ -3318,6 +3371,7 @@ const sidebarBannersApp = {
 
         this.renderList();
         this.cancelEdit();
+        showToast('Đã lưu banner', 'success');
     },
 
     cancelEdit() {
@@ -3574,6 +3628,7 @@ const infoUtilityApp = {
     selectIcon(iconClass) {
         document.getElementById('iu-link-icon').value = iconClass;
         document.getElementById('icon-modal').style.display = 'none';
+        showToast('Đã thay đổi icon thành công!', 'success');
         
         // Restore icon modal back to partner links if needed
         if (typeof partnerLinksApp !== 'undefined' && partnerLinksApp.iconLibrary) {
@@ -3596,8 +3651,14 @@ const infoUtilityApp = {
         const listContainer = document.getElementById('iu-groups-list');
         if (!listContainer) return;
         
+        // Safeguard: Move form out before wiping DOM
+        const formContainer = document.getElementById('iu-link-form-container');
+        if (formContainer && listContainer.contains(formContainer)) {
+            listContainer.parentNode.insertBefore(formContainer, listContainer);
+        }
+        
         listContainer.innerHTML = '';
-        this.groups.forEach(group => {
+        this.groups.forEach((group, index) => {
             let linksHtml = '';
             if (group.links && group.links.length > 0) {
                 linksHtml = '<ul style="list-style: none; padding: 0; margin: 0; margin-top: 10px;">' + group.links.map(link => `
@@ -3617,13 +3678,17 @@ const infoUtilityApp = {
             }
 
             const div = document.createElement('div');
-            div.style.cssText = 'border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc;';
+            div.id = `iu-group-dom-${group.id}`;
+            div.style.cssText = 'border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; margin-bottom: 15px;';
             div.innerHTML = `
                 <div style="background-color: ${group.bgColor || '#ffffff'}; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
                     ${group.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${group.bgImage}'); background-size: cover; background-position: center; opacity: 0.3; z-index: 1;"></div>` : ''}
-                    <div style="font-weight: 600; color: #1e293b; font-size: 15px; position: relative; z-index: 2;">
+                    <div style="font-weight: 600; color: #1e293b; font-size: 15px; position: relative; z-index: 2; display: flex; align-items: center; gap: 8px;">
+                        <button type="button" onclick="infoUtilityApp.groups[${index}].isExpanded = !infoUtilityApp.groups[${index}].isExpanded; const c = this.closest('div').parentElement.nextElementSibling; const i = this.querySelector('i'); if(infoUtilityApp.groups[${index}].isExpanded){c.style.display='block'; i.style.transform='rotate(0deg)';}else{c.style.display='none'; i.style.transform='rotate(-90deg)';}" style="background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; font-size: 14px;">
+                            <i class="fa-solid fa-chevron-down" style="transition: transform 0.2s; transform: rotate(${group.isExpanded ? '0deg' : '-90deg'});"></i>
+                        </button>
                         ${group.title} 
-                        <span style="font-size: 12px; font-weight: normal; color: #64748b; margin-left: 10px;">(${group.links ? group.links.length : 0} mục)</span>
+                        <span style="font-size: 12px; font-weight: normal; color: #64748b;">(${group.links ? group.links.length : 0} mục)</span>
                     </div>
                     <div style="display: flex; gap: 5px; position: relative; z-index: 2;">
                         <button type="button" onclick="infoUtilityApp.addLink(${group.id})" style="background-color: var(--primary); color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 13px; cursor: pointer;"><i class="fa-solid fa-plus"></i> Thêm Mục</button>
@@ -3631,7 +3696,7 @@ const infoUtilityApp = {
                         <button type="button" onclick="infoUtilityApp.deleteGroup(${group.id})" style="background-color: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 13px; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa Cột</button>
                     </div>
                 </div>
-                <div style="padding: 10px;">
+                <div style="padding: 10px; display: ${group.isExpanded ? 'block' : 'none'};">
                     ${linksHtml}
                 </div>
             `;
@@ -3669,6 +3734,7 @@ const infoUtilityApp = {
         if (confirm('Bạn có chắc chắn muốn xóa toàn bộ Cột này và các Mục bên trong?')) {
             this.groups = this.groups.filter(x => x.id !== id);
             this.renderList();
+            showToast('Đã xóa cột', 'success');
         }
     },
 
@@ -3697,6 +3763,7 @@ const infoUtilityApp = {
 
         this.renderList();
         this.cancelEditGroup();
+        showToast('Đã lưu cột', 'success');
     },
 
     cancelEditGroup() {
@@ -3716,8 +3783,14 @@ const infoUtilityApp = {
         document.getElementById('iu-link-logoPreview').src = '';
         document.getElementById('iu-link-logoPreview').style.display = 'none';
         
-        document.getElementById('iu-link-form-container').style.display = 'block';
+        const formContainer = document.getElementById('iu-link-form-container');
+        const groupContainer = document.getElementById(`iu-group-dom-${groupId}`);
+        if (groupContainer) {
+            groupContainer.appendChild(formContainer);
+        }
+        formContainer.style.display = 'block';
         document.getElementById('iu-group-form-container').style.display = 'none';
+        setTimeout(() => formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     },
 
     editLink(groupId, linkId) {
@@ -3744,8 +3817,14 @@ const infoUtilityApp = {
             logoPreview.style.display = 'none';
         }
         
-        document.getElementById('iu-link-form-container').style.display = 'block';
+        const formContainer = document.getElementById('iu-link-form-container');
+        const groupContainer = document.getElementById(`iu-group-dom-${groupId}`);
+        if (groupContainer) {
+            groupContainer.appendChild(formContainer);
+        }
+        formContainer.style.display = 'block';
         document.getElementById('iu-group-form-container').style.display = 'none';
+        setTimeout(() => formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     },
 
     deleteLink(groupId, linkId) {
@@ -3754,6 +3833,7 @@ const infoUtilityApp = {
             if (group) {
                 group.links = group.links.filter(x => x.id !== linkId);
                 this.renderList();
+                showToast('Đã xóa mục', 'success');
             }
         }
     },
@@ -3789,6 +3869,7 @@ const infoUtilityApp = {
             this.renderList();
         }
         this.cancelEditLink();
+        showToast('Đã lưu mục', 'success');
     },
 
     cancelEditLink() {
@@ -3986,17 +4067,47 @@ async function applySystemTheme(themeId) {
 
     // Update config object
     config.themePreset = themeId;
-    if (themeId !== 'default') {
-        config.primaryColor = theme.primary;
-        config.menuBarBgColor = theme.primary;
-        config.headerTextColor = '#ffffff';
-        config.welcomeBgColor = theme.secondary;
-        config.welcomeTextColor = (themeId === 'national_day' || themeId === 'tet') ? '#dc2626' : '#ffffff';
-    } else {
-        config.primaryColor = '#0a59ab';
-        config.menuBarBgColor = '#0a59ab';
-        config.welcomeBgColor = '#1322bc';
-        config.welcomeTextColor = '#ffffff';
+    
+    if (themeId === 'tet') {
+        Object.assign(config, {
+            primaryColor: '#dc2626', primaryDarkColor: '#b91c1c', menuBarBgColor: '#dc2626',
+            welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
+            tickerLabelColor: '#dc2626', heroTitleColor: '#dc2626', heroSubtitleColor: '#b91c1c',
+            heroBgColor: '#ffffff', heroButtonBgColor: '#dc2626', accentOrangeColor: '#facc15',
+            accentRedColor: '#dc2626', bodyBgColor: '#fffcfc', newsSectionBgColor: '#fef2f2',
+            infoUtilityBgColor: '#fffbeb', footerBgColor: '#991b1b', techSolutionsColor: '#dc2626',
+            agencyLinksColor: '#dc2626'
+        });
+    } else if (themeId === 'coffee') {
+        Object.assign(config, {
+            primaryColor: '#78350f', primaryDarkColor: '#451a03', menuBarBgColor: '#78350f',
+            welcomeBgColor: '#fef3c7', welcomeTextColor: '#78350f', headerTextColor: '#ffffff',
+            tickerLabelColor: '#78350f', heroTitleColor: '#78350f', heroSubtitleColor: '#451a03',
+            heroBgColor: '#ffffff', heroButtonBgColor: '#78350f', accentOrangeColor: '#d97706',
+            accentRedColor: '#991b1b', bodyBgColor: '#fffbeb', newsSectionBgColor: '#fef3c7',
+            infoUtilityBgColor: '#fff7ed', footerBgColor: '#451a03', techSolutionsColor: '#78350f',
+            agencyLinksColor: '#78350f'
+        });
+    } else if (themeId === 'national_day') {
+        Object.assign(config, {
+            primaryColor: '#da251d', primaryDarkColor: '#b91c1c', menuBarBgColor: '#da251d',
+            welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
+            tickerLabelColor: '#da251d', heroTitleColor: '#da251d', heroSubtitleColor: '#b91c1c',
+            heroBgColor: '#ffffff', heroButtonBgColor: '#da251d', accentOrangeColor: '#eab308',
+            accentRedColor: '#da251d', bodyBgColor: '#ffffff', newsSectionBgColor: '#fef2f2',
+            infoUtilityBgColor: '#ffffff', footerBgColor: '#991b1b', techSolutionsColor: '#da251d',
+            agencyLinksColor: '#da251d'
+        });
+    } else { // default
+        Object.assign(config, {
+            primaryColor: '#0a59ab', primaryDarkColor: '#074180', menuBarBgColor: '#497fbf',
+            welcomeBgColor: '#1322bc', welcomeTextColor: '#ffffff', headerTextColor: '#ffffff',
+            tickerLabelColor: '#f1592b', heroTitleColor: '#1e3a8a', heroSubtitleColor: '#475569',
+            heroBgColor: '#ffffff', heroButtonBgColor: '#0a59ab', accentOrangeColor: '#f1592b',
+            accentRedColor: '#dc2626', bodyBgColor: '#ffffff', newsSectionBgColor: '#f8fafc',
+            infoUtilityBgColor: '#f0f4f8', footerBgColor: '#0f172a', techSolutionsColor: '#0a59ab',
+            agencyLinksColor: '#0a59ab'
+        });
     }
 
     try {
@@ -4107,3 +4218,63 @@ async function deletePreset(index) {
         showAlert('Lỗi kết nối khi xóa cấu hình', false);
     }
 }
+
+// --- STATE PRESERVATION LOGIC ---
+window.addEventListener('scroll', () => {
+    sessionStorage.setItem('adminScrollY', window.scrollY);
+});
+
+function restoreAdminUIState() {
+    // 1. Restore Tab
+    const savedTabStr = sessionStorage.getItem('adminActiveTab');
+    if (savedTabStr) {
+        try {
+            const state = JSON.parse(savedTabStr);
+            let targetLink = null;
+            if (state.isNews || state.isDoc) {
+                const cls = state.isNews ? '.news-category-link' : '.document-category-link';
+                targetLink = document.querySelector(`${cls}[data-category="${state.category}"]`);
+            } else {
+                targetLink = document.querySelector(`.tab-link[data-target="${state.targetId}"]`);
+            }
+            if (targetLink) {
+                targetLink.click();
+            }
+        } catch(e) {}
+    }
+
+    // 2. Restore Open Sections
+    const openSectionsStr = sessionStorage.getItem('adminOpenSections');
+    if (openSectionsStr) {
+        try {
+            const openSections = JSON.parse(openSectionsStr);
+            document.querySelectorAll('.config-section-header').forEach(header => {
+                const h4 = header.querySelector('h4');
+                if (h4) {
+                    const content = header.nextElementSibling;
+                    const iconEl = header.querySelector('.fa-chevron-up');
+                    const textEl = header.querySelector('.toggle-text');
+                    
+                    if (openSections.includes(h4.textContent.trim())) {
+                        if (content) content.style.display = 'block';
+                        if (iconEl) iconEl.style.transform = 'rotate(0deg)';
+                        if (textEl) textEl.textContent = 'Thu nhỏ';
+                    } else {
+                        if (content) content.style.display = 'none';
+                        if (iconEl) iconEl.style.transform = 'rotate(180deg)';
+                        if (textEl) textEl.textContent = 'Mở rộng';
+                    }
+                }
+            });
+        } catch(e) {}
+    }
+
+    // 3. Restore Scroll
+    const savedScroll = sessionStorage.getItem('adminScrollY');
+    if (savedScroll) {
+        setTimeout(() => window.scrollTo(0, parseInt(savedScroll)), 150);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', restoreAdminUIState);
+

@@ -1,0 +1,22 @@
+--- shared/components.js
++++ shared/components.js
+@@ -677,19 +677,6 @@
+         }, { passive: false });
+     });
+ 
+-    // Tự động tính toán chiều cao tối đa cho dropdown cấp 1 để không bị khuất dưới đáy màn hình
+-    document.querySelectorAll('.nav-item.has-dropdown').forEach(function(item) {
+-        const dropdown = item.querySelector(':scope > .dropdown');
+-        if (!dropdown || item.classList.contains('dropdown-submenu')) return;
+-        
+-        item.addEventListener('mouseenter', function() {
+-            if (window.innerWidth <= 992) return;
+-            const rect = item.getBoundingClientRect();
+-            const availableHeight = window.innerHeight - rect.bottom - 20;
+-            dropdown.style.maxHeight = Math.max(availableHeight, 200) + 'px';
+-        });
+-    });
+-
+     // 4.8. Xử lý Submenu bị tràn mép phải màn hình và khắc phục lỗi Safari cắt xén (clip)
+     document.querySelectorAll('.dropdown-submenu').forEach(function(item) {
+         const dropdown = item.querySelector(':scope > .dropdown'); // Chỉ lấy dropdown trực tiếp

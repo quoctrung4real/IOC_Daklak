@@ -51,7 +51,9 @@
                 <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
                 <span>Tin tức</span>
                 <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
-                <span style="color: #475569;">Chi tiết tin tức</span>
+                <a id="breadcrumb-category" href="#" style="color: #475569; text-decoration: none;">Chuyên mục</a>
+                <i class="fa-solid fa-caret-right" style="font-size: 12px; color: #94a3b8;"></i>
+                <span id="breadcrumb-title" style="color: #475569; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom;">Chi tiết</span>
             </div>
         </div>
     </div>
@@ -140,6 +142,26 @@
 
                 // Render dữ liệu
                 document.getElementById('detail-title').innerText = post.title;
+                
+                // Update breadcrumb
+                const categoryMap = {
+                    'cap-nhat-bao-lu': 'Cập nhật bão lũ',
+                    'giai-phap-an-toan-thong-tin': 'Giải pháp an toàn thông tin',
+                    'thong-bao': 'Thông báo',
+                    'tin-hoat-dong': 'Tin hoạt động',
+                    'cds-doi-moi-sang-tao': 'CĐS - Đổi mới sáng tạo',
+                    'giai-phap-an-toan-mang': 'Giải pháp an toàn mạng'
+                };
+                const bcCat = document.getElementById('breadcrumb-category');
+                let categoryName = categoryMap[category] || 'Chuyên mục';
+                if (bcCat) {
+                    bcCat.innerText = categoryName;
+                    bcCat.href = `${window.BASE_URL || '../../'}user/tin-tuc/${category}.html`;
+                }
+                const bcTitle = document.getElementById('breadcrumb-title');
+                if (bcTitle) {
+                    bcTitle.innerText = `Chi tiết tin ${categoryName.toLowerCase()}`;
+                }
                 
                 document.getElementById('detail-meta').style.display = 'flex';
                 const readBtn = document.getElementById('read-news-btn');

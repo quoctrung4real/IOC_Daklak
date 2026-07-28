@@ -47,7 +47,6 @@ body {
     color: var(--text-dark);
     background-color: var(--white);
     line-height: 1.6;
-    overflow-x: hidden;
 }
 
 a {
@@ -61,7 +60,7 @@ ul {
 }
 
 img {
-    max-width: 100%;
+    
     height: auto;
     display: block;
 }
@@ -251,11 +250,30 @@ body.is-sticky .nav-wrapper {
     visibility: hidden;
     pointer-events: none;
     transform: translateY(10px);
-    transition: all var(--transition);
+    transition: opacity var(--transition), visibility var(--transition), transform var(--transition);
     z-index: 50;
+    overflow-x: hidden;
 }
 
-.nav-item.has-dropdown:hover>.dropdown {
+body.is-sticky .dropdown {
+    /* max-height: calc(100vh - 80px); removed */
+}
+
+.dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+.dropdown::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+.dropdown::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid var(--white);
+}
+
+.nav-item.has-dropdown:hover>.dropdown,
+.nav-item.has-dropdown.keep-open>.dropdown {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -273,7 +291,6 @@ body.is-sticky .nav-wrapper {
 .dropdown li a:hover {
     background: var(--bg-light);
     color: var(--primary-blue);
-    padding-left: 24px;
 }
 
 /* Search */
@@ -1495,7 +1512,7 @@ body.is-sticky .nav-wrapper {
 
     .hero-text,
     .hero-image {
-        max-width: 100%;
+        
     }
 
     .hero-title {
@@ -1803,8 +1820,20 @@ body.is-sticky .nav-wrapper {
 }
 
 .dropdown-submenu>.dropdown {
+    position: absolute;
     top: 0;
     left: 100%;
+    margin-top: 0;
+    width: auto;
+    min-width: 240px;
+    border-radius: var(--radius-md);
+    background-color: var(--white);
+    box-shadow: var(--shadow-lg);
+    border-left: none;
+    padding-left: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .dropdown-submenu:hover>.dropdown {
@@ -2881,3 +2910,36 @@ body.is-sticky .nav-wrapper {
 }
 
 
+
+@media (min-width: 769px) {
+    html {
+        min-width: 1300px;
+        overflow-x: auto;
+    }
+    body {
+        min-width: 1300px;
+    }
+}
+
+.nav-list .dropdown li.dropdown-submenu > a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-detached {
+    position: fixed !important;
+    z-index: 1050 !important;
+    /* initial state for detached */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+
+.dropdown-detached.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}

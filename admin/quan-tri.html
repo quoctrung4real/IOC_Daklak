@@ -1122,11 +1122,7 @@
                         </div>
                         <div class="config-section-content" style="display: none;">
                             
-                            <!-- Nút Thêm Nhóm Mới (Cột Mới) -->
-                            <div style="margin-bottom: 15px;">
-                                <button type="button" onclick="infoUtilityApp.addGroup()" style="background-color: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-plus"></i> Thêm Cột (Nhóm) Mới</button>
-                                <button type="button" class="btn-save-global" onclick="infoUtilityApp.saveAllToServer()"><i class="fa-solid fa-save"></i> Lưu Phần Này</button>
-                            </div>
+
 
                             <!-- Form Thêm/Sửa Cột (Nhóm) -->
                             <div id="iu-group-form-container" style="display: none; background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;">
@@ -1148,7 +1144,7 @@
                                     <div style="display: flex; gap: 10px; align-items: flex-start; flex-direction: column;">
                                         <input type="file" accept="image/*" onclick="this.value = null" onchange="openCropper(this, 'iuGroupBg')">
                                         <input type="hidden" id="iu-group-bgImage">
-                                        <button type="button" onclick="document.getElementById('iu-group-bgImage').value=''; alert('Đã xóa ảnh nền');" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px;"><i class="fa-solid fa-trash"></i> Xóa ảnh nền</button>
+                                        <button type="button" onclick="document.getElementById('iu-group-bgImage').value=''; showToast('Đã xóa ảnh nền', 'success');" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px;"><i class="fa-solid fa-trash"></i> Xóa ảnh nền</button>
                                     </div>
                                 </div>
 
@@ -1193,7 +1189,7 @@
                                             <input type="file" accept="image/*" onclick="this.value = null" onchange="openCropper(this, 'iuLinkLogo')">
                                         </div>
                                         <input type="hidden" id="iu-link-logo">
-                                        <button type="button" onclick="document.getElementById('iu-link-logo').value=''; document.getElementById('iu-link-logoPreview').src=''; document.getElementById('iu-link-logoPreview').style.display='none'; alert('Đã xóa logo ảnh');" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>
+                                        <button type="button" onclick="document.getElementById('iu-link-logo').value=''; document.getElementById('iu-link-logoPreview').src=''; document.getElementById('iu-link-logoPreview').style.display='none'; showToast('Đã xóa logo ảnh', 'success');" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>
                                     </div>
                                 </div>
 
@@ -1206,6 +1202,13 @@
                             <!-- Danh sách các Cột và Mục -->
                             <div id="iu-groups-list" style="display: flex; flex-direction: column; gap: 15px;">
                                 <!-- Groups will be rendered here -->
+                            </div>
+                            
+                            <!-- Nút Thêm Nhóm Mới (Cột Mới) -->
+                            <button type="button" onclick="infoUtilityApp.addGroup()" style="margin-top: 15px; padding: 8px 15px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-plus"></i> Thêm Cột (Nhóm) Mới</button>
+
+                            <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                                <button type="button" class="btn-save-global" onclick="infoUtilityApp.saveAllToServer()" style="width: 100%;"><i class="fa-solid fa-save"></i> Lưu Phần Này</button>
                             </div>
 
                         </div>
@@ -1274,7 +1277,7 @@
                             
                             <div class="form-group" style="margin-bottom: 20px;">
                                 <label for="agencyLinksColor">Màu Nền Tiêu Đề Mục (Màu Box)</label>
-                                <input type="color" id="agencyLinksColor" value="#0a59ab" onchange="updateAgencyLinksPreview()">
+                                <input type="color" id="agencyLinksColor" value="#0a59ab" onchange="updateAgencyLinksPreview()" style="width: 60px; height: 40px; padding: 0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
                             </div>
 
                             <div id="agencyLinksGroupsContainer" style="display: flex; flex-direction: column; gap: 15px;">
