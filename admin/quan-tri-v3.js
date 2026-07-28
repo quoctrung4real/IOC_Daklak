@@ -4070,7 +4070,7 @@ async function applySystemTheme(themeId) {
     
     if (themeId === 'tet') {
         Object.assign(config, {
-            primaryColor: '#dc2626', primaryDarkColor: '#b91c1c', menuBarBgColor: '#dc2626',
+            bannerUrl: '', primaryColor: '#dc2626', primaryDarkColor: '#b91c1c', menuBarBgColor: '#dc2626',
             welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
             tickerLabelColor: '#dc2626', heroTitleColor: '#dc2626', heroSubtitleColor: '#b91c1c',
             heroBgColor: '#ffffff', heroButtonBgColor: '#dc2626', accentOrangeColor: '#facc15',
@@ -4080,7 +4080,7 @@ async function applySystemTheme(themeId) {
         });
     } else if (themeId === 'coffee') {
         Object.assign(config, {
-            primaryColor: '#78350f', primaryDarkColor: '#451a03', menuBarBgColor: '#78350f',
+            bannerUrl: '', primaryColor: '#78350f', primaryDarkColor: '#451a03', menuBarBgColor: '#78350f',
             welcomeBgColor: '#fef3c7', welcomeTextColor: '#78350f', headerTextColor: '#ffffff',
             tickerLabelColor: '#78350f', heroTitleColor: '#78350f', heroSubtitleColor: '#451a03',
             heroBgColor: '#ffffff', heroButtonBgColor: '#78350f', accentOrangeColor: '#d97706',
@@ -4090,7 +4090,7 @@ async function applySystemTheme(themeId) {
         });
     } else if (themeId === 'national_day') {
         Object.assign(config, {
-            primaryColor: '#da251d', primaryDarkColor: '#b91c1c', menuBarBgColor: '#da251d',
+            bannerUrl: '', primaryColor: '#da251d', primaryDarkColor: '#b91c1c', menuBarBgColor: '#da251d',
             welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
             tickerLabelColor: '#da251d', heroTitleColor: '#da251d', heroSubtitleColor: '#b91c1c',
             heroBgColor: '#ffffff', heroButtonBgColor: '#da251d', accentOrangeColor: '#eab308',
@@ -4100,9 +4100,9 @@ async function applySystemTheme(themeId) {
         });
     } else { // default
         Object.assign(config, {
-            primaryColor: '#0a59ab', primaryDarkColor: '#074180', menuBarBgColor: '#497fbf',
+            bannerUrl: '', primaryColor: '#0a59ab', primaryDarkColor: '#074180', menuBarBgColor: '#497fbf',
             welcomeBgColor: '#1322bc', welcomeTextColor: '#ffffff', headerTextColor: '#ffffff',
-            tickerLabelColor: '#f1592b', heroTitleColor: '#1e3a8a', heroSubtitleColor: '#475569',
+            tickerLabelColor: '#1322bc', heroTitleColor: '#1e3a8a', heroSubtitleColor: '#475569',
             heroBgColor: '#ffffff', heroButtonBgColor: '#0a59ab', accentOrangeColor: '#f1592b',
             accentRedColor: '#dc2626', bodyBgColor: '#ffffff', newsSectionBgColor: '#f8fafc',
             infoUtilityBgColor: '#f0f4f8', footerBgColor: '#0f172a', techSolutionsColor: '#0a59ab',
