@@ -700,8 +700,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ['about', 'support', 'history', 'products', 'orgchart', 'struct'].forEach(key => {
         const editor = new Quill('#' + key + 'Content', quillOptions);
         
-        // Loại bỏ nền xám (background) và màu chữ khi paste từ web khác vào
+        // Loại bỏ nền xám (background) và màu chữ chỉ khi paste từ bên ngoài (Ctrl+V),
+        // KHÔNG loại bỏ khi load nội dung đã lưu (dangerouslyPasteHTML).
+        editor._isLoadingContent = false;
         editor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+            if (editor._isLoadingContent) return delta; // Giữ nguyên màu khi load nội dung đã lưu
             delta.ops.forEach(function(op) {
                 if (op.attributes) {
                     delete op.attributes.background;
@@ -731,7 +734,7 @@ async function loadAbout() {
             const about = await response.json();
             if(about) {
                 if(about.title) document.getElementById('aboutTitle').value = about.title;
-                if(about.content) window.editors['about'].clipboard.dangerouslyPasteHTML(about.content);
+                if(about.content) { window.editors['about']._isLoadingContent = true; window.editors['about'].clipboard.dangerouslyPasteHTML(about.content); window.editors['about']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -769,7 +772,7 @@ async function loadSupport() {
             const support = await response.json();
             if(support) {
                 if(support.title) document.getElementById('supportTitle').value = support.title;
-                if(support.content) window.editors['support'].clipboard.dangerouslyPasteHTML(support.content);
+                if(support.content) { window.editors['support']._isLoadingContent = true; window.editors['support'].clipboard.dangerouslyPasteHTML(support.content); window.editors['support']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -807,7 +810,7 @@ async function loadHistory() {
             const history = await response.json();
             if(history) {
                 if(history.title) document.getElementById('historyTitle').value = history.title;
-                if(history.content) window.editors['history'].clipboard.dangerouslyPasteHTML(history.content);
+                if(history.content) { window.editors['history']._isLoadingContent = true; window.editors['history'].clipboard.dangerouslyPasteHTML(history.content); window.editors['history']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -845,7 +848,7 @@ async function loadProducts() {
             const products = await response.json();
             if(products) {
                 if(products.title) document.getElementById('productsTitle').value = products.title;
-                if(products.content) window.editors['products'].clipboard.dangerouslyPasteHTML(products.content);
+                if(products.content) { window.editors['products']._isLoadingContent = true; window.editors['products'].clipboard.dangerouslyPasteHTML(products.content); window.editors['products']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -883,7 +886,7 @@ async function loadOrgChart() {
             const orgchart = await response.json();
             if(orgchart) {
                 if(orgchart.title) document.getElementById('orgchartTitle').value = orgchart.title;
-                if(orgchart.content) window.editors['orgchart'].clipboard.dangerouslyPasteHTML(orgchart.content);
+                if(orgchart.content) { window.editors['orgchart']._isLoadingContent = true; window.editors['orgchart'].clipboard.dangerouslyPasteHTML(orgchart.content); window.editors['orgchart']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -921,7 +924,7 @@ async function loadStruct() {
             const structData = await response.json();
             if(structData) {
                 if(structData.title) document.getElementById('structTitle').value = structData.title;
-                if(structData.content) window.editors['struct'].clipboard.dangerouslyPasteHTML(structData.content);
+                if(structData.content) { window.editors['struct']._isLoadingContent = true; window.editors['struct'].clipboard.dangerouslyPasteHTML(structData.content); window.editors['struct']._isLoadingContent = false; }
             }
         }
     } catch (e) {
@@ -1731,12 +1734,12 @@ const externalLinksApp = {
         }
 
         listEl.innerHTML = this.items.map(item => `
-            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${(item.bgUrl.startsWith('http') || item.bgUrl.startsWith('data:')) ? item.bgUrl : 'http://localhost:5100' + item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
                 ${item.bgUrl ? `<div style="position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: -1;"></div>` : ''}
                 
                 <div style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'}; z-index: 2; position: relative; flex-shrink: 0;">
                     ${item.logoUrl 
-                        ? `<img src="${item.logoUrl}" style="max-width:32px; max-height:32px; object-fit:contain;">` 
+                        ? `<img src="${(item.logoUrl.startsWith('http') || item.logoUrl.startsWith('data:')) ? item.logoUrl : 'http://localhost:5100' + item.logoUrl}" style="max-width:32px; max-height:32px; object-fit:contain;">` 
                         : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
                             <circle cx="24" cy="24" r="18" fill="currentColor" opacity="0.15" />
                             <text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="${item.logoText && item.logoText.length > 3 ? '8' : '10'}" font-weight="700" font-family="sans-serif">${item.logoText ? item.logoText : (item.name ? item.name.substring(0,3).toUpperCase() : 'LNK')}</text>
@@ -1818,17 +1821,17 @@ const externalLinksApp = {
         formData.append('file', file);
         
         try {
-            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+            const res = await apiFetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.success && data.fileUrl) {
+            if (data.success && data.url) {
                 if (type === 'logo') {
-                    document.getElementById('extLinkLogoUrl').value = data.fileUrl;
+                    document.getElementById('extLinkLogoUrl').value = data.url;
                     document.getElementById('extLinkLogoPreview').style.display = 'block';
-                    document.getElementById('extLinkLogoPreview').querySelector('img').src = data.fileUrl;
+                    document.getElementById('extLinkLogoPreview').querySelector('img').src = data.url;
                 } else {
-                    document.getElementById('extLinkBgUrl').value = data.fileUrl;
+                    document.getElementById('extLinkBgUrl').value = data.url;
                     document.getElementById('extLinkBgPreview').style.display = 'block';
-                    document.getElementById('extLinkBgPreview').querySelector('img').src = data.fileUrl;
+                    document.getElementById('extLinkBgPreview').querySelector('img').src = data.url;
                 }
             } else {
                 showAlert('Tải ảnh thất bại', false);
@@ -2778,9 +2781,21 @@ function renderAgencyLinksGroups() {
                         <label style="font-size: 13px;">Màu Nền Riêng</label>
                         <input type="color" value="${group.bgColor || '#ffffff'}" onchange="updateAgencyGroupField(${groupIndex}, 'bgColor', this.value)" style="width: 60px; height: 40px; padding: 0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group" style="margin-bottom: 0; position: relative;">
                         <label style="font-size: 13px;">Icon (FontAwesome)</label>
-                        <input type="text" value="${group.icon || ''}" oninput="updateAgencyGroupField(${groupIndex}, 'icon', this.value, false)" placeholder="VD: fa-solid fa-building-columns" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" id="agencyIconBtn_${groupIndex}" onclick="toggleAgencyIconPicker(${groupIndex})" style="width: 50px; height: 42px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #475569; transition: all 0.2s;" onmouseover="this.style.borderColor='#0a59ab'" onmouseout="this.style.borderColor='#cbd5e1'">
+                                ${group.icon ? `<i class="${group.icon}"></i>` : `<i class="fa-solid fa-icons" style="opacity:0.4; font-size: 16px;"></i>`}
+                            </button>
+                            <span style="font-size: 12px; color: #94a3b8;">${group.icon || 'Chưa chọn'}</span>
+                            ${group.icon ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'icon', '')" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;" title="Xóa icon"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                        </div>
+                        <div id="agencyIconPicker_${groupIndex}" style="display: none; position: absolute; top: 100%; left: 0; z-index: 100; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); padding: 10px; width: 360px; max-height: 280px; overflow-y: auto; margin-top: 5px;">
+                            <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
+                                <div onclick="selectAgencyIcon(${groupIndex}, '')" style="font-size: 11px; font-weight: bold; padding: 8px 4px; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; text-align: center; color: #ef4444;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">None</div>
+                                ${GLOBAL_ICON_LIBRARY.slice(0, 80).map(ic => `<div onclick="selectAgencyIcon(${groupIndex}, '${ic}')" style="font-size: 18px; padding: 8px 4px; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; text-align: center;" onmouseover="this.style.background='#f0f7ff'; this.style.borderColor='#0a59ab'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'"><i class="${ic}"></i></div>`).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
@@ -2818,6 +2833,33 @@ function updateAgencyGroupField(groupIndex, key, value, reRender = true) {
     updateAgencyLinksPreview();
     if (reRender) renderAgencyLinksGroups();
 }
+
+function toggleAgencyIconPicker(groupIndex) {
+    // Close all other open pickers first
+    document.querySelectorAll('[id^="agencyIconPicker_"]').forEach(el => {
+        if (el.id !== `agencyIconPicker_${groupIndex}`) el.style.display = 'none';
+    });
+    const picker = document.getElementById(`agencyIconPicker_${groupIndex}`);
+    if (picker) {
+        picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function selectAgencyIcon(groupIndex, iconClass) {
+    agencyLinksGroups[groupIndex].icon = iconClass;
+    // Close picker
+    const picker = document.getElementById(`agencyIconPicker_${groupIndex}`);
+    if (picker) picker.style.display = 'none';
+    updateAgencyLinksPreview();
+    renderAgencyLinksGroups();
+}
+
+// Close agency icon picker when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('[id^="agencyIconPicker_"]') && !e.target.closest('[id^="agencyIconBtn_"]')) {
+        document.querySelectorAll('[id^="agencyIconPicker_"]').forEach(el => el.style.display = 'none');
+    }
+});
 
 function uploadAgencyGroupImage(input, groupIndex, key) {
     if (input.files && input.files[0]) {
@@ -3922,13 +3964,13 @@ async function handleFooterImageUpload(input, targetInputId) {
     formData.append('file', file);
     
     try {
-        const response = await fetch(`${API_BASE}/upload`, {
+        const response = await apiFetch(`${API_BASE}/upload`, {
             method: 'POST',
             body: formData
         });
         const result = await response.json();
         if (result.success) {
-            document.getElementById(targetInputId).value = result.fileUrl;
+            document.getElementById(targetInputId).value = result.url;
             showAlert('Tải ảnh thành công!');
         } else {
             showAlert('Lỗi tải ảnh: ' + (result.message || ''), false);

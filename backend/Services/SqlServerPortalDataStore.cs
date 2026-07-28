@@ -411,7 +411,7 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         return saved;
     }
 
-    public async Task<int?> VoteCommentAsync(string id, bool isLike, CancellationToken cancellationToken)
+    public async Task<(int? count, bool toggled)?> VoteCommentAsync(string id, string username, bool isLike, CancellationToken cancellationToken)
     {
         if (!int.TryParse(id, out var commentId))
         {
@@ -428,7 +428,8 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
             """, connection);
         command.Parameters.AddWithValue("@Id", commentId);
         var value = await command.ExecuteScalarAsync(cancellationToken);
-        return value is null ? null : Convert.ToInt32(value, CultureInfo.InvariantCulture);
+        
+        return value is DBNull || value is null ? null : ((int)value, true);
     }
 
     public async Task<(bool Success, string Message)> DeleteCommentAsync(string id, string username, CancellationToken cancellationToken)

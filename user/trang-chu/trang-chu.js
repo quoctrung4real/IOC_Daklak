@@ -1610,11 +1610,11 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
     // Render External Links as Large Bento Cards
     if (externalLinks && externalLinks.length > 0) {
         html += externalLinks.map(item => `
-            <a href="${item.url || '#'}" target="_blank" class="bento-card bento-card-large" style="${item.bgUrl ? `background-image: url('${item.bgUrl}');` : ''}">
+            <a href="${item.url || '#'}" target="_blank" class="bento-card bento-card-large" style="${item.bgUrl ? `background-image: url('${resolveBackendUrl(item.bgUrl)}');` : ''}">
                 ${item.bgUrl ? `<div class="bento-bg-overlay"></div>` : ''}
                 <div class="bento-icon" style="background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'};">
                     ${item.logoUrl 
-                        ? `<img src="${item.logoUrl}" alt="${item.name}">` 
+                        ? `<img src="${resolveBackendUrl(item.logoUrl)}" alt="${item.name}">` 
                         : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
                             <circle cx="24" cy="24" r="18" fill="currentColor" opacity="0.15" />
                             <text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="${item.logoText && item.logoText.length > 3 ? '8' : '10'}" font-weight="700" font-family="Inter">${item.logoText ? item.logoText : (item.name ? item.name.substring(0,3).toUpperCase() : 'LNK')}</text>

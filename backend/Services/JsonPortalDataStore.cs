@@ -212,7 +212,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         return comment;
     }
 
-    public async Task<int?> VoteCommentAsync(string id, bool isLike, CancellationToken cancellationToken)
+    public async Task<(int? count, bool toggled)?> VoteCommentAsync(string id, string username, bool isLike, CancellationToken cancellationToken)
     {
         var comments = await ReadCommentsAsync(cancellationToken);
         var comment = comments.FirstOrDefault(c => string.Equals(c.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -221,11 +221,55 @@ public sealed class JsonPortalDataStore : IPortalDataStore
             return null;
         }
 
-        if (isLike) comment.Likes++;
-        else comment.Dislikes++;
+        bool toggled; // true = voted, false = unvoted (toggled off)
+
+        if (isLike)
+        {
+            if (comment.LikedBy.Contains(username, StringComparer.OrdinalIgnoreCase))
+            {
+                // Already liked → unlike (toggle off)
+                comment.LikedBy.RemoveAll(u => string.Equals(u, username, StringComparison.OrdinalIgnoreCase));
+                comment.Likes = Math.Max(0, comment.Likes - 1);
+                toggled = false;
+            }
+            else
+            {
+                // Add like
+                comment.LikedBy.Add(username);
+                comment.Likes++;
+                toggled = true;
+                // Remove dislike if existed (mutual exclusivity)
+                if (comment.DislikedBy.RemoveAll(u => string.Equals(u, username, StringComparison.OrdinalIgnoreCase)) > 0)
+                {
+                    comment.Dislikes = Math.Max(0, comment.Dislikes - 1);
+                }
+            }
+        }
+        else
+        {
+            if (comment.DislikedBy.Contains(username, StringComparer.OrdinalIgnoreCase))
+            {
+                // Already disliked → un-dislike (toggle off)
+                comment.DislikedBy.RemoveAll(u => string.Equals(u, username, StringComparison.OrdinalIgnoreCase));
+                comment.Dislikes = Math.Max(0, comment.Dislikes - 1);
+                toggled = false;
+            }
+            else
+            {
+                // Add dislike
+                comment.DislikedBy.Add(username);
+                comment.Dislikes++;
+                toggled = true;
+                // Remove like if existed (mutual exclusivity)
+                if (comment.LikedBy.RemoveAll(u => string.Equals(u, username, StringComparison.OrdinalIgnoreCase)) > 0)
+                {
+                    comment.Likes = Math.Max(0, comment.Likes - 1);
+                }
+            }
+        }
 
         await WriteFileAsync("danh-sach-binh-luan.json", JsonSerializer.Serialize(comments, _jsonOptions), cancellationToken);
-        return isLike ? comment.Likes : comment.Dislikes;
+        return (isLike ? comment.Likes : comment.Dislikes, toggled);
     }
 
     public async Task<(bool Success, string Message)> DeleteCommentAsync(string id, string username, CancellationToken cancellationToken)

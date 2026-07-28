@@ -72,6 +72,8 @@ public sealed class CommentDto
     public string? Content { get; set; }
     public int Likes { get; set; }
     public int Dislikes { get; set; }
+    public List<string> LikedBy { get; set; } = new();
+    public List<string> DislikedBy { get; set; } = new();
     public string? AvatarUrl { get; set; }
     public string? CreatedAt { get; set; }
 }

@@ -84,6 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<img src="http://localhost:5100${c.AvatarUrl}" alt="${c.Username}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` 
                 : `<i class="fa-solid fa-user"></i>`;
                 
+            const isLiked = currentUser && c.LikedBy && c.LikedBy.includes(currentUser);
+            const isDisliked = currentUser && c.DislikedBy && c.DislikedBy.includes(currentUser);
+            const likeStyle = isLiked ? 'color: #1a56db; font-weight: bold;' : '';
+            const likeIcon = isLiked ? 'fa-solid' : 'fa-regular';
+            const dislikeStyle = isDisliked ? 'margin-left: 10px; color: #1a56db; font-weight: bold;' : 'margin-left: 10px;';
+            const dislikeIcon = isDisliked ? 'fa-solid' : 'fa-regular';
+            
             div.innerHTML = `
                 <div class="comment-avatar">${avatarHtml}</div>
                 <div class="comment-content-box" style="position: relative;">
@@ -94,11 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="comment-text">${c.Content.replace(/\n/g, '<br>')}</div>
                     <div class="comment-actions">
-                        <button class="like-btn" data-id="${c.Id}">
-                            <i class="fa-regular fa-thumbs-up"></i> Hữu ích (<span class="like-count">${c.Likes || 0}</span>)
+                        <button class="like-btn" data-id="${c.Id}" style="${likeStyle}">
+                            <i class="${likeIcon} fa-thumbs-up"></i> Hữu ích (<span class="like-count">${c.Likes || 0}</span>)
                         </button>
-                        <button class="dislike-btn" data-id="${c.Id}" style="margin-left: 10px;">
-                            <i class="fa-regular fa-thumbs-down"></i> Không hữu ích (<span class="dislike-count">${c.Dislikes || 0}</span>)
+                        <button class="dislike-btn" data-id="${c.Id}" style="${dislikeStyle}">
+                            <i class="${dislikeIcon} fa-thumbs-down"></i> Không hữu ích (<span class="dislike-count">${c.Dislikes || 0}</span>)
                         </button>
                     </div>
                 </div>
@@ -116,12 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/dislike`, { method: 'POST' });
+                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/dislike?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
-                        e.currentTarget.querySelector('.dislike-count').textContent = data.dislikes;
-                        const idx = allComments.findIndex(x => x.Id === id);
-                        if(idx > -1) allComments[idx].Dislikes = data.dislikes;
+                        fetchComments();
                     }
                 } catch(err) {
                     console.error(err);
@@ -138,13 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/like`, { method: 'POST' });
+                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/like?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
-                        e.currentTarget.querySelector('.like-count').textContent = data.likes;
-                        // Cập nhật bộ đệm cục bộ
-                        const idx = allComments.findIndex(x => x.Id === id);
-                        if(idx > -1) allComments[idx].Likes = data.likes;
+                        fetchComments();
                     }
                 } catch(err) {
                     console.error(err);
