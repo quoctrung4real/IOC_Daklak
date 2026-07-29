@@ -493,7 +493,7 @@ const commonComponents = {
                 
                 searchTimeout = setTimeout(async () => {
                     try {
-                        const response = await fetch(`http://localhost:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
+                        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
                         if (!response.ok) throw new Error('Network error');
                         const data = await response.json();
                         
@@ -844,7 +844,7 @@ const commonComponents = {
     setTimeout(async () => {
         try {
             
-            const res = await fetch('http://localhost:5100/api/cau-hinh');
+            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/cau-hinh`);
             if (res.ok) {
                 const config = await res.json();
                 
@@ -854,11 +854,11 @@ const commonComponents = {
                     // Load CSS
                     const linkCss = document.createElement('link');
                     linkCss.rel = 'stylesheet';
-                    linkCss.href = `http://localhost:5100/user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
+                    linkCss.href = `http://${window.location.hostname || 'localhost'}:5100/user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
                     document.head.appendChild(linkCss);
                     // Load JS
                     const scriptJs = document.createElement('script');
-                    scriptJs.src = `http://localhost:5100/user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
+                    scriptJs.src = `http://${window.location.hostname || 'localhost'}:5100/user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
                     document.body.appendChild(scriptJs);
                 }
                 

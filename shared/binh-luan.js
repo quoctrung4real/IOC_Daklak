@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function fetchComments() {
         try {
-            const res = await fetch(`http://localhost:5100/api/binh-luan?pageId=${PAGE_ID}`);
+            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan?pageId=${PAGE_ID}`);
             allComments = await res.json();
             renderComments();
         } catch (err) {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'comment-item';
                         const avatarHtml = c.AvatarUrl 
-                ? `<img src="http://localhost:5100${c.AvatarUrl}" alt="${c.Username}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` 
+                ? `<img src="http://${window.location.hostname || 'localhost'}:5100${c.AvatarUrl}" alt="${c.Username}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` 
                 : `<i class="fa-solid fa-user"></i>`;
                 
             const isLiked = currentUser && c.LikedBy && c.LikedBy.includes(currentUser);
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/dislike?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
+                    const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan/${id}/dislike?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
                         fetchComments();
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}/like?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
+                    const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan/${id}/like?username=${encodeURIComponent(currentUser)}`, { method: 'POST' });
                     const data = await res.json();
                     if (data.success) {
                         fetchComments();
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const id = e.currentTarget.getAttribute('data-id');
                 try {
-                    const res = await fetch(`http://localhost:5100/api/binh-luan/${id}?username=${encodeURIComponent(currentUser)}`, { method: 'DELETE' });
+                    const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan/${id}?username=${encodeURIComponent(currentUser)}`, { method: 'DELETE' });
                     const data = await res.json();
                     if (data.success) {
                         fetchComments();
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser) return;
         
         try {
-            const res = await fetch('http://localhost:5100/api/binh-luan', {
+            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

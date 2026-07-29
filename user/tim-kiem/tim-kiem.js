@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     keywordSpan.textContent = `"${query}"`;
     
     try {
-        const res = await fetch(`http://localhost:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         
         if (data.success && data.results && data.results.length > 0) {

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelector('.page-title').textContent = `Văn bản theo chủ đề: Văn bản dự thảo Trung tâm IOC - ${categoryFilter}`;
         }
 
-        const response = await fetch('http://localhost:5100/api/y-kien-du-thao');
+        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/y-kien-du-thao`);
         const data = await response.json();
         
         const tbody = document.getElementById('drafts-table-body');
