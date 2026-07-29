@@ -120,7 +120,7 @@ accordionHeaders.forEach(header => {
 });
 
 // ===== TÍCH HỢP API (C# BACKEND) =====
-const API_BASE = 'http://localhost:5100/api';
+const API_BASE = `http://${window.location.hostname}:5100/api`;
 
 async function loadConfig() {
     try {

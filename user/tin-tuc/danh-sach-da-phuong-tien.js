@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const API_BASE = 'http://localhost:5100/api';
+        const API_BASE = `http://${window.location.hostname}:5100/api`;
         const response = await fetch(`${API_BASE}/tin-tuc-da-phuong-tien?t=${new Date().getTime()}`);
         if (!response.ok) {
             throw new Error('Network response was not ok');

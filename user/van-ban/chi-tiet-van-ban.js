@@ -1,6 +1,6 @@
 (function() {
-const API_BASE = 'http://localhost:5100/api';
-const BACKEND_ORIGIN = 'http://localhost:5100';
+const API_BASE = `http://${window.location.hostname}:5100/api`;
+const BACKEND_ORIGIN = `http://${window.location.hostname}:5100`;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);

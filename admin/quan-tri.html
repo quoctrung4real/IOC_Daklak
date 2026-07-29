@@ -1844,7 +1844,7 @@
         <div class="modal-content" style="background: white; width: 500px; max-width: 90%; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; position: relative;">
             <button onclick="externalLinksApp.closeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
             <h3 id="extLinkModalTitle" style="margin-top: 0; margin-bottom: 15px; color: var(--primary);">Thêm Liên Kết Ngoài</h3>
-            <form id="extLinkForm" onsubmit="event.preventDefault(); externalLinksApp.saveExtLink();">
+            <form id="extLinkForm" onsubmit="externalLinksApp.saveExtLink(event);">
                 <input type="hidden" id="extLinkId">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="extLinkName" style="display: block; margin-bottom: 5px; font-weight: 500;">Tên hiển thị <span style="color:red">*</span></label>

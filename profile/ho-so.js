@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5100/api';
+const API_BASE = `http://${window.location.hostname}:5100/api`;
 let isAvatarChanged = false;
 let currentAvatarUrl = null;
 
