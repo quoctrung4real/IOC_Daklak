@@ -4,8 +4,10 @@
     "pageId": "chi-tiet-tin-tuc",
     "username": "admin",
     "content": "ad",
-    "likes": 22,
+    "likes": 0,
     "dislikes": 0,
+    "likedBy": [],
+    "dislikedBy": [],
     "avatarUrl": "",
     "createdAt": "2026-07-28 16:41:42"
   }

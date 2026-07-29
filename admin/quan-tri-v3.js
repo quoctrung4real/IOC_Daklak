@@ -1,3 +1,37 @@
+window.currentIconTargetApp = null;
+window.selectIcon = function(iconClass) {
+    if (window.currentIconTargetApp) {
+        if (window.currentIconTargetApp.type === 'agencyLinks') {
+            updateAgencyGroupField(window.currentIconTargetApp.groupIndex, 'icon', iconClass);
+            closeIconModal();
+        } else if (window.currentIconTargetApp.selectIcon) {
+            window.currentIconTargetApp.selectIcon(iconClass);
+        }
+    }
+};
+
+window.openIconModal = function() {
+    const iconGrid = document.getElementById('icon-grid');
+    if (iconGrid) {
+        iconGrid.innerHTML = `
+            <div onclick="selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                None
+            </div>
+        ` + GLOBAL_ICON_LIBRARY.map(iconClass => `
+            <div onclick="selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                <i class="${iconClass}"></i>
+            </div>
+        `).join('');
+    }
+    const modal = document.getElementById('icon-modal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeIconModal = function() {
+    const modal = document.getElementById('icon-modal');
+    if (modal) modal.style.display = 'none';
+};
+
 const API_BASE = 'http://localhost:5100/api';
 
 const GLOBAL_ICON_LIBRARY = [
@@ -121,6 +155,12 @@ function getAuthHeaders(extraHeaders = {}) {
     return token
         ? { ...extraHeaders, Authorization: `${tokenType} ${token}` }
         : extraHeaders;
+}
+
+function resolveAdminUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return API_BASE.replace('/api', '') + (url.startsWith('/') ? '' : '/') + url;
 }
 
 async function apiFetch(url, options = {}) {
@@ -262,6 +302,7 @@ document.querySelectorAll('.tab-link').forEach(link => {
             targetId: e.currentTarget.dataset.target,
             isNews: e.currentTarget.classList.contains('news-category-link'),
             isDoc: e.currentTarget.classList.contains('document-category-link'),
+            isDraft: e.currentTarget.classList.contains('draft-category-link'),
             category: e.currentTarget.dataset.category || null,
             text: e.currentTarget.textContent.trim()
         };
@@ -378,7 +419,7 @@ document.getElementById('searchAccountInput')?.addEventListener('input', (e) => 
 // Load cấu hình hiện tại
 async function loadConfig() {
     try {
-        const response = await apiFetch(`${API_BASE}/cau-hinh`);
+        const response = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
         const config = await response.json();
         if(config) {
             const fields = [
@@ -595,7 +636,7 @@ if(bkhcnForm) {
         e.preventDefault();
         try {
             // Fetch current config first
-            const res = await apiFetch(`${API_BASE}/cau-hinh`);
+            const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
             const currentConfig = await res.json();
             
             // Update only the link
@@ -624,7 +665,7 @@ if(ubndForm) {
         e.preventDefault();
         try {
             // Fetch current config first
-            const res = await apiFetch(`${API_BASE}/cau-hinh`);
+            const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
             const currentConfig = await res.json();
             
             // Update only the link
@@ -652,7 +693,7 @@ function setupLinkFormHandler(formId, inputId, configKey) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             try {
-                const res = await apiFetch(`${API_BASE}/cau-hinh`);
+                const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
                 const currentConfig = await res.json();
                 
                 const newLink = document.getElementById(inputId).value;
@@ -680,6 +721,16 @@ setupLinkFormHandler('vb-luat-link-form', 'vbLuatLink', 'vbLuatLink');
 
 
 // Khởi tạo
+function updateWelcomePreview() {
+    const text = document.getElementById('welcomeText').value;
+    const bgColor = document.getElementById('welcomeBgColor').value;
+    const textColor = document.getElementById('welcomeTextColor').value;
+    
+    document.getElementById('welcomeBannerPreview').style.backgroundColor = bgColor;
+    document.getElementById('welcomeBannerPreview').style.color = textColor;
+    document.getElementById('welcomeTrackPreview').textContent = text;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     ensureAdminSession();
     window.editors = {};
@@ -1374,7 +1425,7 @@ function updateHeaderPreview() {
     if (bgPreview) {
         const bannerUrl = document.getElementById('bannerUrl')?.value;
         if (bannerUrl) {
-            bgPreview.style.background = `url('${bannerUrl}') center/cover no-repeat`;
+            bgPreview.style.background = `url('${resolveAdminUrl(bannerUrl)}') center/cover no-repeat`;
         } else {
             const pColor = document.getElementById('primaryColor')?.value || '#0a59ab';
             const pDark = document.getElementById('primaryDarkColor')?.value || '#074180';
@@ -1384,7 +1435,7 @@ function updateHeaderPreview() {
     if (logoPreviewContainer) {
         const logoUrl = document.getElementById('logoUrl')?.value;
         if (logoUrl) {
-            logoPreviewContainer.innerHTML = `<img src="${logoUrl}" style="height: 60px; width: auto;">`;
+            logoPreviewContainer.innerHTML = `<img src="${resolveAdminUrl(logoUrl)}" style="height: 60px; width: auto;">`;
         } else {
             logoPreviewContainer.innerHTML = `<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" /><circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></svg>`;
         }
@@ -1542,7 +1593,7 @@ const multimediaApp = {
 
     async init() {
         try {
-            const res = await apiFetch(`${API_BASE}/cau-hinh`);
+            const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
             if (res.ok) {
                 const config = await res.json();
                 if (config.multimediaBgColor) this.bgColor = config.multimediaBgColor;
@@ -1737,13 +1788,15 @@ const externalLinksApp = {
             <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${(item.bgUrl.startsWith('http') || item.bgUrl.startsWith('data:')) ? item.bgUrl : 'http://localhost:5100' + item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
                 ${item.bgUrl ? `<div style="position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: -1;"></div>` : ''}
                 
-                <div style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'}; z-index: 2; position: relative; flex-shrink: 0;">
+                <div style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'}; z-index: 2; position: relative; flex-shrink: 0; overflow: hidden;">
                     ${item.logoUrl 
-                        ? `<img src="${(item.logoUrl.startsWith('http') || item.logoUrl.startsWith('data:')) ? item.logoUrl : 'http://localhost:5100' + item.logoUrl}" style="max-width:32px; max-height:32px; object-fit:contain;">` 
-                        : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+                        ? `<img src="${(item.logoUrl.startsWith('http') || item.logoUrl.startsWith('data:')) ? item.logoUrl : 'http://localhost:5100' + item.logoUrl}" style="width:100%; height:100%; object-fit:cover;">` 
+                        : (item.iconClass
+                            ? `<i class="${item.iconClass}" style="font-size: 28px;"></i>`
+                            : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
                             <circle cx="24" cy="24" r="18" fill="currentColor" opacity="0.15" />
                             <text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="${item.logoText && item.logoText.length > 3 ? '8' : '10'}" font-weight="700" font-family="sans-serif">${item.logoText ? item.logoText : (item.name ? item.name.substring(0,3).toUpperCase() : 'LNK')}</text>
-                           </svg>`}
+                           </svg>`)}
                 </div>
                 
                 <div style="z-index: 2; position: relative; flex: 1; padding-right: 30px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
@@ -1781,17 +1834,30 @@ const externalLinksApp = {
         
         document.getElementById('extLinkLogoText').value = item.logoText || '';
         document.getElementById('extLinkLogoUrl').value = item.logoUrl || '';
+        document.getElementById('extLinkIconClass').value = item.iconClass || '';
+        
+        const iconPreview = document.getElementById('extLinkIconPreviewText');
+        const clearBtn = document.getElementById('extLinkIconClearBtn');
+        if (item.iconClass) {
+            iconPreview.innerHTML = `<i class="${item.iconClass}"></i> ${item.iconClass}`;
+            clearBtn.style.display = 'inline-block';
+        } else {
+            iconPreview.innerHTML = `<i class="fa-solid fa-ban"></i> Chưa chọn icon`;
+            clearBtn.style.display = 'none';
+        }
         if (item.logoUrl) {
+            const logoFullUrl = item.logoUrl.startsWith('/') ? API_BASE.replace('/api', '') + item.logoUrl : item.logoUrl;
             document.getElementById('extLinkLogoPreview').style.display = 'block';
-            document.getElementById('extLinkLogoPreview').querySelector('img').src = item.logoUrl;
+            document.getElementById('extLinkLogoPreview').querySelector('img').src = logoFullUrl;
         } else {
             document.getElementById('extLinkLogoPreview').style.display = 'none';
         }
         
         document.getElementById('extLinkBgUrl').value = item.bgUrl || '';
         if (item.bgUrl) {
+            const bgFullUrl = item.bgUrl.startsWith('/') ? API_BASE.replace('/api', '') + item.bgUrl : item.bgUrl;
             document.getElementById('extLinkBgPreview').style.display = 'block';
-            document.getElementById('extLinkBgPreview').querySelector('img').src = item.bgUrl;
+            document.getElementById('extLinkBgPreview').querySelector('img').src = bgFullUrl;
         } else {
             document.getElementById('extLinkBgPreview').style.display = 'none';
         }
@@ -1824,14 +1890,15 @@ const externalLinksApp = {
             const res = await apiFetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.success && data.url) {
+                const fullUrl = data.url.startsWith('/') ? API_BASE.replace('/api', '') + data.url : data.url;
                 if (type === 'logo') {
                     document.getElementById('extLinkLogoUrl').value = data.url;
                     document.getElementById('extLinkLogoPreview').style.display = 'block';
-                    document.getElementById('extLinkLogoPreview').querySelector('img').src = data.url;
+                    document.getElementById('extLinkLogoPreview').querySelector('img').src = fullUrl;
                 } else {
                     document.getElementById('extLinkBgUrl').value = data.url;
                     document.getElementById('extLinkBgPreview').style.display = 'block';
-                    document.getElementById('extLinkBgPreview').querySelector('img').src = data.url;
+                    document.getElementById('extLinkBgPreview').querySelector('img').src = fullUrl;
                 }
             } else {
                 showAlert('Tải ảnh thất bại', false);
@@ -1851,6 +1918,7 @@ const externalLinksApp = {
             color: document.getElementById('extLinkColor').value,
             logoText: document.getElementById('extLinkLogoText').value,
             logoUrl: document.getElementById('extLinkLogoUrl').value,
+            iconClass: document.getElementById('extLinkIconClass').value,
             bgUrl: document.getElementById('extLinkBgUrl').value
         };
 
@@ -1863,6 +1931,20 @@ const externalLinksApp = {
         
         this.renderList();
         this.closeModal();
+    },
+
+    selectIcon(iconClass) {
+        document.getElementById('extLinkIconClass').value = iconClass;
+        const preview = document.getElementById('extLinkIconPreviewText');
+        const clearBtn = document.getElementById('extLinkIconClearBtn');
+        if (iconClass) {
+            preview.innerHTML = `<i class="${iconClass}"></i> ${iconClass}`;
+            clearBtn.style.display = 'inline-block';
+        } else {
+            preview.innerHTML = `<i class="fa-solid fa-ban"></i> Chưa chọn icon`;
+            clearBtn.style.display = 'none';
+        }
+        closeIconModal();
     }
 };
 
@@ -2640,7 +2722,15 @@ async function loadExternalLinksConfig() {
 async function saveExternalLinkConfig(key, value) {
     try {
         const token = localStorage.getItem('accessToken');
-        const configToSave = {};
+        let configToSave = {};
+        
+        try {
+            const fetchRes = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+            if (fetchRes.ok) configToSave = await fetchRes.json();
+        } catch (e) {
+            console.warn("Could not fetch config before save", e);
+        }
+        
         configToSave[key] = value;
         
         const response = await apiFetch(`${API_BASE}/cau-hinh`, {
@@ -2781,20 +2871,14 @@ function renderAgencyLinksGroups() {
                         <label style="font-size: 13px;">Màu Nền Riêng</label>
                         <input type="color" value="${group.bgColor || '#ffffff'}" onchange="updateAgencyGroupField(${groupIndex}, 'bgColor', this.value)" style="width: 60px; height: 40px; padding: 0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0; position: relative;">
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size: 13px;">Icon (FontAwesome)</label>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <button type="button" id="agencyIconBtn_${groupIndex}" onclick="toggleAgencyIconPicker(${groupIndex})" style="width: 50px; height: 42px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #475569; transition: all 0.2s;" onmouseover="this.style.borderColor='#0a59ab'" onmouseout="this.style.borderColor='#cbd5e1'">
+                            <button type="button" onclick="window.currentIconTargetApp = { type: 'agencyLinks', groupIndex: ${groupIndex} }; openIconModal()" style="width: 50px; height: 42px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #475569; transition: all 0.2s;" onmouseover="this.style.borderColor='#0a59ab'" onmouseout="this.style.borderColor='#cbd5e1'">
                                 ${group.icon ? `<i class="${group.icon}"></i>` : `<i class="fa-solid fa-icons" style="opacity:0.4; font-size: 16px;"></i>`}
                             </button>
                             <span style="font-size: 12px; color: #94a3b8;">${group.icon || 'Chưa chọn'}</span>
                             ${group.icon ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'icon', '')" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;" title="Xóa icon"><i class="fa-solid fa-xmark"></i></button>` : ''}
-                        </div>
-                        <div id="agencyIconPicker_${groupIndex}" style="display: none; position: absolute; top: 100%; left: 0; z-index: 100; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); padding: 10px; width: 360px; max-height: 280px; overflow-y: auto; margin-top: 5px;">
-                            <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;">
-                                <div onclick="selectAgencyIcon(${groupIndex}, '')" style="font-size: 11px; font-weight: bold; padding: 8px 4px; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; text-align: center; color: #ef4444;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">None</div>
-                                ${GLOBAL_ICON_LIBRARY.slice(0, 80).map(ic => `<div onclick="selectAgencyIcon(${groupIndex}, '${ic}')" style="font-size: 18px; padding: 8px 4px; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; text-align: center;" onmouseover="this.style.background='#f0f7ff'; this.style.borderColor='#0a59ab'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'"><i class="${ic}"></i></div>`).join('')}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -3162,6 +3246,19 @@ const partnerLinksApp = {
     },
 
     openIconModal() {
+        const iconGrid = document.getElementById('icon-grid');
+        if (iconGrid) {
+            iconGrid.innerHTML = `
+                <div onclick="selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                    None
+                </div>
+            ` + GLOBAL_ICON_LIBRARY.map(iconClass => `
+                <div onclick="selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                    <i class="${iconClass}"></i>
+                </div>
+            `).join('');
+        }
+        window.currentIconTargetApp = this;
         document.getElementById('icon-modal').style.display = 'flex';
     },
 
@@ -3260,15 +3357,16 @@ const sidebarBannersApp = {
         const iconGrid = document.getElementById('icon-grid');
         if (iconGrid) {
             iconGrid.innerHTML = `
-                <div onclick="sidebarBannersApp.selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                <div onclick="selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
                     None
                 </div>
-            ` + this.iconLibrary.map(iconClass => `
-                <div onclick="sidebarBannersApp.selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+            ` + GLOBAL_ICON_LIBRARY.map(iconClass => `
+                <div onclick="selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
                     <i class="${iconClass}"></i>
                 </div>
             `).join('');
         }
+        window.currentIconTargetApp = this;
         document.getElementById('icon-modal').style.display = 'flex';
     },
 
@@ -3653,17 +3751,18 @@ const infoUtilityApp = {
 
     openIconModal() {
         const iconGrid = document.getElementById('icon-grid');
-        if (iconGrid && typeof partnerLinksApp !== 'undefined') {
+        if (iconGrid) {
             iconGrid.innerHTML = `
-                <div onclick="infoUtilityApp.selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+                <div onclick="selectIcon('')" style="font-size: 14px; font-weight: bold; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: #ef4444;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
                     None
                 </div>
-            ` + partnerLinksApp.iconLibrary.map(iconClass => `
-                <div onclick="infoUtilityApp.selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+            ` + GLOBAL_ICON_LIBRARY.map(iconClass => `
+                <div onclick="selectIcon('${iconClass}')" style="font-size: 24px; padding: 15px 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
                     <i class="${iconClass}"></i>
                 </div>
             `).join('');
         }
+        window.currentIconTargetApp = this;
         document.getElementById('icon-modal').style.display = 'flex';
     },
 
@@ -4273,8 +4372,11 @@ function restoreAdminUIState() {
         try {
             const state = JSON.parse(savedTabStr);
             let targetLink = null;
-            if (state.isNews || state.isDoc) {
-                const cls = state.isNews ? '.news-category-link' : '.document-category-link';
+            if (state.isNews || state.isDoc || state.isDraft) {
+                let cls = '';
+                if (state.isNews) cls = '.news-category-link';
+                else if (state.isDoc) cls = '.document-category-link';
+                else if (state.isDraft) cls = '.draft-category-link';
                 targetLink = document.querySelector(`${cls}[data-category="${state.category}"]`);
             } else {
                 targetLink = document.querySelector(`.tab-link[data-target="${state.targetId}"]`);
@@ -4318,5 +4420,7 @@ function restoreAdminUIState() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', restoreAdminUIState);
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(restoreAdminUIState, 0);
+});
 

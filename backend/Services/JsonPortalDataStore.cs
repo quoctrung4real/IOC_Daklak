@@ -28,7 +28,14 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
     public async Task SaveConfigAsync(JsonObject config, CancellationToken cancellationToken)
     {
-        await WriteFileAsync("cau-hinh.json", config.ToJsonString(_jsonOptions), cancellationToken);
+        var existingConfig = await GetConfigAsync(cancellationToken);
+        
+        foreach (var kvp in config)
+        {
+            existingConfig[kvp.Key] = kvp.Value?.DeepClone();
+        }
+
+        await WriteFileAsync("cau-hinh.json", existingConfig.ToJsonString(_jsonOptions), cancellationToken);
     }
 
     public async Task<ContentPageDto> GetContentPageAsync(string slug, CancellationToken cancellationToken)

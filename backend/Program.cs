@@ -569,20 +569,20 @@ app.MapPost("/api/binh-luan", async (CommentDto payload, IPortalDataStore store,
     return Results.Json(new { success = true, message = "Đã gửi bình luận.", comment });
 });
 
-app.MapPost("/api/binh-luan/{id}/like", async (string id, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapPost("/api/binh-luan/{id}/like", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string? username, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
-    var likes = await store.VoteCommentAsync(id, isLike: true, cancellationToken);
-    return likes is null
+    var result = await store.VoteCommentAsync(id, username ?? string.Empty, isLike: true, cancellationToken);
+    return result is null
         ? (IResult)Results.NotFound(new { success = false, message = "Không tìm thấy bình luận." })
-        : Results.Json(new { success = true, likes });
+        : Results.Json(new { success = true, likes = result.Value.count, toggled = result.Value.toggled });
 });
 
-app.MapPost("/api/binh-luan/{id}/dislike", async (string id, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapPost("/api/binh-luan/{id}/dislike", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string? username, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
-    var dislikes = await store.VoteCommentAsync(id, isLike: false, cancellationToken);
-    return dislikes is null
+    var result = await store.VoteCommentAsync(id, username ?? string.Empty, isLike: false, cancellationToken);
+    return result is null
         ? (IResult)Results.NotFound(new { success = false, message = "Không tìm thấy bình luận." })
-        : Results.Json(new { success = true, dislikes });
+        : Results.Json(new { success = true, dislikes = result.Value.count, toggled = result.Value.toggled });
 });
 
 app.MapDelete("/api/binh-luan/{id}", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string username, IPortalDataStore store, CancellationToken cancellationToken) =>

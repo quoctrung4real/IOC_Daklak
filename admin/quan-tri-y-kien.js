@@ -42,8 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 loadDraftOpinions();
             } else if (target === 'feedbacks-tab') {
-                loadFeedbacks();
-                loadDraftsFilter();
+                loadDraftsFilter().then(() => {
+                    loadFeedbacks();
+                });
             }
         });
     });
@@ -127,8 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filter feedback
     document.getElementById('feedbacks-draft-filter')?.addEventListener('change', (e) => {
-        const draftId = e.target.value;
-        renderFeedbacks(draftId);
+        const category = e.target.value;
+        renderFeedbacks(category);
     });
 });
 
@@ -259,25 +260,41 @@ async function loadFeedbacks() {
     }
 }
 
-function renderFeedbacks(draftId = '') {
+function renderFeedbacks(category = '') {
     const tbody = document.querySelector('#feedbacks-table tbody');
     tbody.innerHTML = '';
     
     let filtered = currentFeedbacks;
-    if (draftId) {
-        filtered = currentFeedbacks.filter(f => f.draftOpinionId == draftId);
+    if (category) {
+        filtered = currentFeedbacks.filter(f => {
+            const draft = currentDraftOpinions.find(d => d.id == f.draftOpinionId);
+            if (!draft) return false;
+            let draftDepartment = 'TT_IOC';
+            if (draft.category === 'UBND tỉnh Đắk Lắk') draftDepartment = 'UBND tỉnh Đắk Lắk';
+            else if (draft.category === 'Sở KHCN') draftDepartment = 'Sở KHCN';
+            return draftDepartment === category;
+        });
     }
     
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center">Chưa có góp ý nào</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center">Chưa có góp ý nào</td></tr>`;
         return;
     }
 
     filtered.forEach(item => {
-        const draftTitle = currentDraftOpinions.find(d => d.id === item.draftOpinionId)?.title || `Dự thảo #${item.draftOpinionId}`;
+        const draft = currentDraftOpinions.find(d => d.id == item.draftOpinionId);
+        const draftTitle = draft?.title || `Dự thảo #${item.draftOpinionId}`;
+        let catText = '';
+        if (draft) {
+            if (draft.category === 'UBND tỉnh Đắk Lắk') catText = 'UBND tỉnh Đắk Lắk';
+            else if (draft.category === 'Sở KHCN') catText = 'Sở KHCN';
+            else catText = 'Trung tâm IOC';
+        }
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item.id}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${catText}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;" title="${draftTitle}">${draftTitle.length > 50 ? draftTitle.substring(0, 50) + '...' : draftTitle}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item.fullName || ''}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item.email || ''}<br>${item.phoneNumber || ''}</td>
@@ -299,14 +316,13 @@ async function loadDraftsFilter() {
         if (data.success) {
             currentDraftOpinions = data.draftOpinions;
             const filter = document.getElementById('feedbacks-draft-filter');
-            // reset options
-            filter.innerHTML = '<option value="">-- Tất cả dự thảo --</option>';
-            data.draftOpinions.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.textContent = `[${d.documentNumber || d.id}] ${d.title}`;
-                filter.appendChild(opt);
-            });
+            // set options directly
+            filter.innerHTML = `
+                <option value="">-- Tất cả chuyên mục --</option>
+                <option value="Sở KHCN">Dự thảo Sở KHCN</option>
+                <option value="TT_IOC">Dự thảo Trung tâm IOC</option>
+                <option value="UBND tỉnh Đắk Lắk">Dự thảo UBND tỉnh Đắk Lắk</option>
+            `;
         }
     } catch (err) {
         console.error(err);
@@ -337,7 +353,7 @@ function viewFeedback(id) {
     const feedback = currentFeedbacks.find(f => f.id === id);
     if (!feedback) return;
     
-    const draftTitle = currentDraftOpinions.find(d => d.id === feedback.draftOpinionId)?.title || `Dự thảo #${feedback.draftOpinionId}`;
+    const draftTitle = currentDraftOpinions.find(d => d.id == feedback.draftOpinionId)?.title || `Dự thảo #${feedback.draftOpinionId}`;
     
     document.getElementById('vf-name').textContent = feedback.fullName || 'Không rõ';
     document.getElementById('vf-email').textContent = feedback.email || 'Không có';

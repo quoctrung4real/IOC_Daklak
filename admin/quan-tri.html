@@ -630,16 +630,16 @@
 
                         <div class="form-group">
                             <label for="welcomeText">Nội Dung Welcome Ticker</label>
-                            <input type="text" id="welcomeText" value="CHÀO MỪNG ĐẾN VỚI TRANG THÔNG TIN ĐIỆN TỬ TRUNG TÂM IOC TỈNH ĐẮK LẮK ★ ĐẨY MẠNH CHUYỂN ĐỔI SỐ TRONG CƠ QUAN NHÀ NƯỚC">
+                            <input type="text" id="welcomeText" value="CHÀO MỪNG ĐẾN VỚI TRANG THÔNG TIN ĐIỆN TỬ TRUNG TÂM IOC TỈNH ĐẮK LẮK ★ ĐẨY MẠNH CHUYỂN ĐỔI SỐ TRONG CƠ QUAN NHÀ NƯỚC" oninput="updateWelcomePreview()">
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div class="form-group">
                                 <label for="welcomeBgColor">Màu Nền Ticker</label>
-                                <input type="color" id="welcomeBgColor" value="#1322BC">
+                                <input type="color" id="welcomeBgColor" value="#1322BC" oninput="updateWelcomePreview()">
                             </div>
                             <div class="form-group">
                                 <label for="welcomeTextColor">Màu Chữ Ticker</label>
-                                <input type="color" id="welcomeTextColor" value="#ffffff">
+                                <input type="color" id="welcomeTextColor" value="#ffffff" oninput="updateWelcomePreview()">
                             </div>
                         </div>
                     
@@ -1358,6 +1358,7 @@
                                     <div style="display:flex; gap:10px;">
                                         <input type="text" id="footerNcscImageUrl" class="form-control" placeholder="/uploads/..." style="flex:1;">
                                         <button type="button" onclick="document.getElementById('uploadNcscImage').click()">Tải lên</button>
+                                        <button type="button" onclick="document.getElementById('footerNcscImageUrl').value=''" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 0 10px;" title="Xóa ảnh"><i class="fa-solid fa-trash"></i></button>
                                         <input type="file" id="uploadNcscImage" style="display:none" onclick="this.value = null" onchange="handleFooterImageUpload(this, 'footerNcscImageUrl')">
                                     </div>
                                 </div>
@@ -1366,6 +1367,7 @@
                                     <div style="display:flex; gap:10px;">
                                         <input type="text" id="footerQrCodeUrl" class="form-control" placeholder="/uploads/..." style="flex:1;">
                                         <button type="button" onclick="document.getElementById('uploadQrImage').click()">Tải lên</button>
+                                        <button type="button" onclick="document.getElementById('footerQrCodeUrl').value=''" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 0 10px;" title="Xóa ảnh"><i class="fa-solid fa-trash"></i></button>
                                         <input type="file" id="uploadQrImage" style="display:none" onclick="this.value = null" onchange="handleFooterImageUpload(this, 'footerQrCodeUrl')">
                                     </div>
                                     <label style="margin-top: 10px;">Link App Store</label>
@@ -1706,7 +1708,7 @@
                                 <th style="width: 15%; padding: 12px; text-align: left;">Số, ký hiệu</th>
                                 <th style="width: 15%; padding: 12px; text-align: left;">Chuyên mục</th>
                                 <th style="width: 45%; padding: 12px; text-align: left;">Trích yếu</th>
-                                <th style="width: 10%; padding: 12px; text-align: left;">Thời hạn</th>
+                                <th style="width: 10%; padding: 12px; text-align: left;">Ngày ban hành</th>
                                 <th style="width: 10%; padding: 12px; text-align: center;">Hành động</th>
                             </tr>
                         </thead>
@@ -1721,9 +1723,9 @@
             <div class="card">
                 <h3>Lấy ý kiến người dân</h3>
                 <div class="form-group" id="feedbacks-filter-group" style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Lọc theo Dự thảo</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Lọc theo Chuyên mục</label>
                     <select id="feedbacks-draft-filter" class="form-control" style="width: fit-content; min-width: 250px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif; background-color: white;">
-                        <option value="">-- Tất cả dự thảo --</option>
+                        <option value="">-- Tất cả chuyên mục --</option>
                     </select>
                 </div>
                 <div style="overflow-x:auto;">
@@ -1731,10 +1733,11 @@
                         <thead>
                             <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                                 <th style="width: 5%; padding: 12px; text-align: left;">ID</th>
-                                <th style="width: 25%; padding: 12px; text-align: left;">Dự thảo</th>
+                                <th style="width: 15%; padding: 12px; text-align: left;">Chuyên mục</th>
+                                <th style="width: 20%; padding: 12px; text-align: left;">Dự thảo</th>
                                 <th style="width: 15%; padding: 12px; text-align: left;">Người góp ý</th>
-                                <th style="width: 15%; padding: 12px; text-align: left;">Thông tin</th>
-                                <th style="width: 20%; padding: 12px; text-align: left;">Nội dung</th>
+                                <th style="width: 10%; padding: 12px; text-align: left;">Thông tin</th>
+                                <th style="width: 15%; padding: 12px; text-align: left;">Nội dung</th>
                                 <th style="width: 10%; padding: 12px; text-align: left;">Ngày gửi</th>
                                 <th style="width: 10%; padding: 12px; text-align: center;">Hành động</th>
                             </tr>
@@ -1859,18 +1862,29 @@
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Logo / Icon (Tùy chọn)</label>
                     <input type="file" id="extLinkLogoFile" accept="image/png, image/jpeg, image/svg+xml" onclick="this.value = null" onchange="externalLinksApp.uploadImage('logo')" style="margin-bottom: 5px;">
                     <input type="hidden" id="extLinkLogoUrl">
+                    <input type="hidden" id="extLinkIconClass">
+                    <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.9rem; color: #64748b;">HOẶC chọn Icon FontAwesome:</div>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <button type="button" onclick="window.currentIconTargetApp = externalLinksApp; openIconModal()" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; color: #475569; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-icons"></i> Chọn Icon
+                        </button>
+                        <span id="extLinkIconPreviewText" style="font-size: 13px; color: #64748b;"><i class="fa-solid fa-ban"></i> Chưa chọn icon</span>
+                        <button type="button" id="extLinkIconClearBtn" onclick="externalLinksApp.selectIcon('')" style="display:none; color: #ef4444; background: none; border: none; cursor: pointer; font-size: 13px;"><i class="fa-solid fa-xmark"></i> Xóa</button>
+                    </div>
                     <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.9rem; color: #64748b;">HOẶC nhập chữ thay thế icon (VD: CTTĐT):</div>
                     <input type="text" id="extLinkLogoText" placeholder="VD: CTTĐT" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 5px;" maxlength="5">
-                    <div id="extLinkLogoPreview" style="margin-top: 10px; max-height: 80px; overflow: hidden; display: none; background: #f1f5f9; padding: 10px; border-radius: 4px; text-align: center;">
-                        <img src="" style="max-width: 100%; max-height: 80px; object-fit: contain;">
+                    <div id="extLinkLogoPreview" style="margin-top: 10px; display: none; background: #f1f5f9; padding: 10px; border-radius: 4px; text-align: center;">
+                        <img src="" style="max-width: 100%; max-height: 80px; object-fit: contain; display: block; margin: 0 auto 10px auto;">
+                        <button type="button" onclick="document.getElementById('extLinkLogoUrl').value=''; document.getElementById('extLinkLogoPreview').style.display='none';" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Ảnh nền (Tùy chọn)</label>
                     <input type="file" id="extLinkBgFile" accept="image/png, image/jpeg" onclick="this.value = null" onchange="externalLinksApp.uploadImage('bg')" style="margin-bottom: 5px;">
                     <input type="hidden" id="extLinkBgUrl">
-                    <div id="extLinkBgPreview" style="margin-top: 10px; max-height: 80px; overflow: hidden; display: none; border-radius: 4px;">
-                        <img src="" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px;">
+                    <div id="extLinkBgPreview" style="margin-top: 10px; display: none; border-radius: 4px;">
+                        <img src="" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
+                        <button type="button" onclick="document.getElementById('extLinkBgUrl').value=''; document.getElementById('extLinkBgPreview').style.display='none';" style="background: #ef4444; width: fit-content; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh nền</button>
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
@@ -2200,7 +2214,10 @@
                     </div>
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">File đính kèm</label>
-                        <input type="file" onclick="this.value = null" id="docFile" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="file" onclick="this.value = null" id="docFile" style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                            <button type="button" onclick="document.getElementById('docFile').value=''; document.getElementById('currentDocFile').innerHTML='';" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap;"><i class="fa-solid fa-trash-can"></i> Xoá tệp</button>
+                        </div>
                         <div id="currentDocFile" style="margin-top: 5px; font-size: 13px; color: #0a59ab;"></div>
                     </div>
                 </div>
@@ -2246,12 +2263,15 @@
                         <textarea id="draft-opinion-title" required rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif; resize: vertical;"></textarea>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Thời hạn (ngày kết thúc)</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">Ngày ban hành</label>
                         <input type="date" id="draft-opinion-enddate" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
                     </div>
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #334155;">File đính kèm</label>
-                        <input type="file" onclick="this.value = null" id="draft-opinion-file" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="file" onclick="this.value = null" id="draft-opinion-file" style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+                            <button type="button" onclick="document.getElementById('draft-opinion-file').value=''; document.getElementById('draft-opinion-file-link').innerHTML='';" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap;"><i class="fa-solid fa-trash-can"></i> Xoá tệp</button>
+                        </div>
                         <div id="draft-opinion-file-link" style="margin-top: 5px; font-size: 13px; color: #0a59ab;"></div>
                     </div>
                 </div>

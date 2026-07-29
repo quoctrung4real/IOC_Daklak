@@ -52,7 +52,7 @@ const commonComponents = {
                             <a href="${window.BASE_URL || ''}user/trang-chu/trang-chu.html">Trang chủ</a>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="gioi-thieu">
-                            <a href="#">Giới thiệu <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="#">Giới thiệu <i class="fa-solid fa-chevron-down"></i></a>
                             <ul class="dropdown">
                                 <li><a href="${window.BASE_URL || ''}user/gioi-thieu/chuc-nang-nhiem-vu.html">Chức năng, nhiệm vụ</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/gioi-thieu/dau-moi-ho-tro.html">Đầu mối hỗ trợ trực tuyến qua điện thoại</a></li>
@@ -65,7 +65,7 @@ const commonComponents = {
                             <a href="${window.BASE_URL || ''}user/gioi-thieu/co-cau-to-chuc.html">Cơ cấu tổ chức</a>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="tin-tuc">
-                            <a href="${window.BASE_URL || ''}user/tin-tuc/danh-sach-tin-tuc.html">Tin tức <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="${window.BASE_URL || ''}user/tin-tuc/danh-sach-tin-tuc.html">Tin tức <i class="fa-solid fa-chevron-down"></i></a>
                             <ul class="dropdown">
                                 <li><a href="${window.BASE_URL || ''}user/tin-tuc/cap-nhat-bao-lu.html">Cập nhật bão lũ</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/tin-tuc/cds-doi-moi-sang-tao.html">CĐS - Đổi mới sáng tạo</a></li>
@@ -81,7 +81,7 @@ const commonComponents = {
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="van-ban">
-                            <a href="#">Văn bản <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="#">Văn bản <i class="fa-solid fa-chevron-down"></i></a>
                             <ul class="dropdown">
                                 <li class="dropdown-submenu">
                                     <a href="${window.BASE_URL || ''}user/van-ban/van-ban.html"><span>Văn bản Trung tâm IOC</span> <i class="fa-solid fa-angle-right"></i></a>
@@ -104,7 +104,7 @@ const commonComponents = {
                             </ul>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="y-kien-du-thao">
-                            <a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Ý kiến dự thảo <i class="fa-solid fa-angle-down"></i></a>
+                            <a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Ý kiến dự thảo <i class="fa-solid fa-chevron-down"></i></a>
                             <ul class="dropdown">
                                 <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/danh-sach.html">Lấy ý kiến người dân</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/y-kien-du-thao/so-khcn.html">Văn bản dự thảo Sở KHCN</a></li>
@@ -126,7 +126,7 @@ const commonComponents = {
                             <a href="#">Lịch công tác</a>
                         </li>
                         <li class="nav-item has-dropdown" data-nav="hoi-dap">
-                            <a href="#">Hỏi đáp <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 4px;"></i></a>
+                            <a href="#">Hỏi đáp <i class="fa-solid fa-chevron-down"></i></a>
                             <ul class="dropdown">
                                 <li><a href="${window.BASE_URL || ''}user/hoi-dap/cau-hoi-thuong-gap.html">Các câu hỏi thường gặp</a></li>
                                 <li><a href="${window.BASE_URL || ''}user/hoi-dap/gui-cau-hoi.html">Liên hệ - Gửi câu hỏi</a></li>
@@ -571,14 +571,11 @@ const commonComponents = {
         
         const langLabels = { 'vi': 'VI', 'en': 'EN', 'zh-CN': '中', 'ja': 'JA', 'ko': 'KO', 'fr': 'FR' };
         
-        // Khôi phục trạng thái nút từ cookie nếu có
-        const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
-        if (match) {
-            const currentLang = match[1].split('/').pop();
-            const currentLangText = document.getElementById('currentLangText');
-            if (currentLangText && langLabels[currentLang]) {
-                currentLangText.textContent = langLabels[currentLang];
-            }
+        // Khôi phục trạng thái ngôn ngữ từ localStorage (nguồn tin cậy duy nhất)
+        const savedLang = localStorage.getItem('selectedLang') || 'vi';
+        const currentLangText = document.getElementById('currentLangText');
+        if (currentLangText && langLabels[savedLang]) {
+            currentLangText.textContent = langLabels[savedLang];
         }
         
         // Xử lý chọn ngôn ngữ
@@ -588,8 +585,10 @@ const commonComponents = {
                 const lang = opt.getAttribute('data-lang');
                 langDropdown.style.display = 'none';
                 
-                const currentLangText = document.getElementById('currentLangText');
                 if (currentLangText) currentLangText.textContent = langLabels[lang] || lang.toUpperCase();
+                
+                // Lưu vào localStorage (nguồn tin cậy)
+                localStorage.setItem('selectedLang', lang);
                 
                 // Đặt cookie
                 const expires = "expires=Thu, 01 Jan 2030 00:00:00 UTC";
@@ -613,6 +612,26 @@ const commonComponents = {
             });
         });
     }
+    
+    // Khôi phục cookie googtrans từ localStorage TRƯỚC KHI inject Google Translate script
+    // Điều này đảm bảo ngôn ngữ được duy trì khi navigate giữa các trang
+    (function restoreLangCookie() {
+        const savedLang = localStorage.getItem('selectedLang');
+        if (savedLang && savedLang !== 'vi') {
+            const val = `/vi/${savedLang}`;
+            const expires = "expires=Thu, 01 Jan 2030 00:00:00 UTC";
+            // Luôn set lại cookie trước khi Google Translate load
+            document.cookie = `googtrans=${val}; ${expires}; path=/;`;
+            document.cookie = `googtrans=${val}; ${expires}; domain=${location.hostname}; path=/;`;
+            document.cookie = `googtrans=${val}; ${expires}; domain=.${location.hostname}; path=/;`;
+        } else if (savedLang === 'vi') {
+            // Đảm bảo xóa cookie nếu user đã chọn Tiếng Việt
+            const expirePast = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+            document.cookie = `googtrans=; ${expirePast}; path=/;`;
+            document.cookie = `googtrans=; ${expirePast}; domain=${location.hostname}; path=/;`;
+            document.cookie = `googtrans=; ${expirePast}; domain=.${location.hostname}; path=/;`;
+        }
+    })();
     
     // Inject Google Translate script
     if (!document.getElementById('google-translate-script')) {

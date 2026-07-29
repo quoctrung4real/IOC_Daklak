@@ -131,7 +131,7 @@ async function loadConfig() {
         if (config.bannerUrl) {
             const banner = document.querySelector('.header-banner-bg');
             if (banner) {
-                banner.style.backgroundImage = `url('${config.bannerUrl}')`;
+                banner.style.backgroundImage = `url('${resolveBackendUrl(config.bannerUrl)}')`;
                 banner.style.backgroundSize = 'cover';
                 banner.style.backgroundPosition = 'center';
             }
@@ -194,7 +194,7 @@ async function loadConfig() {
         if (config.logoUrl) {
             const logoEl = document.querySelector('.header-content .logo .logo-icon');
             if (logoEl) {
-                logoEl.innerHTML = `<img src="${config.logoUrl}" style="max-height: 60px; object-fit: contain;">`;
+                logoEl.innerHTML = `<img src="${resolveBackendUrl(config.logoUrl)}" style="max-height: 60px; object-fit: contain;">`;
             }
         }
         
@@ -333,7 +333,7 @@ async function loadConfig() {
         if (config.heroImageUrl) {
             const heroImageContainer = document.querySelector('.hero-image');
             if (heroImageContainer) {
-                heroImageContainer.innerHTML = `<img src="${config.heroImageUrl}" style="max-width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">`;
+                heroImageContainer.innerHTML = `<img src="${resolveBackendUrl(config.heroImageUrl)}" style="max-width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">`;
             }
         }
         
@@ -1615,10 +1615,12 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
                 <div class="bento-icon" style="background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'};">
                     ${item.logoUrl 
                         ? `<img src="${resolveBackendUrl(item.logoUrl)}" alt="${item.name}">` 
-                        : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+                        : (item.iconClass
+                            ? `<i class="${item.iconClass}"></i>`
+                            : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
                             <circle cx="24" cy="24" r="18" fill="currentColor" opacity="0.15" />
                             <text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="${item.logoText && item.logoText.length > 3 ? '8' : '10'}" font-weight="700" font-family="Inter">${item.logoText ? item.logoText : (item.name ? item.name.substring(0,3).toUpperCase() : 'LNK')}</text>
-                           </svg>`
+                           </svg>`)
                     }
                 </div>
                 <span class="bento-title">${item.name || ''}</span>
