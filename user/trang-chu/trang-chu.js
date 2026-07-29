@@ -547,7 +547,7 @@ async function loadDynamicNews() {
                     const featured = featuredPosts[0];
                     if (featuredContainer && featured) {
                         let imageHtml = featured.imageUrl 
-                            ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : 'http://localhost:5100' + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
+                            ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : `http://${window.location.hostname || 'localhost'}:5100` + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
                             : `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#e8f0f8" /><text x="200" y="120" text-anchor="middle" fill="#6b7280">Ảnh minh họa</text></svg>`;
                             
                         featuredContainer.innerHTML = `
@@ -605,7 +605,7 @@ async function loadDynamicNews() {
                 const featured = data.posts[0];
                 if (featuredContainer && featured) {
                     let imageHtml = featured.imageUrl 
-                        ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : 'http://localhost:5100' + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
+                        ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : `http://${window.location.hostname || 'localhost'}:5100` + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
                         : `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#e8f0f8" /><text x="200" y="120" text-anchor="middle" fill="#6b7280">Ảnh minh họa</text></svg>`;
                         
                     featuredContainer.innerHTML = `
@@ -780,7 +780,7 @@ function ensureSearchResultPanel() {
 
 function resolveBackendUrl(url) {
     if (!url || url === '#') return '#';
-    return url.match(/^(http|data:)/) ? url : `http://localhost:5100${url}`;
+    return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`;
 }
 
 function resolveFrontendUrl(url) {
@@ -1003,7 +1003,7 @@ async function loadCategoryNews() {
                 
                 let imageHtml = '';
                 if (post.imageUrl && post.imageUrl.trim() !== '') {
-                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `http://localhost:5100${post.imageUrl}`;
+                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `http://${window.location.hostname || 'localhost'}:5100${post.imageUrl}`;
                     imageHtml = `<div class="baolu-img"><img src="${imgUrl}" alt="${post.title}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'no-image-placeholder\\'>Không có hình ảnh</div>';"></div>`;
                 } else {
                     imageHtml = `<div class="baolu-img"><div class="no-image-placeholder">Không có hình ảnh</div></div>`;
