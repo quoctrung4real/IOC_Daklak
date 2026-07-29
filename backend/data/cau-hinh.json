@@ -198,7 +198,8 @@
       "url": "#",
       "color": "#0a59ab",
       "logoText": "CADL",
-      "logoUrl": "/uploads/e857072359ff48d7b47f9618acad1c36.jpg",
+      "logoUrl": "",
+      "iconClass": "",
       "bgUrl": ""
     },
     {
@@ -208,6 +209,7 @@
       "color": "#0a59ab",
       "logoText": "STIC",
       "logoUrl": "",
+      "iconClass": "",
       "bgUrl": ""
     },
     {
