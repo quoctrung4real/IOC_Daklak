@@ -437,6 +437,43 @@
   "bodyBgColor": "#ffffff",
   "newsSectionBgColor": "#f8fafc",
   "infoUtilityBgColor": "#f0f4f8",
-  "footerBgColor": "#0056d6",
-  "lichCongTacLink": "https://ioffice.vnptdaklak.vn/qlvbdh_dlk/public/lich_don_vi.jsp?schemaName=QLVB_DLK_SKHCN.\u0026unitCode=DLK_SKHCN\u0026tokenAuthen=3682e3f32d3f0d45b4a5bf2cf4e8d7ee"
+  "footerBgColor": "#0f172a",
+  "lichCongTacLink": "https://ioffice.vnptdaklak.vn/qlvbdh_dlk/public/lich_don_vi.jsp?schemaName=QLVB_DLK_SKHCN.\u0026unitCode=DLK_SKHCN\u0026tokenAuthen=3682e3f32d3f0d45b4a5bf2cf4e8d7ee",
+  "sidebarBanners": [
+    {
+      "id": 1,
+      "title": "D\u1ECBch v\u1EE5 c\u00F4ng tr\u1EF1c tuy\u1EBFn",
+      "url": "#",
+      "color": "#0a59ab",
+      "style": "original"
+    },
+    {
+      "id": 2,
+      "title": "G\u1EEDi ph\u1EA3n h\u1ED3i",
+      "url": "#",
+      "color": "#e74c3c",
+      "style": "original"
+    },
+    {
+      "id": 3,
+      "title": "H\u1ECFi c\u01A1 quan nh\u00E0 n\u01B0\u1EDBc",
+      "url": "#",
+      "color": "#27ae60",
+      "style": "original"
+    },
+    {
+      "id": 4,
+      "title": "T\u01B0\u01A1ng t\u00E1c b\u00E1o ch\u00ED",
+      "url": "#",
+      "color": "#f39c12",
+      "style": "original"
+    },
+    {
+      "id": 5,
+      "title": "T\u00ECm hi\u1EC3u v\u1EC1 chuy\u1EC3n \u0111\u1ED5i s\u1ED1",
+      "url": "#",
+      "color": "#2c3e50",
+      "style": "original"
+    }
+  ]
 }

@@ -450,34 +450,19 @@ async function loadConfig() {
             if (sidebarContainer) {
                 sidebarContainer.innerHTML = `
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
-                        <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="280" height="100" rx="8" fill="#0a59ab" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Dịch vụ công trực tuyến</text>
-                        </svg>
+                        <div style="width: 100%; height: 100px; border-radius: 8px; background-color: #0a59ab; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="color: white; font-size: 16px; font-weight: 600; font-family: Inter; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Dịch vụ công trực tuyến</span></div>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
-                        <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="280" height="100" rx="8" fill="#e74c3c" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Gửi phản hồi</text>
-                        </svg>
+                        <div style="width: 100%; height: 100px; border-radius: 8px; background-color: #10b981; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="color: white; font-size: 16px; font-weight: 600; font-family: Inter; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Gửi phản hồi</span></div>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
-                        <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="280" height="100" rx="8" fill="#27ae60" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Hỏi cơ quan nhà nước</text>
-                        </svg>
+                        <div style="width: 100%; height: 100px; border-radius: 8px; background-color: #f59e0b; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="color: white; font-size: 16px; font-weight: 600; font-family: Inter; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Hỏi cơ quan nhà nước</span></div>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
-                        <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="280" height="100" rx="8" fill="#f39c12" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tương tác báo chí</text>
-                        </svg>
+                        <div style="width: 100%; height: 100px; border-radius: 8px; background-color: #8b5cf6; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="color: white; font-size: 16px; font-weight: 600; font-family: Inter; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tương tác báo chí</span></div>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
-                        <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="280" height="100" rx="8" fill="#2c3e50" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tìm hiểu về chuyển đổi số</text>
-                        </svg>
+                        <div style="width: 100%; height: 100px; border-radius: 8px; background-color: #ef4444; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="color: white; font-size: 16px; font-weight: 600; font-family: Inter; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tìm hiểu về chuyển đổi số</span></div>
                     </a>
                 `;
             }

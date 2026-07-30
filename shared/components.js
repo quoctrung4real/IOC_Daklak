@@ -231,14 +231,10 @@ const commonComponents = {
                                 </svg>`;
 
         let footerStyle = '';
-        if (config.footerBgType === 'solid' && config.footerBgColor) {
-            footerStyle = `style="background: ${config.footerBgColor};"`;
-        } else if (config.footerBgType === 'gradient') {
-            const startColor = config.footerGradientStart || '#1a4d8f';
-            const endColor = config.footerGradientEnd || '#3d8fd4';
-            footerStyle = `style="background: linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%);"`;
-        }
-
+        const bgColor = config.footerBgColor || '#0f172a';
+        const startColor = config.footerGradientStart || '#1a4d8f';
+        const endColor = config.footerGradientEnd || '#3d8fd4';
+        footerStyle = `style="background-color: ${bgColor}; background-image: linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%);"`;
         return `
     <!-- ===== FOOTER ===== -->
     <footer class="footer" ${footerStyle}>
