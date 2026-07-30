@@ -431,8 +431,8 @@ async function loadConfig() {
                         bannerHtml = `
                         <a href="${banner.url}" class="sidebar-banner style-image-right" style="display: flex; align-items: center; height: 100px; border-radius: 8px; margin-bottom: 15px; text-decoration: none; color: white; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: ${banner.color}; transition: transform 0.2s;">
                             <div style="display: flex; align-items: center; gap: 15px; padding: 0 20px; z-index: 2; width: 30%; box-sizing: border-box;">
-                                ${banner.icon ? `<i class="${banner.icon}" style="font-size: 32px; flex-shrink: 0;"></i>` : ''}
-                                <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; line-height: 1.4; word-wrap: break-word;">${banner.title}</span>
+                                ${banner.icon ? `<i class="${banner.icon}" style="font-size: 32px; flex-shrink: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></i>` : ''}
+                                <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; line-height: 1.4; word-wrap: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${banner.title}</span>
                             </div>
                             ${banner.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url('${banner.bgImage}'); background-size: cover; background-position: center right; z-index: 1; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);"></div>` : ''}
                         </a>
@@ -443,8 +443,8 @@ async function loadConfig() {
                         <a href="${banner.url}" class="sidebar-banner style-original" style="display: flex; align-items: center; justify-content: center; height: 100px; border-radius: 8px; margin-bottom: 15px; text-decoration: none; color: white; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: ${banner.color}; transition: transform 0.2s;">
                             ${banner.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${banner.bgImage}'); background-size: cover; background-position: center; opacity: ${banner.bgOpacity !== undefined ? banner.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
                             <div style="display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 2; width: 100%; padding: 0 15px;">
-                                ${banner.icon ? `<i class="${banner.icon}" style="font-size: 28px;"></i>` : ''}
-                                <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; text-align: center;">${banner.title}</span>
+                                ${banner.icon ? `<i class="${banner.icon}" style="font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></i>` : ''}
+                                <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${banner.title}</span>
                             </div>
                         </a>
                         `;
@@ -460,31 +460,31 @@ async function loadConfig() {
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
                         <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
                             <rect width="280" height="100" rx="8" fill="#0a59ab" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter">Dịch vụ công trực tuyến</text>
+                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Dịch vụ công trực tuyến</text>
                         </svg>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
                         <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
                             <rect width="280" height="100" rx="8" fill="#e74c3c" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter">Gửi phản hồi</text>
+                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Gửi phản hồi</text>
                         </svg>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
                         <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
                             <rect width="280" height="100" rx="8" fill="#27ae60" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter">Hỏi cơ quan nhà nước</text>
+                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Hỏi cơ quan nhà nước</text>
                         </svg>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
                         <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
                             <rect width="280" height="100" rx="8" fill="#f39c12" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter">Tương tác báo chí</text>
+                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tương tác báo chí</text>
                         </svg>
                     </a>
                     <a href="#" class="sidebar-banner" style="display: block; text-decoration: none;">
                         <svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
                             <rect width="280" height="100" rx="8" fill="#2c3e50" />
-                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter">Tìm hiểu về chuyển đổi số</text>
+                            <text x="140" y="55" text-anchor="middle" fill="white" font-size="16" font-weight="600" font-family="Inter" style="text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Tìm hiểu về chuyển đổi số</text>
                         </svg>
                     </a>
                 `;

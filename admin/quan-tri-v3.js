@@ -431,7 +431,7 @@ async function loadConfig() {
                 'heroSubtitle', 'heroSubtitleFont', 'heroSubtitleColor', 'heroBgColor', 'heroButtonUrl',
                 'heroButtonText', 'heroButtonFont', 'heroButtonBgColor',
                 'primaryColor', 'primaryDarkColor', 'accentOrangeColor', 'accentRedColor',
-                'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor',
+                'bodyBgColor', 'newsSectionBgColor', 'infoUtilityBgColor', 'bgImageUrl', 'footerBgColor', 'footerBgType', 'footerGradientStart', 'footerGradientEnd',
                 'techSolutionsFont', 'techSolutionsColor', 'boKhcnLink', 'ubndLink',
                 'csdlVbqpplLink', 'khcnTwLink', 'khcnDpLink', 'vbLuatLink', 'agencyLinksColor'
             ];
@@ -440,6 +440,9 @@ async function loadConfig() {
                 const el = document.getElementById(field);
                 if(el && config[field] !== undefined) {
                     el.value = config[field];
+                    if (el.tagName === 'SELECT') {
+                        el.dispatchEvent(new Event('change'));
+                    }
                 }
             });
 
@@ -610,6 +613,22 @@ if(footerForm) {
                 const el = document.getElementById('footer' + key.charAt(0).toUpperCase() + key.slice(1));
                 if (el) config.footerConfig[key] = el.value;
             });
+            const footerBgColorEl = document.getElementById('footerBgColor');
+            if (footerBgColorEl) {
+                config.footerBgColor = footerBgColorEl.value;
+            }
+            const footerBgTypeEl = document.getElementById('footerBgType');
+            if (footerBgTypeEl) {
+                config.footerBgType = footerBgTypeEl.value;
+            }
+            const footerGradientStartEl = document.getElementById('footerGradientStart');
+            if (footerGradientStartEl) {
+                config.footerGradientStart = footerGradientStartEl.value;
+            }
+            const footerGradientEndEl = document.getElementById('footerGradientEnd');
+            if (footerGradientEndEl) {
+                config.footerGradientEnd = footerGradientEndEl.value;
+            }
 
             const response = await apiFetch(`${API_BASE}/cau-hinh`, {
                 method: 'POST',
@@ -1094,7 +1113,7 @@ function renderNewsTable() {
         tr.innerHTML = `
             <td style="padding: 12px;">
                 ${post.imageUrl ? 
-                    `<img src="${post.imageUrl}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px;" onerror="this.outerHTML='<div style=\\'width: 80px; height: 50px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; border: 1px dashed #cbd5e1;\\'>Không có<br>hình ảnh</div>'">` 
+                    `<img src="${post.imageUrl}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px;" onerror="this.outerHTML='<div style=\'width: 80px; height: 50px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; border: 1px dashed #cbd5e1;\'>Không có<br>hình ảnh</div>'">` 
                     : 
                     `<div style="width: 80px; height: 50px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; border: 1px dashed #cbd5e1;">Không có<br>hình ảnh</div>`
                 }
@@ -2104,14 +2123,14 @@ function renderTechSolutionsItems() {
             <div class="form-group" style="margin-bottom: 0;">
                 <label>Upload Hình Ảnh Banner (Bên phải)</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionImage(${index}, this)">
+                    <div><input type="file" accept="image/*" style="flex: 1;" onchange="openCropper(this, 'techSolutionImg', ${index})"><small style="display:block; color:#64748b; font-size:12px; margin-top:5px">Kích thước: 500x400px (Tỷ lệ 5:4)</small></div>
                     ${item.image ? `<button type="button" onclick="removeTechSolutionImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>` : ''}
                 </div>
             </div>
             <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
                 <label>Upload Ảnh Nền (Background) cho Box</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="file" accept="image/*" style="flex: 1;" onchange="uploadTechSolutionBgImage(${index}, this)">
+                    <div><input type="file" accept="image/*" style="flex: 1;" onchange="openCropper(this, 'techSolutionBg', ${index})"><small style="display:block; color:#64748b; font-size:12px; margin-top:5px">Kích thước: 500x400px (Tỷ lệ 5:4)</small></div>
                     ${item.bgImage ? `<button type="button" onclick="removeTechSolutionBgImage(${index})" style="background: #ef4444; padding: 6px 15px; font-size: 13px; border-radius: 4px; border: none; color: white; cursor: pointer;"><i class="fa-solid fa-trash"></i> Xóa nền</button>` : ''}
                 </div>
             </div>
@@ -2127,17 +2146,6 @@ function updateTechSolutionItem(index, key, value) {
     updateTechSolutionsPreview();
 }
 
-function uploadTechSolutionImage(index, input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            techSolutionsItems[index].image = e.target.result;
-            renderTechSolutionsItems();
-            showToast('Đã tải ảnh lên', 'success');
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 function removeTechSolutionImage(index) {
     techSolutionsItems[index].image = '';
@@ -2145,17 +2153,6 @@ function removeTechSolutionImage(index) {
     showToast('Đã xóa ảnh', 'success');
 }
 
-function uploadTechSolutionBgImage(index, input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            techSolutionsItems[index].bgImage = e.target.result;
-            renderTechSolutionsItems();
-            showToast('Đã tải ảnh nền lên', 'success');
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 function removeTechSolutionBgImage(index) {
     techSolutionsItems[index].bgImage = '';
@@ -2310,15 +2307,17 @@ let cropper = null;
 let currentCropTarget = null;
 let currentCropInput = null;
 let currentCropFileType = null;
+let currentCropExtraData = null;
 
 let currentCropFileName = '';
 
-function openCropper(input, target) {
+function openCropper(input, target, extraData = null) {
     if (input.files && input.files[0]) {
         currentCropTarget = target;
         currentCropInput = input;
         currentCropFileType = input.files[0].type;
         currentCropFileName = input.files[0].name;
+        currentCropExtraData = extraData;
         
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -2335,21 +2334,42 @@ function openCropper(input, target) {
             const shapeSelector = document.getElementById('cropShapeSelector');
             if (shapeSelector) shapeSelector.style.display = 'none';
             
-            if (target === 'news') {
+            let isCircular = false;
+            
+            if (target === 'news' || target === 'hero') {
                 aspectRatio = 16 / 9;
             } else if (target === 'logo' || target === 'favicon') {
                 aspectRatio = 1;
                 if (shapeSelector) shapeSelector.style.display = 'block';
-            } else if (target === 'banner') {
-                aspectRatio = NaN; // Cho phép crop tự do (rất cần cho banner siêu dài)
-            } else if (target === 'hero') {
-                aspectRatio = 16 / 9;
+            } else if (target === 'banner' || target === 'partnerLinkBg') {
+                aspectRatio = NaN;
+            } else if (target === 'sidebarBannerBg') {
+                aspectRatio = 2.8; // 280x100
+            } else if (target === 'iuGroupBg') {
+                aspectRatio = 2; // 800x400
+            } else if (target === 'extLinkBg') {
+                aspectRatio = 2; // 400x200
+            } else if (target === 'iuLinkLogo' || target === 'extLinkLogo' || target === 'agencyLogo' || target === 'footerQr') {
+                aspectRatio = 1;
+                isCircular = true;
+            } else if (target === 'techSolutionImg' || target === 'techSolutionBg') {
+                aspectRatio = 1.25; // 5:4 ratio
+            } else if (target === 'agencyBg') {
+                aspectRatio = 1.5; // 3:2 ratio
+            } else if (target === 'footerNcsc') {
+                aspectRatio = 2; // 200x100
             }
             
             cropper = new Cropper(image, {
                 aspectRatio: aspectRatio,
                 viewMode: 1,
                 autoCropArea: 1,
+                ready: function() {
+                    if (isCircular) {
+                        document.querySelector('.cropper-view-box').style.borderRadius = '50%';
+                        document.querySelector('.cropper-face').style.borderRadius = '50%';
+                    }
+                }
             });
         };
         reader.readAsDataURL(input.files[0]);
@@ -2365,6 +2385,7 @@ function closeCropperModal() {
     if (currentCropInput) {
         currentCropInput.value = '';
     }
+    currentCropExtraData = null;
 }
 
 function updateCropShape() {
@@ -2386,14 +2407,20 @@ function saveCrop() {
     let canvasWidth = 800;
     
     // Thu nhỏ mini hình ảnh để tối ưu dung lượng
-    if (currentCropTarget === 'news') {
+    if (currentCropTarget === 'news' || currentCropTarget === 'techSolutionImg' || currentCropTarget === 'iuGroupBg') {
         canvasWidth = 800;
-    } else if (currentCropTarget === 'logo' || currentCropTarget === 'favicon') {
+    } else if (currentCropTarget === 'logo' || currentCropTarget === 'favicon' || currentCropTarget === 'iuLinkLogo' || currentCropTarget === 'extLinkLogo' || currentCropTarget === 'agencyLogo' || currentCropTarget === 'footerQr') {
         canvasWidth = 200;
-    } else if (currentCropTarget === 'banner') {
+    } else if (currentCropTarget === 'banner' || currentCropTarget === 'hero' || currentCropTarget === 'partnerLinkBg' || currentCropTarget === 'agencyBg') {
         canvasWidth = 1200;
-    } else if (currentCropTarget === 'hero') {
+    } else if (currentCropTarget === 'sidebarBannerBg') {
+        canvasWidth = 300;
+    } else if (currentCropTarget === 'extLinkBg') {
+        canvasWidth = 400;
+    } else if (currentCropTarget === 'techSolutionBg') {
         canvasWidth = 1200;
+    } else if (currentCropTarget === 'footerNcsc') {
+        canvasWidth = 200;
     }
 
     const canvas = cropper.getCroppedCanvas({
@@ -2406,9 +2433,8 @@ function saveCrop() {
     let imageQuality = 0.8;
     
     // Giữ nguyên nền trong suốt (PNG) nếu ảnh gốc là PNG hoặc là logo/favicon
-    if ((typeof currentCropFileType !== 'undefined' && currentCropFileType === 'image/png') || 
-        currentCropTarget === 'logo' || 
-        currentCropTarget === 'favicon') {
+    const alwaysPngTargets = ['logo', 'favicon', 'iuLinkLogo', 'extLinkLogo', 'agencyLogo', 'footerQr', 'footerNcsc'];
+    if ((typeof currentCropFileType !== 'undefined' && currentCropFileType === 'image/png') || alwaysPngTargets.includes(currentCropTarget)) {
         imageFormat = 'image/png';
         imageQuality = undefined; 
     }
@@ -2436,7 +2462,6 @@ function saveCrop() {
         if (typeof updateHeaderPreview === 'function') updateHeaderPreview();
     } else if (currentCropTarget === 'banner') {
         document.getElementById('bannerUrl').value = base64Image;
-        // There is no direct bannerPreview img tag, we update the header background
         if (typeof updateHeaderPreview === 'function') updateHeaderPreview();
     } else if (currentCropTarget === 'hero') {
         document.getElementById('heroImageUrl').value = base64Image;
@@ -2457,6 +2482,44 @@ function saveCrop() {
         if (typeof sidebarBannersApp !== 'undefined') {
             sidebarBannersApp.updatePreview();
         }
+    } else if (currentCropTarget === 'iuGroupBg') {
+        document.getElementById('iu-group-bgImage').value = base64Image;
+        document.getElementById('iu-remove-group-bg-btn').style.display = 'inline-block';
+        if (typeof imageUtilitiesApp !== 'undefined') imageUtilitiesApp.updateGroupPreview();
+    } else if (currentCropTarget === 'iuLinkLogo') {
+        document.getElementById('iu-link-logo').value = base64Image;
+    } else if (currentCropTarget === 'extLinkLogo') {
+        document.getElementById('extLinkLogo').value = base64Image;
+    } else if (currentCropTarget === 'extLinkBg') {
+        document.getElementById('extLinkBg').value = base64Image;
+    } else if (currentCropTarget === 'techSolutionImg') {
+        if (currentCropExtraData !== null && typeof techSolutionsItems !== 'undefined') {
+            techSolutionsItems[currentCropExtraData].image = base64Image;
+            renderTechSolutionsItems();
+        }
+    } else if (currentCropTarget === 'techSolutionBg') {
+        if (currentCropExtraData !== null && typeof techSolutionsItems !== 'undefined') {
+            techSolutionsItems[currentCropExtraData].bgImage = base64Image;
+            renderTechSolutionsItems();
+        }
+    } else if (currentCropTarget === 'agencyLogo') {
+        if (currentCropExtraData !== null && typeof agenciesData !== 'undefined') {
+            agenciesData[currentCropExtraData].logo = base64Image;
+            renderAgencyGroupsList();
+        }
+    } else if (currentCropTarget === 'agencyBg') {
+        if (currentCropExtraData !== null && typeof agenciesData !== 'undefined') {
+            agenciesData[currentCropExtraData].bgImage = base64Image;
+            renderAgencyGroupsList();
+        }
+    } else if (currentCropTarget === 'footerNcsc') {
+        document.getElementById('footerNcscImageUrl').value = base64Image;
+        const p = document.getElementById('footerNcscImagePreview');
+        if (p) { p.src = base64Image; p.style.display = 'block'; }
+    } else if (currentCropTarget === 'footerQr') {
+        document.getElementById('footerQrCodeUrl').value = base64Image;
+        const p = document.getElementById('footerQrCodePreview');
+        if (p) { p.src = base64Image; p.style.display = 'block'; }
     }
     
     if (currentCropInput) {
@@ -2888,7 +2951,7 @@ function renderAgencyLinksGroups() {
                         <label style="font-size: 13px;">Logo Ảnh (thay thế Icon)</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             ${group.logo ? `<img src="${group.logo}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
-                            <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'logo')" style="font-size: 12px; max-width: 150px;">
+                            <div><input type="file" accept="image/*" onclick="this.value = null" onchange="openCropper(this, 'agencyLogo', ${groupIndex})" style="font-size: 12px; max-width: 150px;"><small style="display:block; color:#64748b; font-size:12px; margin-top:5px">Kích thước: 200x200px (Tỷ lệ 1:1)</small></div>
                             ${group.logo ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'logo', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </div>
                     </div>
@@ -2896,7 +2959,7 @@ function renderAgencyLinksGroups() {
                         <label style="font-size: 13px;">Ảnh nền (Background)</label>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             ${group.bgImage ? `<img src="${group.bgImage}" style="max-height: 30px; border-radius: 4px; border: 1px solid #ddd;">` : ''}
-                            <input type="file" accept="image/*" onclick="this.value = null" onchange="uploadAgencyGroupImage(this, ${groupIndex}, 'bgImage')" style="font-size: 12px; max-width: 150px;">
+                            <div><input type="file" accept="image/*" onclick="this.value = null" onchange="openCropper(this, 'agencyBg', ${groupIndex})" style="font-size: 12px; max-width: 150px;"><small style="display:block; color:#64748b; font-size:12px; margin-top:5px">Kích thước: 600x400px (Tỷ lệ 3:2)</small></div>
                             ${group.bgImage ? `<button type="button" onclick="updateAgencyGroupField(${groupIndex}, 'bgImage', '')" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;"><i class="fa-solid fa-trash"></i></button>` : ''}
                         </div>
                     </div>
@@ -4057,30 +4120,6 @@ const infoUtilityApp = {
     }
 };
 
-async function handleFooterImageUpload(input, targetInputId) {
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-        const response = await apiFetch(`${API_BASE}/upload`, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        if (result.success) {
-            document.getElementById(targetInputId).value = result.url;
-            showAlert('Tải ảnh thành công!');
-        } else {
-            showAlert('Lỗi tải ảnh: ' + (result.message || ''), false);
-        }
-    } catch (e) {
-        console.error(e);
-        showAlert('Lỗi kết nối khi tải ảnh', false);
-    }
-    input.value = ''; // Reset input
-}
 
 // Tự động thêm nút "Lưu" cho tất cả các mục con trong form cấu hình hệ thống
 document.addEventListener('DOMContentLoaded', () => {

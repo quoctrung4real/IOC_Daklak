@@ -230,9 +230,18 @@ const commonComponents = {
                                     <rect x="64" y="56" width="4" height="4" fill="#333" />
                                 </svg>`;
 
+        let footerStyle = '';
+        if (config.footerBgType === 'solid' && config.footerBgColor) {
+            footerStyle = `style="background: ${config.footerBgColor};"`;
+        } else if (config.footerBgType === 'gradient') {
+            const startColor = config.footerGradientStart || '#1a4d8f';
+            const endColor = config.footerGradientEnd || '#3d8fd4';
+            footerStyle = `style="background: linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%);"`;
+        }
+
         return `
     <!-- ===== FOOTER ===== -->
-    <footer class="footer">
+    <footer class="footer" ${footerStyle}>
         <div class="container">
             <div class="footer-main">
                 <div class="footer-column">
@@ -866,7 +875,7 @@ const commonComponents = {
                 if (config && config.footerConfig) {
                     const existingFooter = document.querySelector('.footer');
                     if (existingFooter) {
-                        existingFooter.outerHTML = commonComponents.renderFooter(config.footerConfig);
+                        existingFooter.outerHTML = commonComponents.renderFooter({ ...config.footerConfig, footerBgColor: config.footerBgColor, footerBgType: config.footerBgType, footerGradientStart: config.footerGradientStart, footerGradientEnd: config.footerGradientEnd });
                     }
                 }
                 
