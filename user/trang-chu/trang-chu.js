@@ -605,7 +605,7 @@ async function loadDynamicNews() {
                     displayList.forEach(item => {
                         html += `
                             <li>
-                                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${item.categoryId || 'chi-dao-dieu-hanh'}&id=${item.id}">
+                                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${categoryId}&id=${item.id}">
                                     <span class="news-list-date">${item.createdAt || ''}</span>
                                     <span>${item.title || ''}</span>
                                 </a>
