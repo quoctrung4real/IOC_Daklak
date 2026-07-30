@@ -2513,14 +2513,21 @@ function saveCrop() {
         }
     } else if (currentCropTarget === 'iuGroupBg') {
         document.getElementById('iu-group-bgImage').value = base64Image;
-        document.getElementById('iu-remove-group-bg-btn').style.display = 'inline-block';
-        if (typeof imageUtilitiesApp !== 'undefined') imageUtilitiesApp.updateGroupPreview();
+        if (typeof infoUtilityApp !== 'undefined') infoUtilityApp.renderList();
     } else if (currentCropTarget === 'iuLinkLogo') {
         document.getElementById('iu-link-logo').value = base64Image;
+        const p = document.getElementById('iu-link-logoPreview');
+        if (p) { p.src = base64Image; p.style.display = 'block'; }
     } else if (currentCropTarget === 'extLinkLogo') {
-        document.getElementById('extLinkLogo').value = base64Image;
+        const urlEl = document.getElementById('extLinkLogoUrl');
+        if (urlEl) urlEl.value = base64Image;
+        const p = document.getElementById('extLinkLogoPreview');
+        if (p) { p.querySelector('img').src = base64Image; p.style.display = 'block'; }
     } else if (currentCropTarget === 'extLinkBg') {
-        document.getElementById('extLinkBg').value = base64Image;
+        const urlEl = document.getElementById('extLinkBgUrl');
+        if (urlEl) urlEl.value = base64Image;
+        const p = document.getElementById('extLinkBgPreview');
+        if (p) { p.querySelector('img').src = base64Image; p.style.display = 'block'; }
     } else if (currentCropTarget === 'techSolutionImg') {
         if (currentCropExtraData !== null && typeof techSolutionsItems !== 'undefined') {
             techSolutionsItems[currentCropExtraData].image = base64Image;
@@ -2532,14 +2539,14 @@ function saveCrop() {
             renderTechSolutionsItems();
         }
     } else if (currentCropTarget === 'agencyLogo') {
-        if (currentCropExtraData !== null && typeof agenciesData !== 'undefined') {
-            agenciesData[currentCropExtraData].logo = base64Image;
-            renderAgencyGroupsList();
+        if (currentCropExtraData !== null && typeof agencyLinksGroups !== 'undefined') {
+            agencyLinksGroups[currentCropExtraData].logo = base64Image;
+            renderAgencyLinksGroups();
         }
     } else if (currentCropTarget === 'agencyBg') {
-        if (currentCropExtraData !== null && typeof agenciesData !== 'undefined') {
-            agenciesData[currentCropExtraData].bgImage = base64Image;
-            renderAgencyGroupsList();
+        if (currentCropExtraData !== null && typeof agencyLinksGroups !== 'undefined') {
+            agencyLinksGroups[currentCropExtraData].bgImage = base64Image;
+            renderAgencyLinksGroups();
         }
     } else if (currentCropTarget === 'footerNcsc') {
         document.getElementById('footerNcscImageUrl').value = base64Image;
@@ -2551,7 +2558,7 @@ function saveCrop() {
         if (p) { p.src = base64Image; p.style.display = 'block'; }
     }
     
-    if (currentCropInput) {
+    if (currentCropInput && currentCropInput.parentNode) {
         let namePreview = currentCropInput.nextElementSibling;
         if (!namePreview || !namePreview.classList.contains('file-name-preview')) {
             namePreview = document.createElement('div');
@@ -2568,6 +2575,15 @@ function saveCrop() {
     }
 
     closeCropperModal();
+
+    // Tự động đồng bộ ngay lập tức cho các mục inline (tránh lỗi người dùng quên bấm Lưu Cấu Hình)
+    const inlineTargets = ['logo', 'favicon', 'banner', 'hero', 'techSolutionImg', 'techSolutionBg', 'agencyLogo', 'agencyBg'];
+    if (inlineTargets.includes(currentCropTarget)) {
+        if (typeof window.saveAllToServer === 'function') window.saveAllToServer();
+    } else if (currentCropTarget === 'footerNcsc' || currentCropTarget === 'footerQr') {
+        const footerBtn = document.querySelector('#footer-config-form button[type="submit"]');
+        if (footerBtn) footerBtn.click();
+    }
 }
 
 // ================= VĂN BẢN (DOCUMENTS) LOGIC =================
@@ -4280,6 +4296,7 @@ async function applySystemTheme(themeId) {
     
     if (themeId === 'tet') {
         Object.assign(config, {
+            logoUrl: '', faviconUrl: '', heroImageUrl: '',
             bannerUrl: '', primaryColor: '#dc2626', primaryDarkColor: '#b91c1c', menuBarBgColor: '#dc2626',
             welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
             tickerLabelColor: '#dc2626', heroTitleColor: '#dc2626', heroSubtitleColor: '#b91c1c',
@@ -4290,6 +4307,7 @@ async function applySystemTheme(themeId) {
         });
     } else if (themeId === 'coffee') {
         Object.assign(config, {
+            logoUrl: '', faviconUrl: '', heroImageUrl: '',
             bannerUrl: '', primaryColor: '#78350f', primaryDarkColor: '#451a03', menuBarBgColor: '#78350f',
             welcomeBgColor: '#fef3c7', welcomeTextColor: '#78350f', headerTextColor: '#ffffff',
             tickerLabelColor: '#78350f', heroTitleColor: '#78350f', heroSubtitleColor: '#451a03',
@@ -4300,6 +4318,7 @@ async function applySystemTheme(themeId) {
         });
     } else if (themeId === 'national_day') {
         Object.assign(config, {
+            logoUrl: '', faviconUrl: '', heroImageUrl: '',
             bannerUrl: '', primaryColor: '#da251d', primaryDarkColor: '#b91c1c', menuBarBgColor: '#da251d',
             welcomeBgColor: '#fef2f2', welcomeTextColor: '#dc2626', headerTextColor: '#ffffff',
             tickerLabelColor: '#da251d', heroTitleColor: '#da251d', heroSubtitleColor: '#b91c1c',
@@ -4310,6 +4329,7 @@ async function applySystemTheme(themeId) {
         });
     } else { // default
         Object.assign(config, {
+            logoUrl: '', faviconUrl: '', heroImageUrl: '',
             bannerUrl: '', primaryColor: '#0a59ab', primaryDarkColor: '#074180', menuBarBgColor: '#497fbf',
             welcomeBgColor: '#1322bc', welcomeTextColor: '#ffffff', headerTextColor: '#ffffff',
             tickerLabelColor: '#1322bc', heroTitleColor: '#1e3a8a', heroSubtitleColor: '#475569',
@@ -4318,6 +4338,44 @@ async function applySystemTheme(themeId) {
             infoUtilityBgColor: '#f0f4f8', footerBgColor: '#0f172a', techSolutionsColor: '#0a59ab',
             agencyLinksColor: '#0a59ab'
         });
+    }
+
+    // Xoá tất cả ảnh nền, logo tuỳ chỉnh ở các mục bên dưới để đồng bộ về mặc định
+    if (config.partnerLinks) {
+        config.partnerLinks.forEach(item => { item.bgImage = ''; });
+    }
+    if (config.sidebarBanners) {
+        config.sidebarBanners.forEach(item => { item.bgImage = ''; });
+    }
+    if (config.infoUtilityConfig) {
+        config.infoUtilityConfig.forEach(group => {
+            group.bgImage = '';
+            if (group.links) {
+                group.links.forEach(link => { link.logo = ''; });
+            }
+        });
+    }
+    if (config.agencyLinksGroups) {
+        config.agencyLinksGroups.forEach(group => {
+            group.bgImage = '';
+            group.logo = '';
+        });
+    }
+    if (config.techSolutionsItems) {
+        config.techSolutionsItems.forEach(item => {
+            item.image = '';
+            item.bgImage = '';
+        });
+    }
+    if (config.externalLinks) {
+        config.externalLinks.forEach(item => {
+            item.logoUrl = '';
+            item.bgUrl = '';
+        });
+    }
+    if (config.footerConfig) {
+        config.footerConfig.ncscImageUrl = '';
+        config.footerConfig.qrCodeUrl = '';
     }
 
     try {
@@ -4533,9 +4591,18 @@ window.saveAllToServer = async function() {
 
     // Grab App states
     if (typeof sidebarBannersApp !== 'undefined') config.sidebarBanners = sidebarBannersApp.banners;
-    if (typeof partnerLinksApp !== 'undefined') config.partnerLinks = partnerLinksApp.items;
-    if (typeof infoUtilityApp !== 'undefined') config.infoUtility = infoUtilityApp.items;
-    if (typeof multimediaApp !== 'undefined') config.multimedia = multimediaApp.items;
+    if (typeof partnerLinksApp !== 'undefined') config.partnerLinks = partnerLinksApp.links;
+    if (typeof infoUtilityApp !== 'undefined') config.infoUtilityConfig = infoUtilityApp.groups;
+    if (typeof multimediaApp !== 'undefined') {
+        const mmBgColorEl = document.getElementById('multimedia-bgColor');
+        config.multimediaBgColor = mmBgColorEl ? mmBgColorEl.value : multimediaApp.bgColor;
+        config.multimediaPriorityVideoId = multimediaApp.priorityVideoId;
+        config.multimediaPriorityImageId = multimediaApp.priorityImageId;
+        config.multimediaPriorityInfographicId = multimediaApp.priorityInfographicId;
+        config.multimediaSecondaryVideoIds = multimediaApp.secondaryVideoIds;
+        config.multimediaSecondaryImageIds = multimediaApp.secondaryImageIds;
+        config.multimediaSecondaryInfographicIds = multimediaApp.secondaryInfographicIds;
+    }
 
     try {
         const response = await apiFetch(`${API_BASE}/cau-hinh`, {
