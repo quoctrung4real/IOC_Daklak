@@ -1099,4 +1099,11 @@ window.addEventListener('DOMContentLoaded', () => {
         observer.observe(document.body, { childList: true, subtree: true });
     })();
     
+    // ===== MENU ĐIỆN THOẠI =====
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            document.body.classList.toggle('open-menu');
+        });
+    }
 });

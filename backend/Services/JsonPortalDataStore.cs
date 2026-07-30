@@ -612,6 +612,33 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         }
     }
 
+    private async Task<List<QuestionDto>> ReadQuestionsAsync(CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("hoi-dap.json", "[]", cancellationToken);
+        return JsonSerializer.Deserialize<List<QuestionDto>>(json, _jsonOptions) ?? [];
+    }
+
+    private async Task WriteQuestionsAsync(List<QuestionDto> questions, CancellationToken cancellationToken)
+    {
+        await WriteFileAsync("hoi-dap.json", JsonSerializer.Serialize(questions, _jsonOptions), cancellationToken);
+    }
+
+    public async Task<List<QuestionDto>> GetQuestionsAsync(CancellationToken cancellationToken)
+    {
+        var questions = await ReadQuestionsAsync(cancellationToken);
+        return questions.OrderByDescending(q => q.CreatedAt).ToList();
+    }
+
+    public async Task<QuestionDto> AddQuestionAsync(QuestionDto payload, CancellationToken cancellationToken)
+    {
+        var questions = await ReadQuestionsAsync(cancellationToken);
+        payload.Id = questions.Count > 0 ? questions.Max(q => q.Id) + 1 : 1;
+        payload.CreatedAt = DateTimeOffset.Now;
+        questions.Add(payload);
+        await WriteQuestionsAsync(questions, cancellationToken);
+        return payload;
+    }
+
     private async Task<List<UserDto>> ReadUsersAsync(CancellationToken cancellationToken)
     {
         var json = await ReadFileAsync("nguoi-dung.json", "[]", cancellationToken);

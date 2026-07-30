@@ -57,14 +57,6 @@ if (closeSearch && searchForm) {
     });
 }
 
-// ===== MENU ĐIỆN THOẠI =====
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-
-if (mobileMenuBtn) {
-    mobileMenuBtn.addEventListener('click', () => {
-        document.body.classList.toggle('open-menu');
-    });
-}
 
 // ===== CHUYỂN TAB TÀI LIỆU =====
 const docTabs = document.querySelectorAll('.doc-tab');

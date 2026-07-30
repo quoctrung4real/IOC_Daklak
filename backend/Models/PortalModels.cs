@@ -15,6 +15,19 @@ public sealed class ContentPageDto
     public string? Content { get; set; }
 }
 
+public sealed class QuestionDto
+{
+    public int Id { get; set; }
+    public string? SenderName { get; set; }
+    public string? SenderEmail { get; set; }
+    public string? SenderPhone { get; set; }
+    public string? Content { get; set; }
+    public string? Topic { get; set; }
+    public string? Title { get; set; }
+    public string? Address { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}
+
 public sealed class CategoryPageDto
 {
     public string? Title { get; set; }

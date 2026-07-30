@@ -268,6 +268,18 @@ app.MapDelete("/api/gop-y/{id:int}", async (int id, IPortalDataStore store, Canc
     return Results.Json(new { success = true });
 }).RequireAuthorization("AdminOnly");
 
+// --- Hỏi đáp ---
+app.MapGet("/api/hoi-dap", async (IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    return Results.Json(new { success = true, data = await store.GetQuestionsAsync(cancellationToken) });
+});
+
+app.MapPost("/api/hoi-dap", async (QuestionDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+{
+    var result = await store.AddQuestionAsync(payload, cancellationToken);
+    return Results.Json(new { success = true, data = result });
+});
+
 app.MapGet("/api/tim-kiem", async (string? q, int? take, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
     if (string.IsNullOrWhiteSpace(q))

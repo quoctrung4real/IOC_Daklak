@@ -360,31 +360,37 @@
             }
         });
 
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
+        document.getElementById('contact-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Xử lý gửi câu hỏi (lưu vào localStorage giả lập gửi lên server)
             const newQuestion = {
-                id: Date.now().toString(),
                 senderName: document.getElementById('fname').value,
                 senderEmail: document.getElementById('femail').value,
                 senderPhone: document.getElementById('fphone').value,
                 content: document.getElementById('fcon').value,
                 topic: document.getElementById('fcat').options[document.getElementById('fcat').selectedIndex].text,
                 title: document.getElementById('ftitle').value,
-                address: document.getElementById('faddress').value,
-                createdAt: new Date().toISOString(),
-                status: 'pending',
-                answer: '',
-                isPublic: false
+                address: document.getElementById('faddress').value
             };
 
-            const existingQuestions = JSON.parse(localStorage.getItem('portal_user_questions') || '[]');
-            existingQuestions.push(newQuestion);
-            localStorage.setItem('portal_user_questions', JSON.stringify(existingQuestions));
-
-            alert('Cảm ơn bạn đã gửi phản hồi/câu hỏi. Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất!');
-            this.reset();
+            try {
+                const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
+                const response = await fetch(`${API_BASE}/hoi-dap`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newQuestion)
+                });
+                
+                if (response.ok) {
+                    alert('Cảm ơn bạn đã gửi phản hồi/câu hỏi. Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất!');
+                    this.reset();
+                } else {
+                    alert('Đã xảy ra lỗi khi gửi. Vui lòng thử lại sau.');
+                }
+            } catch (error) {
+                console.error("Lỗi gửi phản hồi:", error);
+                alert('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+            }
         });
     </script>
 </body>
