@@ -1238,7 +1238,6 @@
                                     <label>Màu nền khối Đa phương tiện</label>
                                     <input type="color" id="multimedia-bgColor" value="#0a59ab" style="width: 150px; height: 35px;">
                                 </div>
-                                <button type="button" class="btn-save-global" onclick="multimediaApp.saveAllToServer()"><i class="fa-solid fa-save"></i> Lưu Phần Này</button>
                             </div>
 
                             <!-- Tabs Phân loại -->
@@ -1250,7 +1249,10 @@
                             <div id="mm-items-list" style="margin-top: 15px;">
                                 <!-- Items will be rendered here -->
                             </div>
-
+                            
+                            <div style="margin-top: 20px;">
+                                <button type="button" class="btn-save-global" onclick="multimediaApp.saveAllToServer()" style="width: 100%;"><i class="fa-solid fa-save"></i> Lưu Phần Này</button>
+                            </div>
                         </div>
                     </div>
 

@@ -1160,6 +1160,87 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
+    // Hỏi đáp (Questions)
+    public async Task<List<QuestionDto>> GetQuestionsAsync(CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureQuestionTableAsync(connection, cancellationToken);
+        var list = new List<QuestionDto>();
+        await using var command = new SqlCommand($"SELECT Id, SenderName, SenderEmail, SenderPhone, Content, Topic, Title, Address, CreatedAt FROM Gov.Questions WHERE IsDeleted = 0 ORDER BY Id DESC", connection);
+        
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            list.Add(new QuestionDto
+            {
+                Id = reader.GetInt32(0),
+                SenderName = reader.IsDBNull(1) ? null : reader.GetString(1),
+                SenderEmail = reader.IsDBNull(2) ? null : reader.GetString(2),
+                SenderPhone = reader.IsDBNull(3) ? null : reader.GetString(3),
+                Content = reader.IsDBNull(4) ? null : reader.GetString(4),
+                Topic = reader.IsDBNull(5) ? null : reader.GetString(5),
+                Title = reader.IsDBNull(6) ? null : reader.GetString(6),
+                Address = reader.IsDBNull(7) ? null : reader.GetString(7),
+                CreatedAt = reader.GetDateTime(8)
+            });
+        }
+        return list;
+    }
+
+    public async Task<QuestionDto> AddQuestionAsync(QuestionDto payload, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await EnsureQuestionTableAsync(connection, cancellationToken);
+        await using var command = new SqlCommand(@"
+            INSERT INTO Gov.Questions (SenderName, SenderEmail, SenderPhone, Content, Topic, Title, Address, CreatedAt, IsDeleted)
+            OUTPUT INSERTED.Id, INSERTED.CreatedAt
+            VALUES (@SenderName, @SenderEmail, @SenderPhone, @Content, @Topic, @Title, @Address, SYSUTCDATETIME(), 0)", connection);
+        command.Parameters.AddWithValue("@SenderName", DbValue(payload.SenderName));
+        command.Parameters.AddWithValue("@SenderEmail", DbValue(payload.SenderEmail));
+        command.Parameters.AddWithValue("@SenderPhone", DbValue(payload.SenderPhone));
+        command.Parameters.AddWithValue("@Content", DbValue(payload.Content));
+        command.Parameters.AddWithValue("@Topic", DbValue(payload.Topic));
+        command.Parameters.AddWithValue("@Title", DbValue(payload.Title));
+        command.Parameters.AddWithValue("@Address", DbValue(payload.Address));
+        
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            payload.Id = reader.GetInt32(0);
+            payload.CreatedAt = reader.GetDateTime(1);
+        }
+        return payload;
+    }
+
+    private static async Task EnsureQuestionTableAsync(SqlConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(@"
+            IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Gov')
+            BEGIN
+                EXEC('CREATE SCHEMA Gov');
+            END
+
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'Questions')
+            BEGIN
+                CREATE TABLE Gov.Questions (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    SenderName NVARCHAR(255) NULL,
+                    SenderEmail NVARCHAR(255) NULL,
+                    SenderPhone NVARCHAR(50) NULL,
+                    Content NVARCHAR(MAX) NULL,
+                    Topic NVARCHAR(255) NULL,
+                    Title NVARCHAR(255) NULL,
+                    Address NVARCHAR(MAX) NULL,
+                    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+                    IsDeleted BIT NOT NULL DEFAULT 0
+                );
+            END
+        ", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private static async Task EnsureDraftTablesAsync(SqlConnection connection, CancellationToken cancellationToken)
     {
         await using var command = new SqlCommand(@"
