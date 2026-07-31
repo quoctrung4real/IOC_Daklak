@@ -1473,7 +1473,7 @@ function updateHeaderPreview() {
     if (bgPreview) {
         const bannerUrl = document.getElementById('bannerUrl')?.value;
         if (bannerUrl) {
-            bgPreview.style.background = `url('${resolveAdminUrl(bannerUrl)}') center/cover no-repeat`;
+            bgPreview.style.background = `url('${resolveAdminUrl(bannerUrl)}') center/100% 100% no-repeat`;
         } else {
             const pColor = document.getElementById('primaryColor')?.value || '#0a59ab';
             const pDark = document.getElementById('primaryDarkColor')?.value || '#074180';
@@ -2398,6 +2398,9 @@ function openCropper(input, target, extraData = null) {
                         document.querySelector('.cropper-view-box').style.borderRadius = '50%';
                         document.querySelector('.cropper-face').style.borderRadius = '50%';
                     }
+                    if (target === 'banner' || target === 'partnerLinkBg') {
+                        cropper.setCropBoxData(cropper.getCanvasData());
+                    }
                 }
             });
         };
@@ -2440,7 +2443,9 @@ function saveCrop() {
         canvasWidth = 800;
     } else if (currentCropTarget === 'logo' || currentCropTarget === 'favicon' || currentCropTarget === 'iuLinkLogo' || currentCropTarget === 'extLinkLogo' || currentCropTarget === 'agencyLogo' || currentCropTarget === 'footerQr') {
         canvasWidth = 200;
-    } else if (currentCropTarget === 'banner' || currentCropTarget === 'hero' || currentCropTarget === 'partnerLinkBg' || currentCropTarget === 'agencyBg') {
+    } else if (currentCropTarget === 'banner') {
+        canvasWidth = null; // Use original native resolution
+    } else if (currentCropTarget === 'hero' || currentCropTarget === 'partnerLinkBg' || currentCropTarget === 'agencyBg') {
         canvasWidth = 1200;
     } else if (currentCropTarget === 'sidebarBannerBg') {
         canvasWidth = 300;
@@ -2452,14 +2457,22 @@ function saveCrop() {
         canvasWidth = 200;
     }
 
-    const canvas = cropper.getCroppedCanvas({
-        width: canvasWidth,
+    const canvasOptions = {
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high'
-    });
+    };
+    if (canvasWidth) {
+        canvasOptions.width = canvasWidth;
+    }
+    
+    const canvas = cropper.getCroppedCanvas(canvasOptions);
     
     let imageFormat = 'image/jpeg';
     let imageQuality = 0.8;
+    
+    if (currentCropTarget === 'banner') {
+        imageQuality = 0.95;
+    }
     
     // Giữ nguyên nền trong suốt (PNG) nếu ảnh gốc là PNG hoặc là logo/favicon
     const alwaysPngTargets = ['logo', 'favicon', 'iuLinkLogo', 'extLinkLogo', 'agencyLogo', 'footerQr', 'footerNcsc'];

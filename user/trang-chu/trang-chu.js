@@ -124,7 +124,7 @@ async function loadConfig() {
             const banner = document.querySelector('.header-banner-bg');
             if (banner) {
                 banner.style.backgroundImage = `url('${resolveBackendUrl(config.bannerUrl)}')`;
-                banner.style.backgroundSize = 'cover';
+                banner.style.backgroundSize = '100% 100%';
                 banner.style.backgroundPosition = 'center';
             }
         }
