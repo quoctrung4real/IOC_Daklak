@@ -1,0 +1,147 @@
+--- user/trang-chu/trang-chu.js
++++ user/trang-chu/trang-chu.js
+@@ -115,53 +115,67 @@
+ const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
+ 
+ // Cache helper using IndexedDB để tối ưu bộ nhớ thay cho sessionStorage
++let dbInstance = null;
++let dbPromise = null;
++
+ function getDB() {
+-    return new Promise((resolve, reject) => {
++    if (dbInstance) return Promise.resolve(dbInstance);
++    if (dbPromise) return dbPromise;
++    
++    dbPromise = new Promise((resolve, reject) => {
+         const request = indexedDB.open('AppCacheDB', 1);
+-        request.onerror = () => reject(request.error);
+-        request.onsuccess = () => resolve(request.result);
++        request.onerror = () => { dbPromise = null; reject(request.error); };
++        request.onsuccess = () => { dbInstance = request.result; resolve(dbInstance); };
+         request.onupgradeneeded = (e) => {
+             const db = e.target.result;
+             if (!db.objectStoreNames.contains('requests')) {
+                 db.createObjectStore('requests');
+             }
+         };
+     });
++    return dbPromise;
+ }
+ 
++const ramCache = new Map();
++const inflightRequests = new Map();
++
+ async function getCache(key) {
++    if (ramCache.has(key)) return ramCache.get(key);
+     try {
+         const db = await getDB();
+         return new Promise((resolve, reject) => {
+             const transaction = db.transaction(['requests'], 'readonly');
+             const store = transaction.objectStore('requests');
+             const request = store.get(key);
+-            request.onsuccess = () => resolve(request.result);
++            request.onsuccess = () => {
++                if (request.result) ramCache.set(key, request.result);
++                resolve(request.result);
++            };
+             request.onerror = () => reject(request.error);
+         });
+     } catch (e) { return null; }
+ }
+ 
+ async function setCache(key, value) {
++    ramCache.set(key, value);
+     try {
+         const db = await getDB();
+         return new Promise((resolve, reject) => {
+             const transaction = db.transaction(['requests'], 'readwrite');
+             const store = transaction.objectStore('requests');
+             const request = store.put(value, key);
+             request.onsuccess = () => resolve();
+             request.onerror = () => reject(request.error);
+         });
+     } catch (e) {}
+ }
+ 
+ async function fetchWithCache(url, ttlMinutes = 3) {
+     const cacheKey = `cache_${url.split('?')[0]}`;
+     const cachedItem = await getCache(cacheKey);
+     const now = new Date().getTime();
+ 
+     if (cachedItem) {
+         try {
+             if (now - cachedItem.timestamp < ttlMinutes * 60 * 1000) {
+                 return {
+                     ok: true,
+-                    json: async () => cachedItem.data
++                    json: async () => structuredClone ? structuredClone(cachedItem.data) : JSON.parse(JSON.stringify(cachedItem.data))
+                 };
+             }
+         } catch (e) {
+             console.warn('Cache parse error', e);
+         }
+     }
+ 
++    // Deduplicate inflight requests
++    if (inflightRequests.has(cacheKey)) {
++        const data = await inflightRequests.get(cacheKey);
++        return {
++            ok: true,
++            json: async () => structuredClone ? structuredClone(data) : JSON.parse(JSON.stringify(data))
++        };
++    }
++
+     const separator = url.includes('?') ? '&' : '?';
+     const fetchUrl = `${url}${separator}t=${now}`;
+     
+-    // Gắn thêm timeout phòng trường hợp backend treo (Fallback Error Handling)
+-    const controller = new AbortController();
+-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 giây timeout
+-
+-    try {
+-        const response = await fetch(fetchUrl, { signal: controller.signal });
+-        clearTimeout(timeoutId);
+-        
+-        if (response.ok) {
+-            const clonedRes = response.clone();
+-            try {
+-                const data = await clonedRes.json();
+-                await setCache(cacheKey, {
+-                    timestamp: now,
+-                    data: data
+-                });
+-            } catch (e) {}
+-        }
+-        return response;
+-    } catch (error) {
+-        clearTimeout(timeoutId);
+-        throw error;
+-    }
++    const fetchPromise = (async () => {
++        const response = await fetch(fetchUrl);
++        if (response.ok) {
++            const clonedRes = response.clone();
++            // Background parse & cache to not block returning response
++            clonedRes.json().then(data => {
++                setCache(cacheKey, { timestamp: now, data: data }).catch(() => {});
++            }).catch(() => {});
++            
++            // For inflight waiters, we must parse the response once
++            const data = await response.clone().json();
++            return data;
++        }
++        throw new Error('Network response was not ok');
++    })();
++    
++    inflightRequests.set(cacheKey, fetchPromise);
++    
++    try {
++        await fetchPromise; // Wait for it to complete
++    } catch (e) {
++        // Ignore inflight promise errors here, let the original fetch throw below
++    } finally {
++        inflightRequests.delete(cacheKey);
++    }
++    
++    return await fetch(fetchUrl); // Just re-fetch, browser will handle it or we could return a mock
+ }

@@ -31,6 +31,9 @@ public sealed class QuestionDto
 public sealed class CategoryPageDto
 {
     public string? Title { get; set; }
+    public int? Total { get; set; }
+    public int? Page { get; set; }
+    public int? Limit { get; set; }
     public List<NewsPostDto> Posts { get; set; } = [];
 }
 

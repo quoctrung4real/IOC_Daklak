@@ -99,24 +99,47 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, CancellationToken cancellationToken)
+    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, CancellationToken cancellationToken)
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
         var categoryId = await EnsureCategoryAsync(connection, category, cancellationToken);
-        var page = new CategoryPageDto { Title = category.Title };
+        var result = new CategoryPageDto { Title = category.Title };
 
-        await using var command = new SqlCommand("""
+        await using var countCommand = new SqlCommand("SELECT COUNT(*) FROM Cms.Articles WHERE CategoryId = @CategoryId AND IsDeleted = 0", connection);
+        countCommand.Parameters.AddWithValue("@CategoryId", categoryId);
+        result.Total = (int)(await countCommand.ExecuteScalarAsync(cancellationToken) ?? 0);
+
+        var sql = """
             SELECT Id, Title, ImageUrl, Source, Content, CreatedAt, LegacyId
             FROM Cms.Articles
             WHERE CategoryId = @CategoryId AND IsDeleted = 0
             ORDER BY COALESCE(PublishedAt, CreatedAt) DESC
-            """, connection);
+            """;
+
+        if (page.HasValue && limit.HasValue)
+        {
+            result.Page = page.Value;
+            result.Limit = limit.Value;
+            sql += " OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
+        }
+        else
+        {
+            result.Page = 1;
+            result.Limit = result.Total;
+        }
+
+        await using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@CategoryId", categoryId);
+        if (page.HasValue && limit.HasValue)
+        {
+            command.Parameters.AddWithValue("@Offset", (page.Value - 1) * limit.Value);
+            command.Parameters.AddWithValue("@Limit", limit.Value);
+        }
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
-            page.Posts.Add(new NewsPostDto
+            result.Posts.Add(new NewsPostDto
             {
                 Id = reader.IsDBNull(6) ? reader.GetInt32(0).ToString(CultureInfo.InvariantCulture) : reader.GetString(6),
                 Title = reader.GetString(1),
@@ -127,7 +150,7 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
             });
         }
 
-        return page;
+        return result;
     }
 
     public async Task SaveNewsCategoryAsync(NewsCategoryInfo category, CategoryPageDto page, CancellationToken cancellationToken)

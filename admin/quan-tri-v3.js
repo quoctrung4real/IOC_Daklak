@@ -1,3 +1,5 @@
+window.resolveBackendUrl = function(url) { if (!url || url === '#') return '#'; return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`; };
+
 
 window.clearImage = function(urlId, fileId, previewId) {
     if (urlId) {
@@ -3128,7 +3130,7 @@ function updateAgencyLinksPreview() {
         
         let iconHtml = '';
         if (group.logo) {
-            iconHtml = `<img src="${group.logo}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+            iconHtml = `<img src="${window.resolveBackendUrl(group.logo)}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         } else {
             iconHtml = `<i class="${group.icon || 'fa-solid fa-building-columns'}"></i>`;
         }
@@ -3136,7 +3138,7 @@ function updateAgencyLinksPreview() {
         let bgImageStyle = '';
         let bgOverlay = '';
         if (group.bgImage) {
-            bgImageStyle = `background-image: url('${group.bgImage}'); background-size: cover; background-position: center;`;
+            bgImageStyle = `background-image: url('${window.resolveBackendUrl(group.bgImage)}'); background-size: cover; background-position: center;`;
             // Add a white overlay like the user frontend
             bgOverlay = `<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.85); border-radius: 12px; z-index: 0;"></div>`;
         }
@@ -3233,7 +3235,7 @@ const partnerLinksApp = {
 
             let bgHtml = '';
             if (item.bgImage) {
-                bgHtml = `<div style="position: absolute; inset: 0; background-image: url(${item.bgImage}); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>`;
+                bgHtml = `<div style="position: absolute; inset: 0; background-image: url('${window.resolveBackendUrl(item.bgImage)}'); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>`;
             }
 
             div.innerHTML = `
@@ -3357,7 +3359,7 @@ const partnerLinksApp = {
         if(previewTitle) previewTitle.textContent = title;
         if(previewBg) {
             if (bgImage) {
-                previewBg.style.backgroundImage = `url(${bgImage})`;
+                previewBg.style.backgroundImage = `url('${window.resolveBackendUrl(bgImage)}')`;
                 previewBg.style.opacity = bgOpacity;
                 previewBg.style.display = 'block';
             } else {
@@ -3531,13 +3533,13 @@ const sidebarBannersApp = {
                     <div style="width: 150px; height: 50px; border-radius: 8px; background-color: ${item.color}; display: flex; align-items: center; color: white; padding: 0 10px; position: relative; overflow: hidden;">
                         <i class="${item.icon || 'fa-solid fa-star'}" style="margin-right: 8px; z-index: 2; font-size: 14px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>
                         <span style="position: relative; z-index: 2; font-size: 10px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${item.title}</span>
-                        ${item.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 60%; background-image: url(${item.bgImage}); background-size: cover; background-position: center left; mask-image: linear-gradient(to right, transparent 0%, black 50%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%); z-index: 1;"></div>` : ''}
+                        ${item.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 60%; background-image: url('${window.resolveBackendUrl(item.bgImage)}'); background-size: cover; background-position: center left; mask-image: linear-gradient(to right, transparent 0%, black 50%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%); z-index: 1;"></div>` : ''}
                     </div>
                 `;
             } else {
                 previewHtml = `
                     <div style="width: 150px; height: 50px; border-radius: 8px; background-color: ${item.color}; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 600; text-align: center; padding: 5px; position: relative; overflow: hidden;">
-                        ${item.bgImage ? `<div style="position: absolute; inset: 0; background-image: url(${item.bgImage}); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
+                        ${item.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${window.resolveBackendUrl(item.bgImage)}'); background-size: cover; background-position: center; opacity: ${item.bgOpacity !== undefined ? item.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
                         ${item.icon ? `<i class="${item.icon}" style="margin-right: 5px; z-index: 2; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
                         <span style="position: relative; z-index: 2; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${item.title}</span>
                     </div>
@@ -3658,13 +3660,13 @@ const sidebarBannersApp = {
                             ${icon ? `<i class="${icon}" style="font-size: 24px; flex-shrink: 0; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
                             <span style="font-weight: 600; font-family: Inter; text-align: left; line-height: 1.3; font-size: 14px; word-wrap: break-word; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${title}</span>
                         </div>
-                        ${bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url(${bgImage}); background-size: cover; background-position: center right; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%); z-index: 1;"></div>` : ''}
+                        ${bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url('${window.resolveBackendUrl(bgImage)}'); background-size: cover; background-position: center right; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%); z-index: 1;"></div>` : ''}
                     </div>
                 `;
             } else {
                 previewContainer.innerHTML = `
                     <div style="width: 100%; height: 100%; background-color: ${color}; display: flex; align-items: center; justify-content: center; color: white; padding: 15px; position: absolute; inset: 0;">
-                        ${bgImage ? `<div style="position: absolute; inset: 0; background-image: url(${bgImage}); background-size: cover; background-position: center; opacity: ${bgOpacity}; z-index: 1;"></div>` : ''}
+                        ${bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${window.resolveBackendUrl(bgImage)}'); background-size: cover; background-position: center; opacity: ${bgOpacity}; z-index: 1;"></div>` : ''}
                         <div style="z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 5px;">
                             ${icon ? `<i class="${icon}" style="font-size: 24px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));"></i>` : ''}
                             <span style="font-weight: 600; font-family: Inter; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${title}</span>
@@ -3945,7 +3947,7 @@ const infoUtilityApp = {
             div.style.cssText = 'border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; margin-bottom: 15px;';
             div.innerHTML = `
                 <div style="background-color: ${group.bgColor || '#ffffff'}; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
-                    ${group.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${group.bgImage}'); background-size: cover; background-position: center; opacity: 0.3; z-index: 1;"></div>` : ''}
+                    ${group.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${window.resolveBackendUrl(group.bgImage)}'); background-size: cover; background-position: center; opacity: 0.3; z-index: 1;"></div>` : ''}
                     <div style="font-weight: 600; color: #1e293b; font-size: 15px; position: relative; z-index: 2; display: flex; align-items: center; gap: 8px;">
                         <button type="button" onclick="infoUtilityApp.groups[${index}].isExpanded = !infoUtilityApp.groups[${index}].isExpanded; const c = this.closest('div').parentElement.nextElementSibling; const i = this.querySelector('i'); if(infoUtilityApp.groups[${index}].isExpanded){c.style.display='block'; i.style.transform='rotate(0deg)';}else{c.style.display='none'; i.style.transform='rotate(-90deg)';}" style="background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; font-size: 14px;">
                             <i class="fa-solid fa-chevron-down" style="transition: transform 0.2s; transform: rotate(${group.isExpanded ? '0deg' : '-90deg'});"></i>

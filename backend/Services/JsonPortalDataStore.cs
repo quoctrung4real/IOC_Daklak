@@ -7,6 +7,8 @@ namespace Backend.Services;
 public sealed class JsonPortalDataStore : IPortalDataStore
 {
     private readonly string _dataDir;
+    private readonly string _webRootPath;
+
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -18,16 +20,26 @@ public sealed class JsonPortalDataStore : IPortalDataStore
     {
         _dataDir = Path.Combine(environment.ContentRootPath, "data");
         Directory.CreateDirectory(_dataDir);
+        _webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
     }
 
     public async Task<JsonObject> GetConfigAsync(CancellationToken cancellationToken)
     {
         var json = await ReadFileAsync("cau-hinh.json", "{}", cancellationToken);
-        return JsonNode.Parse(json)?.AsObject() ?? [];
+        var obj = JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        
+        if (await Base64FileProcessor.ProcessJsonNodeAsync(obj, _webRootPath))
+        {
+            await WriteFileAsync("cau-hinh.json", obj.ToJsonString(_jsonOptions), cancellationToken);
+        }
+        
+        return obj;
     }
 
     public async Task SaveConfigAsync(JsonObject config, CancellationToken cancellationToken)
     {
+        await Base64FileProcessor.ProcessJsonNodeAsync(config, _webRootPath);
+
         var existingConfig = await GetConfigAsync(cancellationToken);
         
         foreach (var kvp in config)
@@ -49,10 +61,26 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         await WriteFileAsync($"{slug}.json", JsonSerializer.Serialize(page, _jsonOptions), cancellationToken);
     }
 
-    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, CancellationToken cancellationToken)
+    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, CancellationToken cancellationToken)
     {
         var json = await ReadFileAsync($"{category.Slug}.json", JsonSerializer.Serialize(new CategoryPageDto { Title = category.Title }, _jsonOptions), cancellationToken);
-        return JsonSerializer.Deserialize<CategoryPageDto>(json, _jsonOptions) ?? new CategoryPageDto { Title = category.Title };
+        var result = JsonSerializer.Deserialize<CategoryPageDto>(json, _jsonOptions) ?? new CategoryPageDto { Title = category.Title };
+
+        if (page.HasValue && limit.HasValue)
+        {
+            result.Total = result.Posts.Count;
+            result.Page = page.Value;
+            result.Limit = limit.Value;
+            result.Posts = result.Posts.Skip((page.Value - 1) * limit.Value).Take(limit.Value).ToList();
+        }
+        else
+        {
+            result.Total = result.Posts.Count;
+            result.Page = 1;
+            result.Limit = result.Posts.Count;
+        }
+
+        return result;
     }
 
     public async Task SaveNewsCategoryAsync(NewsCategoryInfo category, CategoryPageDto page, CancellationToken cancellationToken)
@@ -464,7 +492,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
         foreach (var cat in newsCategories)
         {
-            var page = await GetNewsCategoryAsync(new NewsCategoryInfo { Slug = cat, Title = categoryTitles[cat] }, cancellationToken);
+            var page = await GetNewsCategoryAsync(new NewsCategoryInfo { Slug = cat, Title = categoryTitles[cat] }, null, null, cancellationToken);
             if (page?.Posts != null)
             {
                 foreach (var post in page.Posts)

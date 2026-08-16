@@ -92,6 +92,11 @@ builder.Services.AddTransient<ITextToSpeechService>(serviceProvider =>
     return serviceProvider.GetRequiredService<EspeakTextToSpeechService>();
 });
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
 var app = builder.Build();
 
 try
@@ -122,6 +127,7 @@ catch (Exception ex)
     app.Logger.LogWarning("Auto-migration failed: {Message}", ex.Message);
 }
 
+app.UseResponseCompression();
 app.UseCors();
 app.UseStaticFiles();
 UseFrontendStaticFiles(app, frontendRoot);
@@ -336,9 +342,9 @@ foreach (var page in contentPages)
 var newsCategories = app.Services.GetRequiredService<IReadOnlyList<NewsCategoryInfo>>();
 foreach (var category in newsCategories)
 {
-    app.MapGet($"/api/{category.Slug}", async (IPortalDataStore store, CancellationToken cancellationToken) =>
+    app.MapGet($"/api/{category.Slug}", async (int? page, int? limit, IPortalDataStore store, CancellationToken cancellationToken) =>
     {
-        return Results.Json(await store.GetNewsCategoryAsync(category, cancellationToken));
+        return Results.Json(await store.GetNewsCategoryAsync(category, page, limit, cancellationToken));
     });
 
     app.MapPost($"/api/{category.Slug}", async (CategoryPageDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
@@ -505,7 +511,7 @@ app.MapGet("/api/text-to-speech/news-category/{slug}", async (
         return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay chuyen muc tin tuc."));
     }
 
-    var page = await store.GetNewsCategoryAsync(category, cancellationToken);
+    var page = await store.GetNewsCategoryAsync(category, null, null, cancellationToken);
     var posts = page.Posts
         .OrderByDescending(post => DateTime.TryParse(post.CreatedAt, out var date) ? date : DateTime.MinValue)
         .Select(post => $"{post.Title}. {post.Content}");

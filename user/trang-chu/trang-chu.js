@@ -114,9 +114,125 @@ accordionHeaders.forEach(header => {
 // ===== TÍCH HỢP API (C# BACKEND) =====
 const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
 
+// Cache helper using IndexedDB để tối ưu bộ nhớ thay cho sessionStorage
+let dbInstance = null;
+let dbPromise = null;
+
+function getDB() {
+    if (dbInstance) return Promise.resolve(dbInstance);
+    if (dbPromise) return dbPromise;
+    
+    dbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open('AppCacheDB', 1);
+        request.onerror = () => { dbPromise = null; reject(request.error); };
+        request.onsuccess = () => { dbInstance = request.result; resolve(dbInstance); };
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('requests')) {
+                db.createObjectStore('requests');
+            }
+        };
+    });
+    return dbPromise;
+}
+
+const ramCache = new Map();
+const inflightRequests = new Map();
+
+async function getCache(key) {
+    if (ramCache.has(key)) return ramCache.get(key);
+    try {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['requests'], 'readonly');
+            const store = transaction.objectStore('requests');
+            const request = store.get(key);
+            request.onsuccess = () => {
+                if (request.result) ramCache.set(key, request.result);
+                resolve(request.result);
+            };
+            request.onerror = () => reject(request.error);
+        });
+    } catch (e) { return null; }
+}
+
+async function setCache(key, value) {
+    ramCache.set(key, value);
+    try {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['requests'], 'readwrite');
+            const store = transaction.objectStore('requests');
+            const request = store.put(value, key);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    } catch (e) {}
+}
+
+async function fetchWithCache(url, ttlMinutes = 3) {
+    const cacheKey = `cache_${url.split('?')[0]}`;
+    const cachedItem = await getCache(cacheKey);
+    const now = new Date().getTime();
+
+    const cloneData = (data) => typeof structuredClone === 'function' ? structuredClone(data) : JSON.parse(JSON.stringify(data));
+
+    if (cachedItem) {
+        try {
+            if (now - cachedItem.timestamp < ttlMinutes * 60 * 1000) {
+                return {
+                    ok: true,
+                    json: async () => cloneData(cachedItem.data)
+                };
+            }
+        } catch (e) {
+            console.warn('Cache parse error', e);
+        }
+    }
+
+    // Deduplicate inflight requests (chống gọi 3 lần /cau-hinh cùng lúc)
+    if (inflightRequests.has(cacheKey)) {
+        try {
+            const data = await inflightRequests.get(cacheKey);
+            return {
+                ok: true,
+                json: async () => cloneData(data)
+            };
+        } catch (e) {
+            // Fallthrough to fetch again if inflight failed
+        }
+    }
+
+    const separator = url.includes('?') ? '&' : '?';
+    const fetchUrl = `${url}${separator}t=${now}`;
+    
+    const fetchPromise = fetch(fetchUrl).then(async (response) => {
+        if (!response.ok) throw new Error('Network error');
+        const data = await response.json();
+        // Lưu cache ở background (không chặn)
+        setCache(cacheKey, { timestamp: now, data: data }).catch(() => {});
+        return data;
+    });
+    
+    inflightRequests.set(cacheKey, fetchPromise);
+    
+    try {
+        const data = await fetchPromise;
+        return {
+            ok: true,
+            json: async () => cloneData(data)
+        };
+    } catch (error) {
+        throw error;
+    } finally {
+        inflightRequests.delete(cacheKey);
+    }
+}
+
+
 async function loadConfig() {
     try {
-        const response = await fetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+        const response = await fetchWithCache(`${API_BASE}/cau-hinh`);
         if (!response.ok) return;
         const config = await response.json();
 
@@ -325,7 +441,7 @@ async function loadConfig() {
         if (config.heroImageUrl) {
             const heroImageContainer = document.querySelector('.hero-image');
             if (heroImageContainer) {
-                heroImageContainer.innerHTML = `<img src="${resolveBackendUrl(config.heroImageUrl)}" style="max-width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">`;
+                heroImageContainer.innerHTML = `<img src="${resolveBackendUrl(config.heroImageUrl)}" loading="lazy" decoding="async" style="max-width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">`;
             }
         }
         
@@ -375,7 +491,7 @@ async function loadConfig() {
                     const pStyle = font ? `font-family: ${font};` : '';
                     const aStyle = color ? `color: ${color};` : '';
                     
-                    const imgHtml = item.image ? `<img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` : `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="20" width="80" height="100" rx="8" fill="#d4e5f7" /><rect x="70" y="30" width="60" height="40" rx="4" fill="#a8c4db" /><circle cx="100" cy="100" r="8" fill="#8fb3ce" /></svg>`;
+                    const imgHtml = item.image ? `<img src="${resolveBackendUrl(item.image)}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` : `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="20" width="80" height="100" rx="8" fill="#d4e5f7" /><rect x="70" y="30" width="60" height="40" rx="4" fill="#a8c4db" /><circle cx="100" cy="100" r="8" fill="#8fb3ce" /></svg>`;
 
                     let cardStyle = '';
                     if (item.bgImage) {
@@ -426,14 +542,14 @@ async function loadConfig() {
                                 ${banner.icon ? `<i class="${banner.icon}" style="font-size: 32px; flex-shrink: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></i>` : ''}
                                 <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; line-height: 1.4; word-wrap: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${banner.title}</span>
                             </div>
-                            ${banner.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url('${banner.bgImage}'); background-size: cover; background-position: center right; z-index: 1; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);"></div>` : ''}
+                            ${banner.bgImage ? `<div style="position: absolute; right: 0; top: 0; bottom: 0; width: 70%; background-image: url('${resolveBackendUrl(banner.bgImage)}'); background-size: cover; background-position: center right; z-index: 1; mask-image: linear-gradient(to right, transparent 0%, black 40%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40%);"></div>` : ''}
                         </a>
                         `;
                     } else {
                         // Original style
                         bannerHtml = `
                         <a href="${banner.url}" class="sidebar-banner style-original" style="display: flex; align-items: center; justify-content: center; height: 100px; border-radius: 8px; margin-bottom: 15px; text-decoration: none; color: white; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: ${banner.color}; transition: transform 0.2s;">
-                            ${banner.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${banner.bgImage}'); background-size: cover; background-position: center; opacity: ${banner.bgOpacity !== undefined ? banner.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
+                            ${banner.bgImage ? `<div style="position: absolute; inset: 0; background-image: url('${resolveBackendUrl(banner.bgImage)}'); background-size: cover; background-position: center; opacity: ${banner.bgOpacity !== undefined ? banner.bgOpacity : 0.2}; z-index: 1;"></div>` : ''}
                             <div style="display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 2; width: 100%; padding: 0 15px;">
                                 ${banner.icon ? `<i class="${banner.icon}" style="font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></i>` : ''}
                                 <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${banner.title}</span>
@@ -480,24 +596,32 @@ async function loadDynamicNews() {
     try {
         const renderFeaturedNews = async () => {
             try {
-                const configRes = await fetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+                const configRes = await fetchWithCache(`${API_BASE}/cau-hinh`);
                 const config = await configRes.json();
                 const featuredIds = config.featuredNewsIds || [];
                 
                 let featuredPosts = [];
                 if (featuredIds.length > 0) {
                     const categories = ['cap-nhat-bao-lu', 'cds-doi-moi-sang-tao', 'chi-dao-dieu-hanh', 'cong-tac-xay-dung-dang', 'giai-phap-an-toan-mang', 'giai-phap-an-toan-thong-tin', 'thong-bao', 'tieu-chuan-chat-luong', 'tin-hoat-dong', 'trao-doi-kinh-nghiem', 'tuong-tac-cong-dan'];
-                    let allPosts = [];
-                    for (const cat of categories) {
-                        const res = await fetch(`${API_BASE}/${cat}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data && data.posts) {
-                                data.posts.forEach(p => p.categoryId = cat);
-                                allPosts = allPosts.concat(data.posts);
+                    
+                    const promises = categories.map(async cat => {
+                        try {
+                            const res = await fetchWithCache(`${API_BASE}/${cat}?page=1&limit=10`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                if (data && data.posts) {
+                                    data.posts.forEach(p => p.categoryId = cat);
+                                    return data.posts;
+                                }
                             }
+                        } catch (e) {
+                            console.warn(`Failed to fetch ${cat}:`, e);
                         }
-                    }
+                        return [];
+                    });
+                    
+                    const results = await Promise.all(promises);
+                    let allPosts = results.flat();
                     
                     featuredIds.forEach(id => {
                         const post = allPosts.find(p => p.id === id);
@@ -506,7 +630,7 @@ async function loadDynamicNews() {
                 }
                 
                 if (featuredPosts.length === 0) {
-                    const fallbackRes = await fetch(`${API_BASE}/chi-dao-dieu-hanh`);
+                    const fallbackRes = await fetchWithCache(`${API_BASE}/chi-dao-dieu-hanh?page=1&limit=4`);
                     if (fallbackRes.ok) {
                         const data = await fallbackRes.json();
                         if (data && data.posts) {
@@ -524,7 +648,7 @@ async function loadDynamicNews() {
                     const featured = featuredPosts[0];
                     if (featuredContainer && featured) {
                         let imageHtml = featured.imageUrl 
-                            ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : `http://${window.location.hostname || 'localhost'}:5100` + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
+                            ? `<img src="${resolveBackendUrl(featured.imageUrl)}" alt="${featured.title}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
                             : `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#e8f0f8" /><text x="200" y="120" text-anchor="middle" fill="#6b7280">Ảnh minh họa</text></svg>`;
                             
                         featuredContainer.innerHTML = `
@@ -567,7 +691,7 @@ async function loadDynamicNews() {
         };
 
         const fetchAndRender = async (categoryId, listId, featuredId) => {
-            const response = await fetch(`${API_BASE}/${categoryId}`);
+            const response = await fetchWithCache(`${API_BASE}/${categoryId}?page=1&limit=4`);
             if (!response.ok) return;
             const data = await response.json();
             const ul = document.getElementById(listId);
@@ -582,7 +706,7 @@ async function loadDynamicNews() {
                 const featured = data.posts[0];
                 if (featuredContainer && featured) {
                     let imageHtml = featured.imageUrl 
-                        ? `<img src="${featured.imageUrl.match(/^(http|data:)/) ? featured.imageUrl : `http://${window.location.hostname || 'localhost'}:5100` + featured.imageUrl}" alt="${featured.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
+                        ? `<img src="${resolveBackendUrl(featured.imageUrl)}" alt="${featured.title}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.outerHTML='<svg viewBox=\\'0 0 400 240\\' xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'400\\' height=\\'240\\' fill=\\'#e8f0f8\\' /><text x=\\'200\\' y=\\'120\\' text-anchor=\\'middle\\' fill=\\'#6b7280\\'>Ảnh minh họa</text></svg>';">`
                         : `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="#e8f0f8" /><text x="200" y="120" text-anchor="middle" fill="#6b7280">Ảnh minh họa</text></svg>`;
                         
                     featuredContainer.innerHTML = `
@@ -621,7 +745,7 @@ async function loadDynamicNews() {
             }
         };
 
-        await Promise.all([
+        await Promise.allSettled([
             renderFeaturedNews(),
             fetchAndRender('tuong-tac-cong-dan', 'dynamic-tuongtac-list', 'dynamic-tuongtac-featured'),
             fetchAndRender('cds-doi-moi-sang-tao', 'dynamic-cds-list', 'dynamic-cds-featured'),
@@ -636,20 +760,49 @@ async function loadDynamicNews() {
 // Khởi tạo khi tải trang
 document.addEventListener('DOMContentLoaded', () => {
     loadConfig();
-    loadDynamicNews();
-    loadHomePageGovData();
-    loadAboutContent();
-    loadSupportContent();
-    loadHistoryContent();
-    loadProductsContent();
-    loadOrgChartContent();
-    loadStructContent();
-    loadCategoryNews();
+
+    const observerOptions = {
+        rootMargin: '200px 0px',
+        threshold: 0
+    };
+
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const targetClasses = entry.target.classList;
+                if (targetClasses.contains('news-section')) {
+                    loadDynamicNews();
+                    loadCategoryNews();
+                } else if (targetClasses.contains('tech-solutions-section')) {
+                    loadHomePageGovData();
+                } else if (targetClasses.contains('partner-links-section')) {
+                    if (typeof loadDynamicPartnerLinks === 'function') loadDynamicPartnerLinks();
+                } else if (targetClasses.contains('documents-section')) {
+                    if (typeof loadHomeAnnouncements === 'function') loadHomeAnnouncements();
+                    if (typeof loadHomeDocuments === 'function') loadHomeDocuments();
+                } else if (targetClasses.contains('multimedia-section')) {
+                    if (typeof loadMultimediaNews === 'function') loadMultimediaNews();
+                }
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.news-section, .tech-solutions-section, .partner-links-section, .documents-section, .multimedia-section').forEach(section => {
+        sectionObserver.observe(section);
+    });
+
+    if (document.getElementById('dynamic-about-content')) loadAboutContent();
+    if (document.getElementById('dynamic-support-content')) loadSupportContent();
+    if (document.getElementById('dynamic-history-content')) loadHistoryContent();
+    if (document.getElementById('dynamic-products-content')) loadProductsContent();
+    if (document.getElementById('dynamic-orgchart-content')) loadOrgChartContent();
+    if (document.getElementById('dynamic-struct-content')) loadStructContent();
 });
 
 async function loadHomePageGovData() {
     try {
-        const response = await fetch(`${API_BASE}/trang-chu?t=${new Date().getTime()}`);
+        const response = await fetchWithCache(`${API_BASE}/trang-chu`);
         if (!response.ok) return;
 
         const homeData = await response.json();
@@ -794,7 +947,7 @@ async function loadSupportContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/dau-moi-ho-tro`);
+        const response = await fetchWithCache(`${API_BASE}/dau-moi-ho-tro`);
         if (!response.ok) return;
         const support = await response.json();
         
@@ -815,7 +968,7 @@ async function loadHistoryContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/lich-su-hinh-thanh`);
+        const response = await fetchWithCache(`${API_BASE}/lich-su-hinh-thanh`);
         if (!response.ok) return;
         const history = await response.json();
         
@@ -836,7 +989,7 @@ async function loadAboutContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/chuc-nang-nhiem-vu`);
+        const response = await fetchWithCache(`${API_BASE}/chuc-nang-nhiem-vu`);
         if (!response.ok) return;
         const about = await response.json();
         
@@ -857,7 +1010,7 @@ async function loadProductsContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/san-pham-tieu-bieu`);
+        const response = await fetchWithCache(`${API_BASE}/san-pham-tieu-bieu`);
         if (!response.ok) return;
         const products = await response.json();
         
@@ -878,7 +1031,7 @@ async function loadOrgChartContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/so-do-to-chuc`);
+        const response = await fetchWithCache(`${API_BASE}/so-do-to-chuc`);
         if (!response.ok) return;
         const orgchart = await response.json();
         
@@ -899,7 +1052,7 @@ async function loadStructContent() {
     if (!titleEl && !contentEl) return;
 
     try {
-        const response = await fetch(`${API_BASE}/co-cau-to-chuc`);
+        const response = await fetchWithCache(`${API_BASE}/co-cau-to-chuc`);
         if (!response.ok) return;
         const structData = await response.json();
         
@@ -912,59 +1065,94 @@ async function loadStructContent() {
     }
 }
 
-async function loadCategoryNews() {
-    // Lấy ID danh mục từ thuộc tính data-page-id của thẻ body
-    const categoryId = document.body.getAttribute('data-page-id');
-    if (!categoryId) return; // Nếu không có thì không phải trang tin tức
 
-    // Lấy phần tử hiển thị (hỗ trợ cả id chung và id cũ của bão lũ để tương thích ngược)
+let currentNewsPage = 1;
+const ITEMS_PER_PAGE = 10;
+let isFetchingNews = false;
+
+async function loadCategoryNews(isLoadMore = false) {
+    const categoryId = document.body.getAttribute('data-page-id');
+    if (!categoryId) return;
+
     const titleEl = document.getElementById('dynamic-news-title') || document.getElementById('dynamic-baolu-title');
     const contentEl = document.getElementById('dynamic-news-content') || document.getElementById('dynamic-baolu-content');
     
     if (!titleEl && !contentEl) return;
+    if (isFetchingNews) return;
+    isFetchingNews = true;
+
+    if (!isLoadMore) {
+        currentNewsPage = 1;
+        if (contentEl) {
+            contentEl.innerHTML = `
+                <div class="loading-spinner" style="text-align: center; padding: 40px;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 30px; color: var(--primary-color);"></i>
+                    <p style="margin-top: 15px; color: #666;">Đang tải tin tức...</p>
+                </div>
+            `;
+        }
+    } else {
+        const loadMoreBtn = document.getElementById('news-load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...';
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.style.opacity = '0.7';
+        }
+    }
 
     try {
-        let data = { title: '', posts: [] };
+        let data = { title: '', posts: [], total: 0 };
         
         if (categoryId === 'tat-ca-tin-tuc') {
             data.title = 'Tất cả tin tức';
             const categories = ['cap-nhat-bao-lu', 'cds-doi-moi-sang-tao', 'chi-dao-dieu-hanh', 'cong-tac-xay-dung-dang', 'giai-phap-an-toan-mang', 'giai-phap-an-toan-thong-tin', 'thong-bao', 'tieu-chuan-chat-luong', 'tin-hoat-dong', 'trao-doi-kinh-nghiem', 'tuong-tac-cong-dan'];
-            let allPosts = [];
-            for (const cat of categories) {
+            const promises = categories.map(async cat => {
                 try {
-                    const res = await fetch(`${API_BASE}/${cat}?t=${new Date().getTime()}`);
+                    const res = await fetchWithCache(`${API_BASE}/${cat}?page=${currentNewsPage}&limit=3`); // 3 per category per page for "All news"
                     if (res.ok) {
                         const catData = await res.json();
                         if (catData && catData.posts) {
                             catData.posts.forEach(p => p.categoryId = cat);
-                            allPosts = allPosts.concat(catData.posts);
+                            return catData.posts;
                         }
                     }
                 } catch (e) {
                     console.warn(`Failed to fetch ${cat}:`, e);
                 }
-            }
-            data.posts = allPosts;
+                return [];
+            });
+            const results = await Promise.all(promises);
+            data.posts = results.flat();
+            // Estimate hasMore
+            data.total = data.posts.length > 0 ? (currentNewsPage * ITEMS_PER_PAGE) + 1 : 0; 
         } else {
-            const response = await fetch(`${API_BASE}/${categoryId}?t=${new Date().getTime()}`);
-            if (!response.ok) return;
-            data = await response.json();
-            if (data && data.posts) {
+            const response = await fetchWithCache(`${API_BASE}/${categoryId}?page=${currentNewsPage}&limit=${ITEMS_PER_PAGE}`);
+            if (!response.ok) { isFetchingNews = false; return; }
+            const catData = await response.json();
+            if (catData && catData.posts) {
+                data.posts = catData.posts;
+                data.title = catData.title;
+                data.total = catData.total || 9999; // Fallback if no total returned
                 data.posts.forEach(p => p.categoryId = categoryId);
             }
         }
         
-        if (titleEl && data.title) titleEl.innerText = data.title;
+        if (titleEl && data.title && !isLoadMore) titleEl.innerText = data.title;
         if (contentEl) {
-            contentEl.innerHTML = '';
+            if (!isLoadMore) contentEl.innerHTML = '';
+            else {
+                const oldBtnContainer = document.getElementById('news-load-more-container');
+                if (oldBtnContainer) oldBtnContainer.remove();
+            }
+
             if (!data.posts || data.posts.length === 0) {
-                contentEl.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Chưa có bản tin nào.</p>';
+                if (!isLoadMore) contentEl.innerHTML = '<p style="text-align: center; color: #666; font-style: italic; padding: 40px;">Chưa có bản tin nào.</p>';
+                isFetchingNews = false;
                 return;
             }
             
             data.posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
-            // Helper để lấy text tóm tắt từ HTML
             const getExcerpt = (html) => {
                 const temp = document.createElement('div');
                 temp.innerHTML = html || '';
@@ -974,19 +1162,19 @@ async function loadCategoryNews() {
 
             const renderCard = (post) => {
                 const card = document.createElement('a');
-                card.className = 'baolu-card';
+                card.className = 'baolu-card fade-in';
                 card.style.textDecoration = 'none';
                 card.style.color = 'inherit';
+                card.style.animation = 'fadeIn 0.5s ease forwards';
                 
                 let imageHtml = '';
                 if (post.imageUrl && post.imageUrl.trim() !== '') {
                     const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `http://${window.location.hostname || 'localhost'}:5100${post.imageUrl}`;
-                    imageHtml = `<div class="baolu-img"><img src="${imgUrl}" alt="${post.title}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'no-image-placeholder\\'>Không có hình ảnh</div>';"></div>`;
+                    imageHtml = `<div class="baolu-img"><img src="${resolveBackendUrl(imgUrl)}" loading="lazy" decoding="async" alt="${post.title}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'no-image-placeholder\'>Không có hình ảnh</div>';"></div>`;
                 } else {
                     imageHtml = `<div class="baolu-img"><div class="no-image-placeholder">Không có hình ảnh</div></div>`;
                 }
                 
-                // Dùng trang chi tiết nội bộ, nếu có linkUrl thì trang chi tiết sẽ hiển thị link đó
                 const detailLink = `../../user/tin-tuc/chi-tiet-tin-tuc.html?category=${post.categoryId || categoryId}&id=${post.id}`;
                 card.href = detailLink;
                 
@@ -998,14 +1186,14 @@ async function loadCategoryNews() {
                         attUrl = `${API_BASE}/download?file=${encodeURIComponent(post.attachmentUrl)}&name=${encodeURIComponent(attName)}`;
                     }
                     attachmentHtml = `
-                        <div style="margin-top: 10px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                        <div style="margin-top: 10px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; gap: 10px;" onclick="event.preventDefault(); window.open('${attUrl}', '_blank');">
                             <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
                                 <i class="fa-solid fa-file-lines" style="color: #0284c7; font-size: 18px;"></i>
                                 <span style="font-size: 14px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${attName}</span>
                             </div>
-                            <a href="${attUrl}" download target="_blank" onclick="event.stopPropagation();" style="padding: 5px 10px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                            <span style="padding: 5px 10px; background: #0ea5e9; color: white; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
                                 <i class="fa-solid fa-download"></i> Tải về
-                            </a>
+                            </span>
                         </div>
                     `;
                 }
@@ -1028,100 +1216,100 @@ async function loadCategoryNews() {
                 return card;
             };
 
-            const featuredPosts = data.posts.filter(p => p.isFeatured).slice(0, 2);
-            const regularPosts = data.posts.filter(p => !featuredPosts.includes(p));
+            let featuredGrid = document.getElementById('news-featured-grid-container');
+            let regularGrid = document.getElementById('news-regular-grid-container');
 
-            if (featuredPosts.length > 0) {
-                const featuredGrid = document.createElement('div');
-                featuredGrid.className = 'news-featured-grid';
-                featuredPosts.forEach(post => {
-                    featuredGrid.appendChild(renderCard(post));
-                });
-                contentEl.appendChild(featuredGrid);
-            }
+            if (!isLoadMore) {
+                // Feature posts only on page 1
+                const featuredPosts = data.posts.filter(p => p.isFeatured).slice(0, 2);
+                const regularPosts = data.posts.filter(p => !featuredPosts.includes(p));
 
-            if (regularPosts.length > 0) {
-                const itemsPerPage = 10;
-                let currentPage = 1;
-                const totalPages = Math.ceil(regularPosts.length / itemsPerPage);
+                if (featuredPosts.length > 0) {
+                    featuredGrid = document.createElement('div');
+                    featuredGrid.id = 'news-featured-grid-container';
+                    featuredGrid.className = 'news-featured-grid';
+                    featuredPosts.forEach(post => {
+                        featuredGrid.appendChild(renderCard(post));
+                    });
+                    contentEl.appendChild(featuredGrid);
+                }
 
-                const listContainer = document.createElement('div');
-                const regularGrid = document.createElement('div');
-                regularGrid.className = 'baolu-grid'; 
-                listContainer.appendChild(regularGrid);
-                
-                const paginationContainer = document.createElement('div');
-                paginationContainer.className = 'pagination';
-                listContainer.appendChild(paginationContainer);
-
-                contentEl.appendChild(listContainer);
-
-                const renderPage = (page) => {
-                    regularGrid.innerHTML = '';
-                    const start = (page - 1) * itemsPerPage;
-                    const end = start + itemsPerPage;
-                    const pageItems = regularPosts.slice(start, end);
-                    
-                    pageItems.forEach(post => {
+                if (regularPosts.length > 0) {
+                    regularGrid = document.createElement('div');
+                    regularGrid.id = 'news-regular-grid-container';
+                    regularGrid.className = 'baolu-grid';
+                    regularPosts.forEach(post => {
                         regularGrid.appendChild(renderCard(post));
                     });
-                };
-
-                const renderPagination = (page) => {
-                    if (totalPages <= 1) {
-                        paginationContainer.innerHTML = '';
-                        return;
-                    }
-                    
-                    let html = '';
-                    const maxButtons = 5;
-                    let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
-                    let endPage = startPage + maxButtons - 1;
-
-                    if (endPage > totalPages) {
-                        endPage = totalPages;
-                        startPage = Math.max(1, endPage - maxButtons + 1);
-                    }
-
-                    if (startPage > 1) {
-                        html += `<button class="page-btn" data-page="1">1</button>`;
-                        if (startPage > 2) html += `<span class="page-ellipsis">...</span>`;
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                        html += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i}</button>`;
-                    }
-
-                    if (endPage < totalPages) {
-                        if (endPage < totalPages - 1) html += `<span class="page-ellipsis">...</span>`;
-                        html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
-                    }
-
-                    paginationContainer.innerHTML = html;
-                    
-                    paginationContainer.querySelectorAll('.page-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const newPage = parseInt(btn.getAttribute('data-page'));
-                            if (newPage !== currentPage) {
-                                currentPage = newPage;
-                                renderPage(currentPage);
-                                renderPagination(currentPage);
-                                const y = listContainer.getBoundingClientRect().top + window.scrollY - 100;
-                                window.scrollTo({top: y, behavior: 'smooth'});
-                            }
-                        });
+                    contentEl.appendChild(regularGrid);
+                }
+            } else {
+                if (regularGrid) {
+                    data.posts.forEach(post => {
+                        regularGrid.appendChild(renderCard(post));
                     });
-                };
+                }
+            }
 
-                renderPage(currentPage);
-                renderPagination(currentPage);
+            // Check if has more
+            const hasMore = categoryId === 'tat-ca-tin-tuc' ? data.posts.length > 0 : (currentNewsPage * ITEMS_PER_PAGE < data.total);
+
+            if (hasMore) {
+                const btnContainer = document.createElement('div');
+                btnContainer.id = 'news-load-more-container';
+                btnContainer.style.textAlign = 'center';
+                btnContainer.style.marginTop = '30px';
+                btnContainer.style.marginBottom = '20px';
+                
+                const loadMoreBtn = document.createElement('button');
+                loadMoreBtn.id = 'news-load-more-btn';
+                loadMoreBtn.className = 'btn-load-more';
+                loadMoreBtn.innerHTML = 'Xem thêm <i class="fa-solid fa-chevron-down"></i>';
+                loadMoreBtn.style.padding = '12px 30px';
+                loadMoreBtn.style.background = 'var(--primary-color)';
+                loadMoreBtn.style.color = '#fff';
+                loadMoreBtn.style.border = 'none';
+                loadMoreBtn.style.borderRadius = '25px';
+                loadMoreBtn.style.cursor = 'pointer';
+                loadMoreBtn.style.fontWeight = '600';
+                loadMoreBtn.style.fontSize = '15px';
+                loadMoreBtn.style.transition = 'all 0.3s ease';
+                loadMoreBtn.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                
+                loadMoreBtn.onmouseover = () => loadMoreBtn.style.transform = 'translateY(-2px)';
+                loadMoreBtn.onmouseout = () => loadMoreBtn.style.transform = 'translateY(0)';
+                
+                // Infinite Scroll using Intersection Observer on the button
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !isFetchingNews) {
+                        observer.disconnect();
+                        currentNewsPage++;
+                        loadCategoryNews(true);
+                    }
+                }, { rootMargin: '100px' });
+                
+                observer.observe(loadMoreBtn);
+
+                loadMoreBtn.addEventListener('click', () => {
+                    if (!isFetchingNews) {
+                        observer.disconnect();
+                        currentNewsPage++;
+                        loadCategoryNews(true);
+                    }
+                });
+                
+                btnContainer.appendChild(loadMoreBtn);
+                contentEl.appendChild(btnContainer);
             }
         }
     } catch (e) {
         console.warn(`Backend C# is not running. Failed to load ${categoryId}.`, e);
         if (contentEl) contentEl.innerHTML = "<p>Lỗi kết nối tới Server. Vui lòng bật Backend.</p>";
+    } finally {
+        isFetchingNews = false;
     }
 }
+
 
 // ==========================================
 // PARTNER LINKS DYNAMIC RENDERING
@@ -1131,7 +1319,7 @@ async function loadDynamicPartnerLinks() {
     if (!container) return;
 
     try {
-        const res = await fetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+        const res = await fetchWithCache(`${API_BASE}/cau-hinh`);
         if (res.ok) {
             const config = await res.json();
             const links = config.partnerLinks || [
@@ -1160,7 +1348,7 @@ async function loadDynamicPartnerLinks() {
 
                 let bgHtml = '';
                 if (link.bgImage) {
-                    bgHtml = `<div style="position: absolute; inset: 0; background-image: url(${link.bgImage}); background-size: cover; background-position: center; opacity: ${link.bgOpacity !== undefined ? link.bgOpacity : 0.2}; z-index: 1;"></div>`;
+                    bgHtml = `<div style="position: absolute; inset: 0; background-image: url('${resolveBackendUrl(link.bgImage)}'); background-size: cover; background-position: center; opacity: ${link.bgOpacity !== undefined ? link.bgOpacity : 0.2}; z-index: 1;"></div>`;
                 }
 
                 a.innerHTML = `
@@ -1184,7 +1372,7 @@ async function loadHomeAnnouncements() {
     if (!listEl) return;
     
     try {
-        const res = await fetch(`${API_BASE}/thong-bao?t=${new Date().getTime()}`);
+        const res = await fetchWithCache(`${API_BASE}/thong-bao`);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
         
@@ -1232,7 +1420,7 @@ async function loadHomeDocuments() {
     if (!tabsContainer || !contentContainer) return;
 
     try {
-        const res = await fetch(`${API_BASE}/loai-van-ban?t=${new Date().getTime()}`);
+        const res = await fetchWithCache(`${API_BASE}/loai-van-ban`);
         if (!res.ok) throw new Error("Failed to fetch document types");
         const types = await res.json();
         
@@ -1300,11 +1488,7 @@ window.switchHomeDocTab = function(index) {
     });
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadDynamicPartnerLinks();
-    loadHomeAnnouncements();
-    loadHomeDocuments();
-});
+
 function renderInfoUtility(config) {
     const iuWrapper = document.querySelector('.info-utility-wrapper');
     if (!iuWrapper) return;
@@ -1339,7 +1523,7 @@ function renderInfoUtility(config) {
                 linksHtml = group.links.map(link => {
                     let iconOrLogo = '';
                     if (link.logo) {
-                        iconOrLogo = `<div class="iu-icon" style="background: none;"><img src="${link.logo}" style="width: 24px; height: 24px; object-fit: contain;"></div>`;
+                        iconOrLogo = `<div class="iu-icon" style="background: none;"><img src="${resolveBackendUrl(link.logo)}" loading="lazy" decoding="async" style="width: 24px; height: 24px; object-fit: contain;"></div>`;
                     } else {
                         iconOrLogo = `<div class="iu-icon" style="color: ${link.iconColor || '#333'};"><i class="${link.icon || 'fa-solid fa-star'}"></i></div>`;
                     }
@@ -1381,7 +1565,7 @@ async function renderMultimedia(config) {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/tin-tuc-da-phuong-tien?t=${new Date().getTime()}`);
+        const res = await fetchWithCache(`${API_BASE}/tin-tuc-da-phuong-tien`);
         const data = await res.json();
         const posts = data.posts || [];
         
@@ -1532,7 +1716,7 @@ function renderMultimediaContent() {
             <a href="${mainItem.url}" target="_blank" class="multimedia-main-item">
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
                     ${(mainItem.thumbnail || getYoutubeThumbnailUrl(mainItem.videoUrl || mainItem.url)) ? 
-                        `<img src="${mainItem.thumbnail || getYoutubeThumbnailUrl(mainItem.videoUrl || mainItem.url)}" alt="${mainItem.title}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                        `<img src="${mainItem.thumbnail || getYoutubeThumbnailUrl(mainItem.videoUrl || mainItem.url)}" loading="lazy" decoding="async" alt="${mainItem.title}" style="width: 100%; height: 100%; object-fit: cover;">` : 
                         `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1a5276, #2980b9); display: flex; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; text-transform: uppercase;">${currentMultimediaTab}</div>`
                     }
                 </div>
@@ -1554,7 +1738,7 @@ function renderMultimediaContent() {
                     <a href="${item.url}" target="_blank" class="multimedia-sub-item" style="text-decoration: none; display: flex; gap: 15px; align-items: stretch; background: rgba(0,0,0,0.1); border-radius: 8px; padding: 10px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">
                         <div style="width: 140px; height: 85px; flex-shrink: 0; border-radius: 6px; overflow: hidden; position: relative; background: #000;">
                             ${(item.thumbnail || getYoutubeThumbnailUrl(item.videoUrl || item.url)) ? 
-                                `<img src="${item.thumbnail || getYoutubeThumbnailUrl(item.videoUrl || item.url)}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                `<img src="${item.thumbnail || getYoutubeThumbnailUrl(item.videoUrl || item.url)}" loading="lazy" decoding="async" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
                                 `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1a5276, #2980b9); display: flex; align-items: center; justify-content: center; color: white; padding: 10px; text-align: center; font-size: 10px; font-weight: bold; text-transform: uppercase;">${currentMultimediaTab}</div>`
                             }
                             ${currentMultimediaTab === 'video' ? `
@@ -1591,7 +1775,7 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
                 ${item.bgUrl ? `<div class="bento-bg-overlay"></div>` : ''}
                 <div class="bento-icon" style="background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'};">
                     ${item.logoUrl 
-                        ? `<img src="${resolveBackendUrl(item.logoUrl)}" alt="${item.name}">` 
+                        ? `<img src="${resolveBackendUrl(item.logoUrl)}" loading="lazy" decoding="async" alt="${item.name}">` 
                         : (item.iconClass
                             ? `<i class="${item.iconClass}"></i>`
                             : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
@@ -1623,7 +1807,7 @@ function renderBentoLinks(externalLinks, agencyGroups, bgColor) {
             
             let iconHtml = '';
             if (group.logo) {
-                iconHtml = `<img src="${group.logo}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                iconHtml = `<img src="${resolveBackendUrl(group.logo)}" loading="lazy" decoding="async" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
             } else {
                 iconHtml = `<i class="${group.icon || 'fa-solid fa-building-columns'}"></i>`;
             }

@@ -197,7 +197,7 @@ const commonComponents = {
             return link;
         };
 
-        const ncscImg = config.ncscImageUrl ? `<img src="${config.ncscImageUrl}" alt="NCSC" style="max-height: 50px; border-radius: 6px;">` : `<svg viewBox="0 0 140 50" width="140" height="50">
+        const ncscImg = config.ncscImageUrl ? `<img src="${config.ncscImageUrl}" alt="NCSC" style="max-height: 50px; border-radius: 6px;" loading="lazy" decoding="async">` : `<svg viewBox="0 0 140 50" width="140" height="50">
                                 <rect width="140" height="50" rx="6" fill="white" />
                                 <text x="70" y="20" text-anchor="middle" fill="#1a5276" font-size="10" font-weight="700"
                                     font-family="Inter">NCSC</text>
@@ -206,7 +206,7 @@ const commonComponents = {
                                 <text x="70" y="43" text-anchor="middle" fill="#c0392b" font-size="8" font-weight="700"
                                     font-family="Inter">TÍN NHIỆM MẠNG</text>
                             </svg>`;
-        const qrImg = config.qrCodeUrl ? `<img src="${config.qrCodeUrl}" alt="QR Code" style="width: 80px; height: 80px; border-radius: 4px;">` : `<svg viewBox="0 0 80 80" width="80" height="80">
+        const qrImg = config.qrCodeUrl ? `<img src="${config.qrCodeUrl}" alt="QR Code" style="width: 80px; height: 80px; border-radius: 4px;" loading="lazy" decoding="async">` : `<svg viewBox="0 0 80 80" width="80" height="80">
                                     <rect width="80" height="80" rx="4" fill="white" />
                                     <rect x="8" y="8" width="20" height="20" rx="2" fill="#333" />
                                     <rect x="52" y="8" width="20" height="20" rx="2" fill="#333" />
@@ -845,6 +845,12 @@ const commonComponents = {
         dropdown.addEventListener('mouseleave', hideDropdown);
     });
 
+    // Define a global helper to resolve backend static URLs
+    window.resolveBackendUrl = function(url) {
+        if (!url || url === '#') return '#';
+        return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`;
+    };
+
     // 5. Load dynamic config (e.g. Bo KHCN link)
     setTimeout(async () => {
         try {
@@ -883,18 +889,18 @@ const commonComponents = {
                         link.rel = 'icon';
                         document.head.appendChild(link);
                     }
-                    link.href = config.faviconUrl;
+                    link.href = window.resolveBackendUrl(config.faviconUrl);
                 }
 
                 // LOGO UPDATE
                 if (config && config.logoUrl) {
                     const logoIcon = document.querySelector('.logo-icon');
                     if (logoIcon) {
-                        logoIcon.innerHTML = `<img src="${config.logoUrl}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain;">`;
+                        logoIcon.innerHTML = `<img src="${window.resolveBackendUrl(config.logoUrl)}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain;" loading="lazy" decoding="async">`;
                     }
                     const navSmallLogo = document.querySelector('.nav-small-logo');
                     if (navSmallLogo) {
-                        navSmallLogo.innerHTML = `<img src="${config.logoUrl}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain;">`;
+                        navSmallLogo.innerHTML = `<img src="${window.resolveBackendUrl(config.logoUrl)}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain;" loading="lazy" decoding="async">`;
                     }
                 }
 

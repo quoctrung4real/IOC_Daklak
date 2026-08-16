@@ -258,10 +258,6 @@ body.is-sticky .nav-wrapper {
     overflow-x: hidden;
 }
 
-body.is-sticky .dropdown {
-    /* max-height: calc(100vh - 80px); removed */
-}
-
 .dropdown::-webkit-scrollbar {
     width: 8px;
 }
@@ -1513,11 +1509,6 @@ body.is-sticky .dropdown {
     .hero-wrapper {
         flex-direction: column;
         gap: 40px;
-    }
-
-    .hero-text,
-    .hero-image {
-        
     }
 
     .hero-title {
