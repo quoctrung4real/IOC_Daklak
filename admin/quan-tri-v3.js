@@ -1080,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadNews(categoryId) {
     currentNewsCategory = categoryId;
     try {
-        const response = await apiFetch(`${API_BASE}/${categoryId}`);
+        const response = await apiFetch(`${API_BASE}/${categoryId}?includeContent=true`);
         if(response.ok) {
             newsDataGlobal = await response.json();
             if (!newsDataGlobal.posts) newsDataGlobal.posts = [];

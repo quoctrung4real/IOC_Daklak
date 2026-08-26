@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Caching.Memory;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Models;
@@ -8,6 +10,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 {
     private readonly string _dataDir;
     private readonly string _webRootPath;
+    private readonly IMemoryCache _cache;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -16,11 +19,12 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public JsonPortalDataStore(IWebHostEnvironment environment)
+    public JsonPortalDataStore(IWebHostEnvironment environment, IMemoryCache cache)
     {
         _dataDir = Path.Combine(environment.ContentRootPath, "data");
         Directory.CreateDirectory(_dataDir);
         _webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+        _cache = cache;
     }
 
     public async Task<JsonObject> GetConfigAsync(CancellationToken cancellationToken)
@@ -61,7 +65,19 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         await WriteFileAsync($"{slug}.json", JsonSerializer.Serialize(page, _jsonOptions), cancellationToken);
     }
 
-    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, CancellationToken cancellationToken)
+    
+    public async Task<NewsPostDto?> GetNewsPostAsync(string categorySlug, string id, CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync($"{categorySlug}.json", "{\"title\":\"\",\"posts\":[]}", cancellationToken);
+        var result = JsonSerializer.Deserialize<CategoryPageDto>(json, _jsonOptions) ?? new CategoryPageDto();
+        var post = result.Posts.FirstOrDefault(p => string.Equals(p.Id?.Trim(), id.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (post == null) {
+            Console.WriteLine($"Could not find post with id {id}. Available IDs: " + string.Join(", ", result.Posts.Select(p => p.Id)));
+        }
+        return post;
+    }
+
+    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, bool includeContent = false, CancellationToken cancellationToken = default)
     {
         var json = await ReadFileAsync($"{category.Slug}.json", JsonSerializer.Serialize(new CategoryPageDto { Title = category.Title }, _jsonOptions), cancellationToken);
         var result = JsonSerializer.Deserialize<CategoryPageDto>(json, _jsonOptions) ?? new CategoryPageDto { Title = category.Title };
@@ -78,6 +94,20 @@ public sealed class JsonPortalDataStore : IPortalDataStore
             result.Total = result.Posts.Count;
             result.Page = 1;
             result.Limit = result.Posts.Count;
+        }
+
+        // Tối ưu Payload API: Lược bỏ Content đầy đủ, chỉ trả về chuỗi trích xuất (Excerpt) nếu không yêu cầu
+        if (!includeContent)
+        {
+            foreach (var post in result.Posts)
+            {
+                if (!string.IsNullOrEmpty(post.Content))
+                {
+                    // Simple HTML tag removal for excerpt
+                    string plainText = Regex.Replace(post.Content, "<.*?>", string.Empty);
+                    post.Content = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                }
+            }
         }
 
         return result;
@@ -492,7 +522,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
         foreach (var cat in newsCategories)
         {
-            var page = await GetNewsCategoryAsync(new NewsCategoryInfo { Slug = cat, Title = categoryTitles[cat] }, null, null, cancellationToken);
+            var page = await GetNewsCategoryAsync(new NewsCategoryInfo { Slug = cat, Title = categoryTitles[cat] }, null, null, true, cancellationToken);
             if (page?.Posts != null)
             {
                 foreach (var post in page.Posts)
@@ -686,19 +716,27 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
     private async Task<string> ReadFileAsync(string fileName, string defaultJson, CancellationToken cancellationToken)
     {
+        if (_cache.TryGetValue(fileName, out string? cachedJson) && cachedJson != null)
+        {
+            return cachedJson;
+        }
+
         var path = Path.Combine(_dataDir, fileName);
         if (!File.Exists(path))
         {
             await File.WriteAllTextAsync(path, defaultJson, cancellationToken);
         }
 
-        return await File.ReadAllTextAsync(path, cancellationToken);
+        var json = await File.ReadAllTextAsync(path, cancellationToken);
+        _cache.Set(fileName, json, TimeSpan.FromMinutes(60));
+        return json;
     }
 
-    private Task WriteFileAsync(string fileName, string json, CancellationToken cancellationToken)
+    private async Task WriteFileAsync(string fileName, string json, CancellationToken cancellationToken)
     {
         var path = Path.Combine(_dataDir, fileName);
-        return File.WriteAllTextAsync(path, json, cancellationToken);
+        await File.WriteAllTextAsync(path, json, cancellationToken);
+        _cache.Remove(fileName);
     }
 
     private static UserDto ToSafeUser(UserDto user)

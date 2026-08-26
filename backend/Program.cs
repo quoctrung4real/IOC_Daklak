@@ -51,6 +51,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -73,7 +74,8 @@ builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
     }
 
     var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
-    return new JsonPortalDataStore(environment);
+    var cache = serviceProvider.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+    return new JsonPortalDataStore(environment, cache);
 });
 builder.Services.AddSingleton<JsonToSqlMigrationService>();
 builder.Services.AddSingleton<AuthTokenService>();
@@ -342,9 +344,15 @@ foreach (var page in contentPages)
 var newsCategories = app.Services.GetRequiredService<IReadOnlyList<NewsCategoryInfo>>();
 foreach (var category in newsCategories)
 {
-    app.MapGet($"/api/{category.Slug}", async (int? page, int? limit, IPortalDataStore store, CancellationToken cancellationToken) =>
+    app.MapGet($"/api/{category.Slug}", async (int? page, int? limit, bool? includeContent, IPortalDataStore store, CancellationToken cancellationToken) =>
     {
-        return Results.Json(await store.GetNewsCategoryAsync(category, page, limit, cancellationToken));
+        return Results.Json(await store.GetNewsCategoryAsync(category, page, limit, includeContent ?? false, cancellationToken));
+    });
+
+    app.MapGet($"/api/{category.Slug}/{{id}}", async (string id, IPortalDataStore store, CancellationToken cancellationToken) =>
+    {
+        var post = await store.GetNewsPostAsync(category.Slug, id, cancellationToken);
+        return post is not null ? Results.Ok(post) : Results.NotFound();
     });
 
     app.MapPost($"/api/{category.Slug}", async (CategoryPageDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
@@ -511,7 +519,7 @@ app.MapGet("/api/text-to-speech/news-category/{slug}", async (
         return Results.NotFound(TextToSpeechResponseDto.Fail("Khong tim thay chuyen muc tin tuc."));
     }
 
-    var page = await store.GetNewsCategoryAsync(category, null, null, cancellationToken);
+    var page = await store.GetNewsCategoryAsync(category, null, null, true, cancellationToken);
     var posts = page.Posts
         .OrderByDescending(post => DateTime.TryParse(post.CreatedAt, out var date) ? date : DateTime.MinValue)
         .Select(post => $"{post.Title}. {post.Content}");
@@ -767,7 +775,16 @@ static IReadOnlyList<NewsCategoryInfo> GetNewsCategories()
         new() { Slug = "tin-hoat-dong", Title = "Tin hoạt động" },
         new() { Slug = "trao-doi-kinh-nghiem", Title = "Trao đổi kinh nghiệm" },
         new() { Slug = "tuong-tac-cong-dan", Title = "Tương tác công dân" },
-        new() { Slug = "tin-tuc-da-phuong-tien", Title = "Tin tức đa phương tiện" }
+        new() { Slug = "tin-tuc-da-phuong-tien", Title = "Tin tức đa phương tiện" },
+        new() { Slug = "hoi-thao-hoi-nghi", Title = "Hội thảo - Hội nghị" },
+        new() { Slug = "sach-tu-lieu", Title = "Sách - Tư liệu" },
+        new() { Slug = "photo", Title = "Photo" },
+        new() { Slug = "video", Title = "Video" },
+        new() { Slug = "infographic", Title = "Infographic" },
+        new() { Slug = "van-ban-ban-hanh", Title = "Văn bản ban hành" },
+        new() { Slug = "tin-xem-nhieu", Title = "Tin xem nhiều" },
+        new() { Slug = "binh-chon", Title = "Bình chọn" },
+        new() { Slug = "thong-ke-truy-cap", Title = "Thống kê truy cập" }
     ];
 }
 

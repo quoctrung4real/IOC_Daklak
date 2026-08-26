@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const targetClasses = entry.target.classList;
-                if (targetClasses.contains('news-section')) {
+                if (targetClasses.contains('news-section') || targetClasses.contains('article-section')) {
                     loadDynamicNews();
                     loadCategoryNews();
                 } else if (targetClasses.contains('tech-solutions-section')) {
@@ -788,7 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    document.querySelectorAll('.news-section, .tech-solutions-section, .partner-links-section, .documents-section, .multimedia-section').forEach(section => {
+    document.querySelectorAll('.news-section, .article-section, .tech-solutions-section, .partner-links-section, .documents-section, .multimedia-section').forEach(section => {
         sectionObserver.observe(section);
     });
 
@@ -1105,10 +1105,10 @@ async function loadCategoryNews(isLoadMore = false) {
         
         if (categoryId === 'tat-ca-tin-tuc') {
             data.title = 'Tất cả tin tức';
-            const categories = ['cap-nhat-bao-lu', 'cds-doi-moi-sang-tao', 'chi-dao-dieu-hanh', 'cong-tac-xay-dung-dang', 'giai-phap-an-toan-mang', 'giai-phap-an-toan-thong-tin', 'thong-bao', 'tieu-chuan-chat-luong', 'tin-hoat-dong', 'trao-doi-kinh-nghiem', 'tuong-tac-cong-dan'];
+            const categories = ['cap-nhat-bao-lu', 'cds-doi-moi-sang-tao', 'chi-dao-dieu-hanh', 'cong-tac-xay-dung-dang', 'giai-phap-an-toan-mang', 'giai-phap-an-toan-thong-tin', 'hoi-thao-hoi-nghi', 'sach-tu-lieu', 'thong-bao', 'tieu-chuan-chat-luong', 'tin-hoat-dong', 'trao-doi-kinh-nghiem', 'tuong-tac-cong-dan'];
             const promises = categories.map(async cat => {
                 try {
-                    const res = await fetchWithCache(`${API_BASE}/${cat}?page=${currentNewsPage}&limit=3`); // 3 per category per page for "All news"
+                    const res = await fetch(`${API_BASE}/${cat}?page=${currentNewsPage}&limit=3&t=${new Date().getTime()}`); // 3 per category per page for "All news"
                     if (res.ok) {
                         const catData = await res.json();
                         if (catData && catData.posts) {
@@ -1126,7 +1126,7 @@ async function loadCategoryNews(isLoadMore = false) {
             // Estimate hasMore
             data.total = data.posts.length > 0 ? (currentNewsPage * ITEMS_PER_PAGE) + 1 : 0; 
         } else {
-            const response = await fetchWithCache(`${API_BASE}/${categoryId}?page=${currentNewsPage}&limit=${ITEMS_PER_PAGE}`);
+            const response = await fetch(`${API_BASE}/${categoryId}?page=${currentNewsPage}&limit=${ITEMS_PER_PAGE}&t=${new Date().getTime()}`);
             if (!response.ok) { isFetchingNews = false; return; }
             const catData = await response.json();
             if (catData && catData.posts) {

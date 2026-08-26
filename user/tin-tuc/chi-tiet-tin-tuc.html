@@ -129,11 +129,9 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/${category}?t=${new Date().getTime()}`);
+                const response = await fetch(`${API_BASE}/${category}/${id}?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                
-                const post = data.posts && data.posts.find(p => String(p.id).trim() === String(id).trim());
+                const post = await response.json();
                 if (!post) {
                     document.getElementById('detail-title').innerText = 'Không tìm thấy bài viết';
                     document.getElementById('detail-content').innerHTML = 'Bài viết có thể đã bị xóa hoặc đường dẫn không chính xác.';

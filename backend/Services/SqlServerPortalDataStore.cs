@@ -99,7 +99,14 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, CancellationToken cancellationToken)
+    
+    public async Task<NewsPostDto?> GetNewsPostAsync(string categorySlug, string id, CancellationToken cancellationToken)
+    {
+        // TODO: Implement actual SQL Server fetch
+        return null;
+    }
+
+    public async Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, bool includeContent = false, CancellationToken cancellationToken = default)
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
         var categoryId = await EnsureCategoryAsync(connection, category, cancellationToken);

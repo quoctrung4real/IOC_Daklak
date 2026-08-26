@@ -2945,3 +2945,110 @@ body.is-sticky .nav-wrapper {
     pointer-events: auto;
     transform: translateY(0);
 }
+
+/* ===== 3-COLUMN LAYOUT ===== */
+.portal-3col-wrapper {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Sidebar Left (Menu) */
+.sidebar-left .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-left .menu-item {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-left .menu-item a {
+    display: block;
+    padding: 12px 16px;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.sidebar-left .menu-item a:hover {
+    color: var(--primary-blue);
+    background: var(--primary-light);
+    border-left-color: var(--primary-blue);
+}
+
+/* Sidebar Right & Shared Components */
+.sidebar-box {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.sidebar-title {
+    background: var(--primary-blue);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.sidebar-content {
+    padding: 16px;
+}
+
+.sidebar-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-content ul li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border-light);
+}
+
+.sidebar-content ul li:last-child {
+    border-bottom: none;
+}
+
+.sidebar-content ul li a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.sidebar-content ul li a:hover {
+    color: var(--primary-blue);
+}
+
+/* Responsive cho Layout 3 cột */
+@media (max-width: 1024px) {
+    .portal-3col-wrapper {
+        grid-template-columns: 240px 1fr;
+    }
+    .sidebar-right {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .portal-3col-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .sidebar-right {
+        grid-template-columns: 1fr;
+    }
+}

@@ -11,7 +11,8 @@ public interface IPortalDataStore
     Task<ContentPageDto> GetContentPageAsync(string slug, CancellationToken cancellationToken);
     Task SaveContentPageAsync(string slug, ContentPageDto page, CancellationToken cancellationToken);
 
-    Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, CancellationToken cancellationToken);
+    Task<CategoryPageDto> GetNewsCategoryAsync(NewsCategoryInfo category, int? page, int? limit, bool includeContent = false, CancellationToken cancellationToken = default);
+    Task<NewsPostDto?> GetNewsPostAsync(string categorySlug, string id, CancellationToken cancellationToken);
     Task SaveNewsCategoryAsync(NewsCategoryInfo category, CategoryPageDto page, CancellationToken cancellationToken);
     Task<List<NewsPostDto>> GetMainNewsAsync(CancellationToken cancellationToken);
     Task AddMainNewsAsync(NewsPostDto post, CancellationToken cancellationToken);
