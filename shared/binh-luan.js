@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function fetchComments() {
         try {
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan?pageId=${PAGE_ID}`);
+            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/binh-luan?pageId=${PAGE_ID}&t=${new Date().getTime()}`);
             allComments = await res.json();
             renderComments();
         } catch (err) {

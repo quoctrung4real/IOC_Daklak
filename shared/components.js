@@ -500,7 +500,7 @@ const commonComponents = {
                 
                 searchTimeout = setTimeout(async () => {
                     try {
-                        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
+                        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}&t=${new Date().getTime()}`);
                         if (!response.ok) throw new Error('Network error');
                         const data = await response.json();
                         
@@ -857,7 +857,7 @@ const commonComponents = {
     setTimeout(async () => {
         try {
             
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/cau-hinh`);
+            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/cau-hinh?t=${new Date().getTime()}`);
             if (res.ok) {
                 const config = await res.json();
                 
