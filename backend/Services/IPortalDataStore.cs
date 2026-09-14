@@ -55,5 +55,8 @@ public interface IPortalDataStore
     // Hỏi đáp
     Task<List<QuestionDto>> GetQuestionsAsync(CancellationToken cancellationToken);
     Task<QuestionDto> AddQuestionAsync(QuestionDto payload, CancellationToken cancellationToken);
-
+    
+    // Thống kê truy cập
+    Task<VisitorStatisticDto> GetVisitorStatisticsAsync(int activeTotal, int activeBots, int activeGuests, CancellationToken cancellationToken);
+    Task RecordVisitAsync(bool isBot, CancellationToken cancellationToken);
 }

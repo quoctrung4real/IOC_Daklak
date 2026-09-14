@@ -260,58 +260,115 @@
                 <aside class="sidebar-right">
                     <!-- Văn bản ban hành -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Văn bản ban hành</h3>
-                        <div class="sidebar-content">
-                            <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
+                        <h3 class="sidebar-title"><a href="../../user/van-ban/van-ban.html" style="color: inherit; text-decoration: none; display: block;">Văn bản ban hành</a></h3>
+                        <div class="sidebar-content" style="padding: 0;">
+                            <div class="marquee-vertical-container">
+                                <div id="dynamic-issued-docs" class="marquee-vertical-content">
+                                    <div class="vb-item">
+                                        <p style="color:var(--text-light); padding: 15px;">Đang cập nhật...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; padding: 10px 15px; border-top: 1px solid #e2e8f0;">
+                                <a href="../../user/van-ban/van-ban.html" style="font-size: 13px; font-weight: 600; color: #1a4d8f;">Xem tiếp &rsaquo;</a>
+                            </div>
                         </div>
                     </div>
                     <!-- Thông báo -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Thông báo</h3>
-                        <div class="sidebar-content">
-                            <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
+                        <h3 class="sidebar-title"><a href="../../user/tin-tuc/thong-bao.html" style="color: inherit; text-decoration: none; display: block;">Thông báo</a></h3>
+                        <div class="sidebar-content" style="padding: 0;">
+                            <div class="marquee-vertical-container">
+                                <div id="dynamic-announcements-sidebar" class="marquee-vertical-content">
+                                    <div class="vb-item">
+                                        <p style="color:var(--text-light); padding: 15px;">Đang cập nhật...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; padding: 10px 15px; border-top: 1px solid #e2e8f0;">
+                                <a href="../../user/tin-tuc/thong-bao.html" style="font-size: 13px; font-weight: 600; color: #1a4d8f;">Xem tiếp &rsaquo;</a>
+                            </div>
                         </div>
                     </div>
                     <!-- Chỉ đạo điều hành -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Chỉ đạo điều hành</h3>
-                        <div class="sidebar-content">
+                        <h3 class="sidebar-title"><a href="../../user/chuyen-muc-khac/chi-dao-dieu-hanh.html" style="color: inherit; text-decoration: none; display: block;">Chỉ đạo điều hành</a></h3>
+                        <div class="sidebar-content" id="dynamic-cddh-sidebar" style="padding: 15px;">
                             <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
                         </div>
                     </div>
                     <!-- Xây dựng Đảng -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Xây dựng Đảng</h3>
-                        <div class="sidebar-content">
+                        <h3 class="sidebar-title"><a href="../../user/chuyen-muc-khac/cong-tac-xay-dung-dang.html" style="color: inherit; text-decoration: none; display: block;">Xây dựng Đảng</a></h3>
+                        <div class="sidebar-content" id="dynamic-xddang-sidebar" style="padding: 15px;">
                             <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
                         </div>
                     </div>
                     <!-- Trao đổi kinh nghiệm -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Trao đổi kinh nghiệm</h3>
-                        <div class="sidebar-content">
+                        <h3 class="sidebar-title"><a href="../../user/chuyen-muc-khac/trao-doi-kinh-nghiem.html" style="color: inherit; text-decoration: none; display: block;">Trao đổi kinh nghiệm</a></h3>
+                        <div class="sidebar-content" id="dynamic-tdkn-sidebar" style="padding: 15px;">
                             <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
                         </div>
                     </div>
                     <!-- Tin xem nhiều -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Tin xem nhiều</h3>
-                        <div class="sidebar-content">
+                        <h3 class="sidebar-title"><a href="../../user/tin-tuc/danh-sach-tin-tuc.html" style="color: inherit; text-decoration: none; display: block;">Tin xem nhiều</a></h3>
+                        <div class="sidebar-content" id="dynamic-tinxemnhieu-sidebar" style="padding: 15px;">
                             <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
                         </div>
                     </div>
                     <!-- Bình chọn -->
                     <div class="sidebar-box">
-                        <h3 class="sidebar-title">Bình chọn</h3>
-                        <div class="sidebar-content">
-                            <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
+                        <h3 class="sidebar-title">BÌNH CHỌN</h3>
+                        <div class="sidebar-content" style="padding: 15px;">
+                            <p class="poll-question">Xin ý kiến đánh giá về giao diện, nội dung, chất lượng cung cấp thông tin của Trang thông tin điện tử Trung tâm Giám sát, điều hành đô thị thông minh tỉnh Đắk Lắk</p>
+                            <form id="poll-form">
+                                <label class="poll-option"><input type="radio" name="poll" value="rattot"> Rất tốt</label>
+                                <label class="poll-option"><input type="radio" name="poll" value="tot"> Tốt</label>
+                                <label class="poll-option"><input type="radio" name="poll" value="trungbinh"> Trung bình</label>
+                                <label class="poll-option"><input type="radio" name="poll" value="kem"> Kém</label>
+                                <label class="poll-option"><input type="radio" name="poll" value="ratkem"> Rất kém</label>
+                                <div class="poll-actions">
+                                    <button type="submit" class="poll-btn-submit">Bình chọn</button>
+                                    <button type="button" class="poll-btn-result" id="btn-show-result">Kết quả</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <!-- Thống kê truy cập -->
                     <div class="sidebar-box">
                         <h3 class="sidebar-title">Thống kê truy cập</h3>
                         <div class="sidebar-content">
-                            <p style="font-size:14px;color:var(--text-light)">Đang cập nhật...</p>
+                            <ul class="visitor-stats-list" id="visitor-stats">
+                                <li class="stat-item main-stat">
+                                    <span class="stat-label"><i class="fa-solid fa-bolt"></i> Đang truy cập</span>
+                                    <span class="stat-value" id="stat-active-total">...</span>
+                                </li>
+                                <li class="stat-item sub-stat">
+                                    <span class="stat-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Máy chủ tìm kiếm</span>
+                                    <span class="stat-value" id="stat-active-bots">...</span>
+                                </li>
+                                <li class="stat-item sub-stat">
+                                    <span class="stat-label"><i class="fa-solid fa-bullseye"></i> Khách viếng thăm</span>
+                                    <span class="stat-value" id="stat-active-guests">...</span>
+                                </li>
+                                
+                                <li class="stat-divider"></li>
+                                
+                                <li class="stat-item">
+                                    <span class="stat-label"><i class="fa-solid fa-filter"></i> Hôm nay</span>
+                                    <span class="stat-value" id="stat-today">...</span>
+                                </li>
+                                <li class="stat-item">
+                                    <span class="stat-label"><i class="fa-regular fa-calendar"></i> Tháng hiện tại</span>
+                                    <span class="stat-value" id="stat-this-month">...</span>
+                                </li>
+                                <li class="stat-item">
+                                    <span class="stat-label"><i class="fa-solid fa-bars"></i> Tổng lượt truy cập</span>
+                                    <span class="stat-value" id="stat-total">...</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -439,9 +496,19 @@
         </div>
     </section>
 
-    
-
-    
+    <!-- ===== POLL RESULT MODAL ===== -->
+    <div id="poll-result-modal" class="poll-modal">
+        <div class="poll-modal-content">
+            <span class="poll-close-btn" id="btn-close-poll">&times;</span>
+            <h4 class="poll-modal-title">Xin ý kiến đánh giá về giao diện, nội dung, chất lượng cung cấp thông tin của Trang thông tin điện tử Trung tâm Giám sát, điều hành đô thị thông minh tỉnh Đắk Lắk</h4>
+            <div id="poll-results-container">
+                <!-- Results injected by JS -->
+            </div>
+            <div class="poll-modal-footer">
+                <strong>Tổng số: <span id="poll-total-votes">0</span> lượt - Tính từ: <span id="poll-start-date"></span></strong>
+            </div>
+        </div>
+    </div>
 
     <script>window.BASE_URL = "../../";</script>
     <script src="../../shared/components.js?v=34"></script>

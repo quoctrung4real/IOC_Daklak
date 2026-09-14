@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Backend.Models;
 using Backend.Services;
+using Backend.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -77,6 +78,7 @@ builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
     var cache = serviceProvider.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
     return new JsonPortalDataStore(environment, cache);
 });
+builder.Services.AddSingleton<VisitorTrackingService>();
 builder.Services.AddSingleton<JsonToSqlMigrationService>();
 builder.Services.AddSingleton<AuthTokenService>();
 builder.Services.AddHttpClient<AzureTextToSpeechService>();
@@ -133,6 +135,7 @@ app.UseResponseCompression();
 app.UseCors();
 app.UseStaticFiles();
 UseFrontendStaticFiles(app, frontendRoot);
+app.UseMiddleware<VisitorTrackingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -161,6 +164,13 @@ app.MapGet("/api/health", (IConfiguration configuration) =>
         dataProvider = configuration["DataProvider"] ?? "Json",
         checkedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
     });
+});
+
+app.MapGet("/api/visitor-statistics", async (IPortalDataStore store, VisitorTrackingService trackingService, CancellationToken cancellationToken) =>
+{
+    var activeCounts = trackingService.GetActiveCounts();
+    var stats = await store.GetVisitorStatisticsAsync(activeCounts.ActiveTotal, activeCounts.ActiveBots, activeCounts.ActiveGuests, cancellationToken);
+    return Results.Json(new { success = true, data = stats });
 });
 
 app.MapGet("/api/auth/me", (ClaimsPrincipal user) =>

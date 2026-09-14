@@ -739,6 +739,74 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         _cache.Remove(fileName);
     }
 
+    private class JsonVisitorRecord
+    {
+        public string Date { get; set; } = "";
+        public int Visits { get; set; }
+        public int BotVisits { get; set; }
+    }
+
+    public async Task<VisitorStatisticDto> GetVisitorStatisticsAsync(int activeTotal, int activeBots, int activeGuests, CancellationToken cancellationToken)
+    {
+        var result = new VisitorStatisticDto
+        {
+            ActiveTotal = activeTotal,
+            ActiveBots = activeBots,
+            ActiveGuests = activeGuests,
+            Today = 0,
+            ThisMonth = 0,
+            Total = 0
+        };
+
+        var json = await ReadFileAsync("visitor-statistics.json", "[]", cancellationToken);
+        var records = JsonSerializer.Deserialize<List<JsonVisitorRecord>>(json, _jsonOptions) ?? new List<JsonVisitorRecord>();
+
+        var todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+        var thisMonthStr = DateTime.Today.ToString("yyyy-MM");
+
+        foreach (var record in records)
+        {
+            var total = record.Visits + record.BotVisits;
+            result.Total += total;
+
+            if (record.Date == todayStr)
+            {
+                result.Today += total;
+            }
+            if (record.Date.StartsWith(thisMonthStr))
+            {
+                result.ThisMonth += total;
+            }
+        }
+
+        return result;
+    }
+
+    public async Task RecordVisitAsync(bool isBot, CancellationToken cancellationToken)
+    {
+        var json = await ReadFileAsync("visitor-statistics.json", "[]", cancellationToken);
+        var records = JsonSerializer.Deserialize<List<JsonVisitorRecord>>(json, _jsonOptions) ?? new List<JsonVisitorRecord>();
+        var todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+
+        var todayRecord = records.FirstOrDefault(r => r.Date == todayStr);
+        if (todayRecord == null)
+        {
+            todayRecord = new JsonVisitorRecord { Date = todayStr };
+            records.Add(todayRecord);
+        }
+
+        if (isBot)
+        {
+            todayRecord.BotVisits++;
+        }
+        else
+        {
+            todayRecord.Visits++;
+        }
+
+        await WriteFileAsync("visitor-statistics.json", JsonSerializer.Serialize(records, _jsonOptions), cancellationToken);
+    }
+
     private static UserDto ToSafeUser(UserDto user)
     {
         // Không trả mật khẩu ra frontend, kể cả khi dữ liệu cũ vẫn còn lưu trong JSON.

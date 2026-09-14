@@ -2952,6 +2952,7 @@ body.is-sticky .nav-wrapper {
     grid-template-columns: 260px 1fr 280px;
     gap: 30px;
     margin-top: 30px;
+    align-items: start;
 }
 
 /* Sidebar Left (Menu) */
@@ -3051,4 +3052,318 @@ body.is-sticky .nav-wrapper {
     .sidebar-right {
         grid-template-columns: 1fr;
     }
+}
+
+/* ===== MARQUEE VERTICAL (VĂN BẢN BAN HÀNH) ===== */
+.marquee-vertical-container {
+    height: 320px;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+}
+.marquee-vertical-content {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    will-change: transform;
+    animation: marqueeUp 35s linear infinite;
+}
+.marquee-vertical-container:hover .marquee-vertical-content {
+    animation-play-state: paused;
+}
+@keyframes marqueeUp {
+    0% { transform: translateY(320px); }
+    100% { transform: translateY(-100%); }
+}
+
+.vb-item {
+    padding: 12px 15px;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 14px;
+}
+.vb-item:last-child {
+    border-bottom: none;
+}
+.vb-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.vb-meta i {
+    color: #3d8fd4;
+}
+.vb-number {
+    font-weight: 700;
+    color: #1a4d8f;
+    margin-bottom: 4px;
+}
+.vb-title {
+    color: #334155;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ===== CHỈ ĐẠO ĐIỀU HÀNH SIDEBAR ===== */
+.cddh-sidebar-item {
+    display: block;
+    margin-bottom: 20px;
+}
+.cddh-sidebar-item:last-child {
+    margin-bottom: 0;
+}
+.cddh-sidebar-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+.cddh-sidebar-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.cddh-sidebar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+.cddh-sidebar-date {
+    color: #1a4d8f;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.cddh-sidebar-link {
+    color: #1a4d8f;
+    font-weight: 600;
+}
+
+/* ===== TIN XEM NHIỀU SIDEBAR ===== */
+.txn-sidebar-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #e2e8f0;
+    text-decoration: none;
+}
+.txn-sidebar-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.txn-sidebar-img {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.txn-sidebar-content {
+    flex: 1;
+}
+.txn-sidebar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.txn-sidebar-date {
+    font-size: 12px;
+    color: #1a4d8f;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ===== POLL ===== */
+.poll-question {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+.poll-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #111;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+.poll-option input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+.poll-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.poll-btn-submit {
+    background: #5cb85c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.poll-btn-submit:hover {
+    background: #4cae4c;
+}
+.poll-btn-result {
+    background: #337ab7;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.poll-btn-result:hover {
+    background: #286090;
+}
+
+/* Modal */
+.poll-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+.poll-modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.poll-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+}
+.poll-close-btn:hover {
+    color: #333;
+}
+.poll-modal-title {
+    color: #337ab7;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    padding-right: 20px;
+}
+.poll-result-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.poll-result-label {
+    width: 120px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.poll-result-bar-bg {
+    flex: 1;
+    background: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    height: 20px;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+}
+.poll-result-bar-fill {
+    background: #337ab7;
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+.poll-result-percent {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 0;
+    left: 0;
+    font-size: 12px;
+    line-height: 20px;
+    color: #a00;
+}
+.poll-modal-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+/* === VISITOR STATISTICS === */
+.visitor-stats-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+.visitor-stats-list .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+.visitor-stats-list .stat-item.sub-stat {
+    padding-left: 20px;
+}
+.visitor-stats-list .stat-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+.visitor-stats-list .stat-value {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.visitor-stats-list .stat-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 10px 0;
 }

@@ -1335,6 +1335,72 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
         return string.IsNullOrWhiteSpace(value) ? DBNull.Value : value;
     }
 
+    public async Task<VisitorStatisticDto> GetVisitorStatisticsAsync(int activeTotal, int activeBots, int activeGuests, CancellationToken cancellationToken)
+    {
+        var result = new VisitorStatisticDto
+        {
+            ActiveTotal = activeTotal,
+            ActiveBots = activeBots,
+            ActiveGuests = activeGuests,
+            Today = 0,
+            ThisMonth = 0,
+            Total = 0
+        };
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        
+        var today = DateTime.Today;
+        var startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+        using var command = new SqlCommand(@"
+            SELECT 
+                SUM(CASE WHEN Date = @Today THEN Visits + BotVisits ELSE 0 END) AS TodayVisits,
+                SUM(CASE WHEN Date >= @StartOfMonth THEN Visits + BotVisits ELSE 0 END) AS MonthVisits,
+                SUM(Visits + BotVisits) AS TotalVisits
+            FROM Gov.VisitorStatistics
+        ", connection);
+        
+        command.Parameters.AddWithValue("@Today", today);
+        command.Parameters.AddWithValue("@StartOfMonth", startOfMonth);
+
+        using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            result.Today = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+            result.ThisMonth = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+            result.Total = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+        }
+
+        return result;
+    }
+
+    public async Task RecordVisitAsync(bool isBot, CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        
+        using var command = new SqlCommand(@"
+            IF EXISTS (SELECT 1 FROM Gov.VisitorStatistics WHERE Date = @Date)
+            BEGIN
+                UPDATE Gov.VisitorStatistics 
+                SET Visits = Visits + @VisitsInc, BotVisits = BotVisits + @BotVisitsInc
+                WHERE Date = @Date
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Gov.VisitorStatistics (Date, Visits, BotVisits)
+                VALUES (@Date, @VisitsInc, @BotVisitsInc)
+            END
+        ", connection);
+        
+        command.Parameters.AddWithValue("@Date", DateTime.Today);
+        command.Parameters.AddWithValue("@VisitsInc", isBot ? 0 : 1);
+        command.Parameters.AddWithValue("@BotVisitsInc", isBot ? 1 : 0);
+        
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     private static object DateValue(string? value)
     {
         return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)

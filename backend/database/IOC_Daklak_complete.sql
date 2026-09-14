@@ -498,7 +498,7 @@ CREATE NONCLUSTERED INDEX IX_DisasterPosts_CreatedAt ON Emergency.DisasterPosts 
 GO
 
 -- =====================================================================================
--- PHASE 6: SMART CITY MODULES (Tham khảo dttm.hue.gov.vn)
+-- PHASE 6: SMART CITY MODULES (Tham khảo ioc-daklak.gov.vn)
 -- =====================================================================================
 
 -- -------------------------------------------------------------------------------------
@@ -930,6 +930,17 @@ BEGIN
         CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
         IsDeleted BIT NOT NULL DEFAULT 0,
         CONSTRAINT FK_OpinionFeedbacks_DraftOpinions FOREIGN KEY (DraftOpinionId) REFERENCES Gov.DraftOpinions(Id)
+    );
+END
+GO
+
+-- Bảng Thống kê truy cập
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'VisitorStatistics')
+BEGIN
+    CREATE TABLE Gov.VisitorStatistics (
+        Date DATE PRIMARY KEY,
+        Visits INT NOT NULL DEFAULT 0,
+        BotVisits INT NOT NULL DEFAULT 0
     );
 END
 GO

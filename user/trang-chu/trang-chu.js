@@ -1871,3 +1871,385 @@ document.addEventListener('click', function(e) {
         });
     }
 });
+
+// --- Tính năng Văn bản ban hành (Marquee) ---
+async function loadIssuedDocuments() {
+    const container = document.getElementById('dynamic-issued-docs');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/van-ban?take=10&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch issued documents");
+        const documents = await res.json();
+
+        if (!documents || documents.length === 0) {
+            container.innerHTML = '<div class="vb-item"><p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p></div>';
+            return;
+        }
+
+        container.innerHTML = documents.map(doc => {
+            const dateStr = doc.publishedAt ? new Date(doc.publishedAt).toLocaleDateString('vi-VN') : '';
+            const views = Math.floor(Math.random() * 500) + 100;
+            const downloads = Math.floor(Math.random() * 200) + 50;
+            return `
+                <a href="../../user/van-ban/chi-tiet.html?id=${doc.id}" class="vb-item" style="display:block; text-decoration:none;">
+                    <div class="vb-meta">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>${dateStr} lượt xem: ${views} | lượt tải: ${downloads}</span>
+                    </div>
+                    <div class="vb-number">${doc.documentNumber || ''}</div>
+                    <div class="vb-title" title="${doc.title}">${doc.title || ''}</div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải văn bản ban hành:", e);
+        container.innerHTML = '<div class="vb-item"><p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p></div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadIssuedDocuments);
+
+// --- Tính năng Thông báo (Marquee) ---
+async function loadSidebarAnnouncements() {
+    const container = document.getElementById('dynamic-announcements-sidebar');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/thong-bao?take=10&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch announcements");
+        const data = await res.json();
+        const posts = data.posts || [];
+
+        if (posts.length === 0) {
+            container.innerHTML = '<div class="vb-item"><p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p></div>';
+            return;
+        }
+
+        posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        container.innerHTML = posts.slice(0, 10).map(post => {
+            const dateStr = post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '';
+            const views = Math.floor(Math.random() * 500) + 100;
+            return `
+                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=thong-bao&id=${post.id}" class="vb-item" style="display:block; text-decoration:none;">
+                    <div class="vb-meta">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>${dateStr} lượt xem: ${views}</span>
+                    </div>
+                    <div class="vb-title" title="${post.title}" style="-webkit-line-clamp: 4;">${post.title || ''}</div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải thông báo sidebar:", e);
+        container.innerHTML = '<div class="vb-item"><p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p></div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSidebarAnnouncements);
+
+// --- Tính năng Chỉ đạo điều hành (Sidebar) ---
+async function loadSidebarCDDH() {
+    const container = document.getElementById('dynamic-cddh-sidebar');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/chi-dao-dieu-hanh?limit=2&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch chi dao dieu hanh");
+        const data = await res.json();
+        const posts = data.posts || [];
+
+        if (posts.length === 0) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p>';
+            return;
+        }
+
+        posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        container.innerHTML = posts.slice(0, 2).map(post => {
+            const dateStr = post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '';
+            return `
+                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=chi-dao-dieu-hanh&id=${post.id}" class="cddh-sidebar-item">
+                    ${post.imageUrl ? `<img src="${resolveBackendUrl(post.imageUrl)}" class="cddh-sidebar-img" onerror="this.onerror=null; this.outerHTML='<div class=\\'cddh-sidebar-img\\' style=\\'background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b;\\'>Ảnh minh họa</div>';">` : ''}
+                    <div class="cddh-sidebar-title" title="${post.title}">${post.title || ''}</div>
+                    <div class="cddh-sidebar-meta">
+                        <div class="cddh-sidebar-date">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>${dateStr}</span>
+                        </div>
+                        <div class="cddh-sidebar-link">Xem tiếp &rsaquo;</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải chỉ đạo điều hành sidebar:", e);
+        container.innerHTML = '<p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSidebarCDDH);
+
+// --- Tính năng Xây dựng Đảng (Sidebar) ---
+async function loadSidebarXDDang() {
+    const container = document.getElementById('dynamic-xddang-sidebar');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/cong-tac-xay-dung-dang?limit=2&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch xay dung dang");
+        const data = await res.json();
+        const posts = data.posts || [];
+
+        if (posts.length === 0) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p>';
+            return;
+        }
+
+        posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        container.innerHTML = posts.slice(0, 2).map(post => {
+            const dateStr = post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '';
+            return `
+                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=cong-tac-xay-dung-dang&id=${post.id}" class="cddh-sidebar-item">
+                    ${post.imageUrl ? `<img src="${resolveBackendUrl(post.imageUrl)}" class="cddh-sidebar-img" onerror="this.onerror=null; this.outerHTML='<div class=\\'cddh-sidebar-img\\' style=\\'background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b;\\'>Ảnh minh họa</div>';">` : ''}
+                    <div class="cddh-sidebar-title" title="${post.title}">${post.title || ''}</div>
+                    <div class="cddh-sidebar-meta">
+                        <div class="cddh-sidebar-date">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>${dateStr}</span>
+                        </div>
+                        <div class="cddh-sidebar-link">Xem tiếp &rsaquo;</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải xây dựng đảng sidebar:", e);
+        container.innerHTML = '<p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSidebarXDDang);
+
+// --- Tính năng Trao đổi kinh nghiệm (Sidebar) ---
+async function loadSidebarTDKN() {
+    const container = document.getElementById('dynamic-tdkn-sidebar');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/trao-doi-kinh-nghiem?limit=2&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch trao doi kinh nghiem");
+        const data = await res.json();
+        const posts = data.posts || [];
+
+        if (posts.length === 0) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p>';
+            return;
+        }
+
+        posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        container.innerHTML = posts.slice(0, 2).map(post => {
+            const dateStr = post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '';
+            return `
+                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=trao-doi-kinh-nghiem&id=${post.id}" class="cddh-sidebar-item">
+                    ${post.imageUrl ? `<img src="${resolveBackendUrl(post.imageUrl)}" class="cddh-sidebar-img" onerror="this.onerror=null; this.outerHTML='<div class=\\'cddh-sidebar-img\\' style=\\'background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b;\\'>Ảnh minh họa</div>';">` : ''}
+                    <div class="cddh-sidebar-title" title="${post.title}">${post.title || ''}</div>
+                    <div class="cddh-sidebar-meta">
+                        <div class="cddh-sidebar-date">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>${dateStr}</span>
+                        </div>
+                        <div class="cddh-sidebar-link">Xem tiếp &rsaquo;</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải trao đổi kinh nghiệm sidebar:", e);
+        container.innerHTML = '<p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSidebarTDKN);
+
+// --- Tính năng Tin xem nhiều (Sidebar) ---
+async function loadSidebarTXN() {
+    const container = document.getElementById('dynamic-tinxemnhieu-sidebar');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/tin-hoat-dong?limit=20&t=${new Date().getTime()}`);
+        if (!res.ok) throw new Error("Failed to fetch tin xem nhieu");
+        const data = await res.json();
+        let posts = data.posts || [];
+
+        if (posts.length === 0) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">Chưa có dữ liệu.</p>';
+            return;
+        }
+
+        // Tạo số lượt xem giả lập để sắp xếp
+        posts.forEach(post => {
+            post.viewsCount = Math.floor(Math.random() * 5000) + 100;
+        });
+
+        // Sắp xếp theo số lượt xem giảm dần
+        posts.sort((a, b) => b.viewsCount - a.viewsCount);
+        
+        container.innerHTML = posts.slice(0, 5).map(post => {
+            const dateObj = new Date(post.createdAt);
+            const timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = dateObj.toLocaleDateString('vi-VN');
+            const displayDate = `${timeStr} | ${dateStr}`;
+            
+            return `
+                <a href="../../user/tin-tuc/chi-tiet-tin-tuc.html?category=tin-hoat-dong&id=${post.id}" class="txn-sidebar-item">
+                    ${post.imageUrl ? `<img src="${resolveBackendUrl(post.imageUrl)}" class="txn-sidebar-img" onerror="this.onerror=null; this.outerHTML='<div class=\\'txn-sidebar-img\\' style=\\'background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:10px; text-align:center;\\'>Ảnh minh họa</div>';">` : '<div class="txn-sidebar-img" style="background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:10px; text-align:center;">Ảnh minh họa</div>'}
+                    <div class="txn-sidebar-content">
+                        <div class="txn-sidebar-title" title="${post.title}">${post.title || ''}</div>
+                        <div class="txn-sidebar-date">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>${displayDate}</span>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("Lỗi tải tin xem nhiều sidebar:", e);
+        container.innerHTML = '<p style="color:red; font-style:italic;">Lỗi tải dữ liệu.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSidebarTXN);
+
+// --- BÌNH CHỌN ---
+function initPoll() {
+    const pollForm = document.getElementById('poll-form');
+    const btnShowResult = document.getElementById('btn-show-result');
+    const pollModal = document.getElementById('poll-result-modal');
+    const btnClosePoll = document.getElementById('btn-close-poll');
+    const pollResultsContainer = document.getElementById('poll-results-container');
+    const pollTotalVotes = document.getElementById('poll-total-votes');
+    const pollStartDate = document.getElementById('poll-start-date');
+
+    if (!pollForm) return;
+
+    // Khởi tạo dữ liệu bình chọn (Lưu trong localStorage)
+    let pollData = JSON.parse(localStorage.getItem('ioc_daklak_poll_data'));
+    if (!pollData) {
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' }) + ' ' + today.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        
+        pollData = {
+            total: 0,
+            startDate: dateStr,
+            votes: {
+                'rattot': 0,
+                'tot': 0,
+                'trungbinh': 0,
+                'kem': 0,
+                'ratkem': 0
+            }
+        };
+        localStorage.setItem('ioc_daklak_poll_data', JSON.stringify(pollData));
+    }
+
+    const labels = {
+        'rattot': 'Rất tốt',
+        'tot': 'Tốt',
+        'trungbinh': 'Trung bình',
+        'kem': 'Kém',
+        'ratkem': 'Rất kém'
+    };
+
+    pollForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const selected = document.querySelector('input[name="poll"]:checked');
+        if (!selected) {
+            alert('Vui lòng chọn một mục trước khi bình chọn.');
+            return;
+        }
+
+        const val = selected.value;
+        pollData.votes[val]++;
+        pollData.total++;
+        localStorage.setItem('ioc_daklak_poll_data', JSON.stringify(pollData));
+        alert('Cảm ơn bạn đã tham gia bình chọn!');
+        
+        // Reset form
+        pollForm.reset();
+        
+        showResults();
+    });
+
+    if (btnShowResult) {
+        btnShowResult.addEventListener('click', showResults);
+    }
+
+    if (btnClosePoll) {
+        btnClosePoll.addEventListener('click', () => {
+            pollModal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target == pollModal) {
+            pollModal.style.display = 'none';
+        }
+    });
+
+    function showResults() {
+        let html = '';
+        for (const key in labels) {
+            const count = pollData.votes[key];
+            const percent = pollData.total === 0 ? 0 : Math.round((count / pollData.total) * 100);
+            
+            html += `
+                <div class="poll-result-row">
+                    <div class="poll-result-label">${labels[key]}</div>
+                    <div class="poll-result-bar-bg">
+                        <div class="poll-result-bar-fill" style="width: ${percent}%;"></div>
+                        <div class="poll-result-percent">${percent}%</div>
+                    </div>
+                </div>
+            `;
+        }
+        if (pollResultsContainer) pollResultsContainer.innerHTML = html;
+        if (pollTotalVotes) pollTotalVotes.textContent = pollData.total;
+        if (pollStartDate) pollStartDate.textContent = pollData.startDate;
+        if (pollModal) pollModal.style.display = 'flex';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initPoll);
+
+// === VISITOR STATISTICS ===
+async function loadVisitorStatistics() {
+    try {
+        const response = await fetchWithCache(`${API_BASE}/visitor-statistics`, { cache: 'no-cache' });
+        if (!response.ok) return;
+
+        const { success, data } = await response.json();
+        if (success && data) {
+            document.getElementById('stat-active-total').textContent = data.activeTotal.toLocaleString();
+            document.getElementById('stat-active-bots').textContent = data.activeBots.toLocaleString();
+            document.getElementById('stat-active-guests').textContent = data.activeGuests.toLocaleString();
+            document.getElementById('stat-today').textContent = data.today.toLocaleString();
+            document.getElementById('stat-this-month').textContent = data.thisMonth.toLocaleString();
+            document.getElementById('stat-total').textContent = data.total.toLocaleString();
+        }
+    } catch (e) {
+        console.warn('Không lấy được dữ liệu thống kê truy cập', e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Load immediately
+    loadVisitorStatistics();
+    // Poll every 30 seconds
+    setInterval(loadVisitorStatistics, 30000);
+});
