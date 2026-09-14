@@ -749,7 +749,13 @@ async function loadDynamicNews() {
             renderFeaturedNews(),
             fetchAndRender('tuong-tac-cong-dan', 'dynamic-tuongtac-list', 'dynamic-tuongtac-featured'),
             fetchAndRender('cds-doi-moi-sang-tao', 'dynamic-cds-list', 'dynamic-cds-featured'),
-            fetchAndRender('cap-nhat-bao-lu', 'dynamic-baolu-list', 'dynamic-baolu-featured')
+            fetchAndRender('cap-nhat-bao-lu', 'dynamic-baolu-list', 'dynamic-baolu-featured'),
+            fetchAndRender('tin-hoat-dong', 'dynamic-tinhoatdong-list', 'dynamic-tinhoatdong-featured'),
+            fetchAndRender('giai-phap-an-toan-thong-tin', 'dynamic-attt-list', 'dynamic-attt-featured'),
+            fetchAndRender('tieu-chuan-chat-luong', 'dynamic-tccl-list', 'dynamic-tccl-featured'),
+            fetchAndRender('giai-phap-an-toan-mang', 'dynamic-anm-list', 'dynamic-anm-featured'),
+            fetchAndRender('hoi-thao-hoi-nghi', 'dynamic-hthn-list', 'dynamic-hthn-featured'),
+            fetchAndRender('sach-tu-lieu', 'dynamic-sachtl-list', 'dynamic-sachtl-featured')
         ]);
 
     } catch (e) {
