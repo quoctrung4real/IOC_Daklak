@@ -20,6 +20,14 @@ public class VisitorTrackingMiddleware
 
     public async Task InvokeAsync(HttpContext context, IPortalDataStore dataStore)
     {
+        // Bỏ qua theo dõi truy cập đối với endpoint thống kê để tránh việc tạo loop lưu file (visitor-statistics.json) liên tục
+        // gây ra lỗi reload liên tục khi dùng Live Server.
+        if (context.Request.Path.StartsWithSegments("/api/visitor-statistics", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
+
         var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var userAgent = context.Request.Headers.UserAgent.ToString().ToLowerInvariant();
 
