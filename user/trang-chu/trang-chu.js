@@ -2254,8 +2254,6 @@ async function loadVisitorStatistics() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Load immediately
+    // Tải số liệu thống kê 1 lần duy nhất khi người dùng vào trang
     loadVisitorStatistics();
-    // Poll every 30 seconds
-    setInterval(loadVisitorStatistics, 30000);
 });
