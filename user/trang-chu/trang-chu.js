@@ -117,21 +117,48 @@ const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
 // Cache helper using IndexedDB để tối ưu bộ nhớ thay cho sessionStorage
 let dbInstance = null;
 let dbPromise = null;
+// Cờ đánh dấu IndexedDB đã fail → không thử lại nữa trong session này
+let dbFailed = false;
 
 function getDB() {
+    if (dbFailed) return Promise.reject(new Error('IndexedDB disabled'));
     if (dbInstance) return Promise.resolve(dbInstance);
     if (dbPromise) return dbPromise;
     
     dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open('AppCacheDB', 1);
-        request.onerror = () => { dbPromise = null; reject(request.error); };
-        request.onsuccess = () => { dbInstance = request.result; resolve(dbInstance); };
-        request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('requests')) {
-                db.createObjectStore('requests');
-            }
-        };
+        try {
+            const request = indexedDB.open('AppCacheDB', 1);
+            
+            // Timeout 2 giây: nếu IndexedDB bị treo (lock trên Windows) → bỏ qua
+            const timeout = setTimeout(() => {
+                dbPromise = null;
+                dbFailed = true;
+                reject(new Error('IndexedDB timeout'));
+            }, 2000);
+            
+            request.onerror = () => { 
+                clearTimeout(timeout);
+                dbPromise = null; 
+                dbFailed = true;
+                reject(request.error); 
+            };
+            request.onsuccess = () => { 
+                clearTimeout(timeout);
+                dbInstance = request.result; 
+                resolve(dbInstance); 
+            };
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('requests')) {
+                    db.createObjectStore('requests');
+                }
+            };
+        } catch (e) {
+            // IndexedDB không khả dụng (ví dụ: private mode cũ, hoặc bị disable)
+            dbPromise = null;
+            dbFailed = true;
+            reject(e);
+        }
     });
     return dbPromise;
 }
@@ -143,15 +170,19 @@ async function getCache(key) {
     if (ramCache.has(key)) return ramCache.get(key);
     try {
         const db = await getDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['requests'], 'readonly');
-            const store = transaction.objectStore('requests');
-            const request = store.get(key);
-            request.onsuccess = () => {
-                if (request.result) ramCache.set(key, request.result);
-                resolve(request.result);
-            };
-            request.onerror = () => reject(request.error);
+        return new Promise((resolve) => {
+            try {
+                const transaction = db.transaction(['requests'], 'readonly');
+                const store = transaction.objectStore('requests');
+                const request = store.get(key);
+                request.onsuccess = () => {
+                    if (request.result) ramCache.set(key, request.result);
+                    resolve(request.result);
+                };
+                request.onerror = () => resolve(null);
+            } catch (e) {
+                resolve(null);
+            }
         });
     } catch (e) { return null; }
 }
@@ -160,34 +191,39 @@ async function setCache(key, value) {
     ramCache.set(key, value);
     try {
         const db = await getDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['requests'], 'readwrite');
-            const store = transaction.objectStore('requests');
-            const request = store.put(value, key);
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
+        return new Promise((resolve) => {
+            try {
+                const transaction = db.transaction(['requests'], 'readwrite');
+                const store = transaction.objectStore('requests');
+                const request = store.put(value, key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => resolve();
+            } catch (e) {
+                resolve();
+            }
         });
-    } catch (e) {}
+    } catch (e) { /* IndexedDB không khả dụng, chỉ dùng ramCache */ }
 }
 
 async function fetchWithCache(url, ttlMinutes = 3) {
     const cacheKey = `cache_${url.split('?')[0]}`;
-    const cachedItem = await getCache(cacheKey);
     const now = new Date().getTime();
 
     const cloneData = (data) => typeof structuredClone === 'function' ? structuredClone(data) : JSON.parse(JSON.stringify(data));
 
-    if (cachedItem) {
-        try {
+    // Thử đọc cache, nhưng KHÔNG để lỗi cache chặn việc fetch network
+    try {
+        const cachedItem = await getCache(cacheKey);
+        if (cachedItem) {
             if (now - cachedItem.timestamp < ttlMinutes * 60 * 1000) {
                 return {
                     ok: true,
                     json: async () => cloneData(cachedItem.data)
                 };
             }
-        } catch (e) {
-            console.warn('Cache parse error', e);
         }
+    } catch (e) {
+        console.warn('Cache read error, falling through to network:', e);
     }
 
     // Deduplicate inflight requests (chống gọi 3 lần /cau-hinh cùng lúc)
@@ -209,7 +245,7 @@ async function fetchWithCache(url, ttlMinutes = 3) {
     const fetchPromise = fetch(fetchUrl).then(async (response) => {
         if (!response.ok) throw new Error('Network error');
         const data = await response.json();
-        // Lưu cache ở background (không chặn)
+        // Lưu cache ở background (không chặn, không throw)
         setCache(cacheKey, { timestamp: now, data: data }).catch(() => {});
         return data;
     });
@@ -797,6 +833,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.news-section, .article-section, .tech-solutions-section, .partner-links-section, .documents-section, .multimedia-section').forEach(section => {
         sectionObserver.observe(section);
     });
+
+    // FALLBACK: Nếu IntersectionObserver không trigger sau 1.5s (do giật trang, CPU chậm, v.v.)
+    // → tải data trực tiếp để đảm bảo trang luôn hiện nội dung
+    const loadedSections = new Set();
+    const originalLoadDynamicNews = typeof loadDynamicNews === 'function' ? loadDynamicNews : null;
+    const originalLoadCategoryNews = typeof loadCategoryNews === 'function' ? loadCategoryNews : null;
+    
+    setTimeout(() => {
+        // Kiểm tra nếu news section chưa có nội dung → tải ngay
+        const featuredMain = document.getElementById('dynamic-featured-main');
+        if (featuredMain && featuredMain.innerHTML.trim() === '') {
+            if (originalLoadDynamicNews) originalLoadDynamicNews();
+            if (originalLoadCategoryNews) originalLoadCategoryNews();
+        }
+        // Kiểm tra nếu documents section chưa có nội dung → tải ngay
+        const thongBaoList = document.getElementById('home-thong-bao-list');
+        if (thongBaoList && thongBaoList.querySelector('li[style]')) {
+            if (typeof loadHomeAnnouncements === 'function') loadHomeAnnouncements();
+            if (typeof loadHomeDocuments === 'function') loadHomeDocuments();
+        }
+    }, 1500);
 
     if (document.getElementById('dynamic-about-content')) loadAboutContent();
     if (document.getElementById('dynamic-support-content')) loadSupportContent();

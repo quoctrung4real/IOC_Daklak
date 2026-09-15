@@ -1053,6 +1053,10 @@ window.addEventListener('DOMContentLoaded', () => {
         const scrollTopBtn = document.getElementById('scrollTopBtn');
         if (!scrollTopBtn) return;
 
+        // Giá trị bottom hiện tại (tránh ghi DOM nếu không thay đổi → chống vòng lặp MutationObserver)
+        let lastBottom = '30px';
+        let rafPending = false;
+
         function repositionScrollTop() {
             // Find ALL fixed positioned elements near bottom-right that we didn't create
             // The external chatbot always renders as a fixed element near the bottom-right
@@ -1086,21 +1090,31 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            if (maxBottomUsed > 0) {
-                scrollTopBtn.style.bottom = (maxBottomUsed + 15) + 'px';
-            } else {
-                scrollTopBtn.style.bottom = '30px';
+            const newBottom = maxBottomUsed > 0 ? (maxBottomUsed + 15) + 'px' : '30px';
+            // CHỈ ghi DOM khi giá trị thực sự thay đổi → tránh trigger MutationObserver vô ích
+            if (newBottom !== lastBottom) {
+                lastBottom = newBottom;
+                scrollTopBtn.style.bottom = newBottom;
             }
         }
 
         // Run periodically since the external chatbot loads asynchronously
-        setInterval(repositionScrollTop, 800);
+        // Chatbot chỉ load 1 lần, nên 5s là đủ → giảm tải CPU trên máy yếu
+        setInterval(repositionScrollTop, 5000);
         
         // Also observe DOM changes for initial chatbot load
+        // Dùng requestAnimationFrame debounce để gom nhiều mutation liên tiếp thành 1 lần xử lý
         const observer = new MutationObserver(() => {
-            setTimeout(repositionScrollTop, 300);
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(() => {
+                rafPending = false;
+                repositionScrollTop();
+            });
         });
-        observer.observe(document.body, { childList: true, subtree: true });
+        // Chỉ lắng nghe childList trực tiếp trên body (chatbot được append vào body)
+        // BỎ subtree: true để tránh trigger hàng ngàn lần từ Google Translate, theme, v.v.
+        observer.observe(document.body, { childList: true, subtree: false });
     })();
     
     // ===== MENU ĐIỆN THOẠI =====
