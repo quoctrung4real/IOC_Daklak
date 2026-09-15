@@ -63,7 +63,8 @@ window.closeIconModal = function() {
     if (modal) modal.style.display = 'none';
 };
 
-const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+const API_BASE = isLocal ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://YOUR_BACKEND_APP_NAME.onrender.com/api';
 
 const GLOBAL_ICON_LIBRARY = [
     'fa-solid fa-house', 'fa-solid fa-user', 'fa-solid fa-envelope', 'fa-solid fa-phone', 'fa-solid fa-globe', 

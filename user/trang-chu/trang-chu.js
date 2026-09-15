@@ -112,7 +112,8 @@ accordionHeaders.forEach(header => {
 });
 
 // ===== TÍCH HỢP API (C# BACKEND) =====
-const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
+const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://YOUR_BACKEND_APP_NAME.onrender.com/api';
 
 // Cache helper using IndexedDB để tối ưu bộ nhớ thay cho sessionStorage
 let dbInstance = null;
@@ -975,7 +976,7 @@ function ensureSearchResultPanel() {
 
 function resolveBackendUrl(url) {
     if (!url || url === '#') return '#';
-    return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`;
+    return url.match(/^(http|data:)/) ? url : (isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100${url}` : `https://YOUR_BACKEND_APP_NAME.onrender.com${url}`);
 }
 
 function resolveFrontendUrl(url) {

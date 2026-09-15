@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const API_BASE = `http://${window.location.hostname || 'localhost'}:5100/api`;
+        const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://YOUR_BACKEND_APP_NAME.onrender.com/api';
         const response = await fetch(`${API_BASE}/tin-tuc-da-phuong-tien?t=${new Date().getTime()}`);
         if (!response.ok) {
             throw new Error('Network response was not ok');
