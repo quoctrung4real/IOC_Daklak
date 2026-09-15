@@ -864,6 +864,8 @@ const commonComponents = {
                 // THEME LOADER
                 if (config && config.themePreset && config.themePreset !== 'default') {
                     const theme = config.themePreset;
+                    // Expose the setting for the theme JS
+                    window.DISABLE_THEME_EFFECTS = config.disableThemeEffects === true;
                     // Load CSS
                     const linkCss = document.createElement('link');
                     linkCss.rel = 'stylesheet';

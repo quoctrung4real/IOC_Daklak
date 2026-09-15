@@ -478,6 +478,10 @@ async function loadConfig() {
                 }
             });
 
+            if (document.getElementById('disableThemeEffects') && config.disableThemeEffects !== undefined) {
+                document.getElementById('disableThemeEffects').checked = config.disableThemeEffects;
+            }
+
             // Add a helper to show file name preview
             const showFileName = (inputId, text) => {
                 const input = document.getElementById(inputId);
@@ -4297,6 +4301,26 @@ async function renderThemesAndPresets() {
                 </div>
             `).join('');
         }
+    }
+}
+
+async function toggleThemeEffects(isChecked) {
+    try {
+        let config = {}; 
+        const res = await apiFetch(`${API_BASE}/cau-hinh?t=${new Date().getTime()}`);
+        if(res.ok) config = await res.json();
+        
+        config.disableThemeEffects = isChecked;
+        
+        await apiFetch(`${API_BASE}/cau-hinh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        
+        showToast('Đã ' + (isChecked ? 'tắt' : 'bật') + ' hiệu ứng hình nền động!', 'success');
+    } catch (error) {
+        showToast('Lỗi khi lưu cấu hình', 'error');
     }
 }
 
