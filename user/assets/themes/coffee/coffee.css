@@ -236,9 +236,7 @@ body {
 }
 
 /* Sync sidebar titles */
-.sidebar-title,
-.cddh-sidebar-title,
-.txn-sidebar-title {
+.sidebar-title {
     background: var(--coffee-primary) !important;
     border-bottom: 2px solid var(--coffee-accent) !important;
 }

@@ -196,9 +196,7 @@ body {
 }
 
 /* Sync sidebar titles */
-.sidebar-title,
-.cddh-sidebar-title,
-.txn-sidebar-title {
+.sidebar-title {
     background: var(--national-red) !important;
     border-bottom: 2px solid var(--national-yellow) !important;
 }
