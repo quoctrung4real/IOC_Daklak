@@ -113,7 +113,7 @@ accordionHeaders.forEach(header => {
 
 // ===== TÍCH HỢP API (C# BACKEND) =====
 const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://ioc-daklak.onrender.com/api';
+const API_BASE = isLocalEnv ? `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api` : 'https://ioc-daklak.onrender.com/api';
 
 // Cache helper using IndexedDB để tối ưu bộ nhớ thay cho sessionStorage
 let dbInstance = null;
@@ -976,7 +976,7 @@ function ensureSearchResultPanel() {
 
 function resolveBackendUrl(url) {
     if (!url || url === '#') return '#';
-    return url.match(/^(http|data:)/) ? url : (isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100${url}` : `https://ioc-daklak.onrender.com${url}`);
+    return url.match(/^(http|data:)/) ? url : (isLocalEnv ? `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${url}` : `https://ioc-daklak.onrender.com${url}`);
 }
 
 function resolveFrontendUrl(url) {
@@ -1235,7 +1235,7 @@ async function loadCategoryNews(isLoadMore = false) {
                 
                 let imageHtml = '';
                 if (post.imageUrl && post.imageUrl.trim() !== '') {
-                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `http://${window.location.hostname || 'localhost'}:5100${post.imageUrl}`;
+                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${post.imageUrl}`;
                     imageHtml = `<div class="baolu-img"><img src="${resolveBackendUrl(imgUrl)}" loading="lazy" decoding="async" alt="${post.title}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'no-image-placeholder\'>Không có hình ảnh</div>';"></div>`;
                 } else {
                     imageHtml = `<div class="baolu-img"><div class="no-image-placeholder">Không có hình ảnh</div></div>`;

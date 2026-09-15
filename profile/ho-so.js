@@ -1,5 +1,5 @@
 const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://ioc-daklak.onrender.com/api';
+const API_BASE = isLocalEnv ? `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api` : 'https://ioc-daklak.onrender.com/api';
 let isAvatarChanged = false;
 let currentAvatarUrl = null;
 
@@ -61,7 +61,7 @@ async function loadUserProfile(username) {
             if (user.avatarUrl) {
                 // Nếu là đường dẫn tương đối, thêm tên miền API
                 if (user.avatarUrl.startsWith('/')) {
-                    document.getElementById('avatarPreview').src = `http://${window.location.hostname || 'localhost'}:5100${user.avatarUrl}`;
+                    document.getElementById('avatarPreview').src = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${user.avatarUrl}`;
                 } else {
                     document.getElementById('avatarPreview').src = user.avatarUrl;
                 }

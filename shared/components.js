@@ -500,7 +500,7 @@ const commonComponents = {
                 
                 searchTimeout = setTimeout(async () => {
                     try {
-                        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}&t=${new Date().getTime()}`);
+                        const response = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/tim-kiem?q=${encodeURIComponent(query)}&t=${new Date().getTime()}`);
                         if (!response.ok) throw new Error('Network error');
                         const data = await response.json();
                         
@@ -850,14 +850,14 @@ const commonComponents = {
     // Define a global helper to resolve backend static URLs
     window.resolveBackendUrl = function(url) {
         if (!url || url === '#') return '#';
-        return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`;
+        return url.match(/^(http|data:)/) ? url : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${url}`;
     };
 
     // 5. Load dynamic config (e.g. Bo KHCN link)
     setTimeout(async () => {
         try {
             
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/cau-hinh?t=${new Date().getTime()}`);
+            const res = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/cau-hinh?t=${new Date().getTime()}`);
             if (res.ok) {
                 const config = await res.json();
                 
@@ -867,11 +867,11 @@ const commonComponents = {
                     // Load CSS
                     const linkCss = document.createElement('link');
                     linkCss.rel = 'stylesheet';
-                    linkCss.href = `http://${window.location.hostname || 'localhost'}:5100/user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
+                    linkCss.href = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
                     document.head.appendChild(linkCss);
                     // Load JS
                     const scriptJs = document.createElement('script');
-                    scriptJs.src = `http://${window.location.hostname || 'localhost'}:5100/user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
+                    scriptJs.src = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
                     document.body.appendChild(scriptJs);
                 }
                 

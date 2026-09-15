@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorEl.textContent = '';
 
         try {
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/login`, {
+            const res = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorEl.textContent = '';
 
         try {
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/register`, {
+            const res = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })

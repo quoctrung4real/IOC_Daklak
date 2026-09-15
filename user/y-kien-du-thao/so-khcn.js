@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/y-kien-du-thao`);
+        const response = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/y-kien-du-thao`);
         const data = await response.json();
         
         const tbody = document.getElementById('drafts-table-body');

@@ -181,7 +181,7 @@
                 }
 
                 if (post.imageUrl) {
-                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `http://${window.location.hostname || 'localhost'}:5100${post.imageUrl}`;
+                    const imgUrl = post.imageUrl.match(/^(http|data:)/) ? post.imageUrl : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${post.imageUrl}`;
                     const imgEl = document.getElementById('detail-image');
                     imgEl.src = imgUrl;
                     imgEl.alt = post.title;

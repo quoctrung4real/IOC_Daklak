@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     keywordSpan.textContent = `"${query}"`;
     
     try {
-        const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/tim-kiem?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/tim-kiem?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         
         if (data.success && data.results && data.results.length > 0) {

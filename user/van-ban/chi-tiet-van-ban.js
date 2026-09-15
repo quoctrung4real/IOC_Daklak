@@ -1,7 +1,7 @@
 (function() {
 const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://ioc-daklak.onrender.com/api';
-const BACKEND_ORIGIN = `http://${window.location.hostname || 'localhost'}:5100`;
+const API_BASE = isLocalEnv ? `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api` : 'https://ioc-daklak.onrender.com/api';
+const BACKEND_ORIGIN = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}`;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);

@@ -1,4 +1,4 @@
-window.resolveBackendUrl = function(url) { if (!url || url === '#') return '#'; return url.match(/^(http|data:)/) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`; };
+window.resolveBackendUrl = function(url) { if (!url || url === '#') return '#'; return url.match(/^(http|data:)/) ? url : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${url}`; };
 
 
 window.clearImage = function(urlId, fileId, previewId) {
@@ -64,7 +64,7 @@ window.closeIconModal = function() {
 };
 
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-const API_BASE = isLocal ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://ioc-daklak.onrender.com/api';
+const API_BASE = isLocal ? `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api` : 'https://ioc-daklak.onrender.com/api';
 
 const GLOBAL_ICON_LIBRARY = [
     'fa-solid fa-house', 'fa-solid fa-user', 'fa-solid fa-envelope', 'fa-solid fa-phone', 'fa-solid fa-globe', 
@@ -1836,12 +1836,12 @@ const externalLinksApp = {
         }
 
         listEl.innerHTML = this.items.map(item => `
-            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${(item.bgUrl.startsWith('http') || item.bgUrl.startsWith('data:')) ? item.bgUrl : `http://${window.location.hostname || 'localhost'}:5100` + item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; min-height: 110px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); ${item.bgUrl ? `background-image: url('${(item.bgUrl.startsWith('http') || item.bgUrl.startsWith('data:')) ? item.bgUrl : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}` + item.bgUrl}'); background-size: cover; background-position: center;` : ''}">
                 ${item.bgUrl ? `<div style="position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: -1;"></div>` : ''}
                 
                 <div style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${(item.color || '#0a59ab')}15; color: ${item.color || '#0a59ab'}; z-index: 2; position: relative; flex-shrink: 0; overflow: hidden;">
                     ${item.logoUrl 
-                        ? `<img src="${(item.logoUrl.startsWith('http') || item.logoUrl.startsWith('data:')) ? item.logoUrl : `http://${window.location.hostname || 'localhost'}:5100` + item.logoUrl}" style="width:100%; height:100%; object-fit:cover;">` 
+                        ? `<img src="${(item.logoUrl.startsWith('http') || item.logoUrl.startsWith('data:')) ? item.logoUrl : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}` + item.logoUrl}" style="width:100%; height:100%; object-fit:cover;">` 
                         : (item.iconClass
                             ? `<i class="${item.iconClass}" style="font-size: 28px;"></i>`
                             : `<svg viewBox="0 0 48 48" width="48" height="48" fill="none">
@@ -2317,7 +2317,7 @@ function updateNewsImagePreview() {
     if (!previewContainer) return;
     
     if (url) {
-        previewImg.src = (url.startsWith('http') || url.startsWith('data:')) ? url : `http://${window.location.hostname || 'localhost'}:5100${url}`;
+        previewImg.src = (url.startsWith('http') || url.startsWith('data:')) ? url : `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${url}`;
         previewContainer.style.display = 'block';
         if (emptyText) emptyText.style.display = 'none';
         if (deleteBtn) deleteBtn.style.display = 'flex';
@@ -2654,7 +2654,7 @@ function renderDocumentTable(docsToRender = allDocuments) {
         let serverFile = doc.fileUrl ? doc.fileUrl.split('/').pop() : '';
         let displayName = doc.originalFileName || serverFile;
         const fileLink = doc.fileUrl 
-            ? `<a href="http://${window.location.hostname || 'localhost'}:5100/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank" style="color: #0a59ab;"><i class="fa-solid fa-download"></i> Tải về</a>` 
+            ? `<a href="${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank" style="color: #0a59ab;"><i class="fa-solid fa-download"></i> Tải về</a>` 
             : `<span style="color: #999;">Không có</span>`;
             
         const tr = document.createElement('tr');
@@ -2703,7 +2703,7 @@ function openDocumentModal(id = null) {
             if (doc.fileUrl) {
                 let serverFile = doc.fileUrl.split('/').pop();
                 let displayName = doc.originalFileName || serverFile;
-                document.getElementById('currentDocFile').innerHTML = `File hiện tại: <a href="http://${window.location.hostname || 'localhost'}:5100/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank">${displayName}</a>`;
+                document.getElementById('currentDocFile').innerHTML = `File hiện tại: <a href="${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/download?file=${encodeURIComponent(serverFile)}&name=${encodeURIComponent(displayName)}" target="_blank">${displayName}</a>`;
             }
         }
     } else {

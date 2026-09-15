@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const response = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/y-kien-du-thao/${draftId}`);
+        const response = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/y-kien-du-thao/${draftId}`);
         const data = await response.json();
         
         if (data.success && data.draftOpinion) {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert.style.display = 'none';
 
         try {
-            const res = await fetch(`http://${window.location.hostname || 'localhost'}:5100/api/y-kien-du-thao/${draftId}/gop-y`, {
+            const res = await fetch(`${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/api/y-kien-du-thao/${draftId}/gop-y`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
