@@ -1,6 +1,6 @@
 (() => {
 const isLocalEnv = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://YOUR_BACKEND_APP_NAME.onrender.com/api';
+const API_BASE = isLocalEnv ? `http://${window.location.hostname || 'localhost'}:5100/api` : 'https://ioc-daklak.onrender.com/api';
 const BACKEND_ORIGIN = `http://${window.location.hostname || 'localhost'}:5100`;
 
 let documents = [];
