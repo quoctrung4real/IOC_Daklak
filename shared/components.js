@@ -866,14 +866,18 @@ const commonComponents = {
                     const theme = config.themePreset;
                     // Expose the setting for the theme JS
                     window.DISABLE_THEME_EFFECTS = config.disableThemeEffects === true;
+                    
+                    const baseUrl = window.BASE_URL || '';
+                    
                     // Load CSS
                     const linkCss = document.createElement('link');
                     linkCss.rel = 'stylesheet';
-                    linkCss.href = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
+                    linkCss.href = `${baseUrl}user/assets/themes/${theme}/${theme}.css?v=${new Date().getTime()}`;
                     document.head.appendChild(linkCss);
+                    
                     // Load JS
                     const scriptJs = document.createElement('script');
-                    scriptJs.src = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}/user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
+                    scriptJs.src = `${baseUrl}user/assets/themes/${theme}/${theme}.js?v=${new Date().getTime()}`;
                     document.body.appendChild(scriptJs);
                 }
                 

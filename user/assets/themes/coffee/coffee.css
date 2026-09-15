@@ -234,3 +234,11 @@ body {
 .iu-card-gradient {
     background: linear-gradient(to bottom, var(--coffee-dark), var(--coffee-accent)) !important;
 }
+
+/* Sync sidebar titles */
+.sidebar-title,
+.cddh-sidebar-title,
+.txn-sidebar-title {
+    background: var(--coffee-primary) !important;
+    border-bottom: 2px solid var(--coffee-accent) !important;
+}

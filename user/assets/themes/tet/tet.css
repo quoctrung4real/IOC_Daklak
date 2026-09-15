@@ -206,3 +206,11 @@ body {
 .iu-card-gradient {
     background: linear-gradient(to bottom, var(--tet-red), var(--tet-gold)) !important;
 }
+
+/* Sync sidebar titles */
+.sidebar-title,
+.cddh-sidebar-title,
+.txn-sidebar-title {
+    background: var(--tet-red) !important;
+    border-bottom: 2px solid var(--tet-gold) !important;
+}
