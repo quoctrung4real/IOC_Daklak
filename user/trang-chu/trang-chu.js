@@ -206,6 +206,8 @@ async function setCache(key, value) {
 }
 
 async function fetchWithCache(url, ttlMinutes = 3) {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+    if (isLocalhost) ttlMinutes = 0; // Bỏ qua cache khi code ở local
     const cacheKey = `cache_${url.split('?')[0]}`;
     const now = new Date().getTime();
 

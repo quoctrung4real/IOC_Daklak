@@ -728,7 +728,7 @@ public sealed class JsonPortalDataStore : IPortalDataStore
         }
 
         var json = await File.ReadAllTextAsync(path, cancellationToken);
-        _cache.Set(fileName, json, TimeSpan.FromMinutes(60));
+        _cache.Set(fileName, json, TimeSpan.FromSeconds(1));
         return json;
     }
 
