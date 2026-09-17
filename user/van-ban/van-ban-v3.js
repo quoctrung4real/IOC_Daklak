@@ -189,7 +189,7 @@ async function readSelectedDocument() {
     try {
         if (button) button.disabled = true;
         if (buttonText) buttonText.textContent = 'Đang tạo audio...';
-        if (status) status.textContent = 'Đang gọi Azure TTS...';
+        if (status) status.textContent = 'Đang gọi AI TTS...';
 
         const response = await fetch(`${API_BASE}/text-to-speech`, {
             method: 'POST',
