@@ -120,8 +120,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const url = URL.createObjectURL(blob);
                 audio.src = url;
                 audio.style.display = 'block';
-                await audio.play();
-                status.textContent = 'Đang phát...';
+                try {
+                    await audio.play();
+                    status.textContent = 'Đang phát...';
+                } catch (playError) {
+                    console.warn('Auto-play bị chặn bởi trình duyệt:', playError);
+                    status.textContent = 'Đã sẵn sàng (Bấm Play)';
+                }
             } catch (error) {
                 console.error(error);
                 status.textContent = 'Lỗi tạo audio.';

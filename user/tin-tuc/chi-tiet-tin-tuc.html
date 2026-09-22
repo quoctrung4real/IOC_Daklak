@@ -198,8 +198,13 @@
                             if (data.success && data.audioUrl) {
                                 newsAudio.src = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${data.audioUrl}`;
                                 newsAudio.style.display = 'block';
-                                await newsAudio.play();
-                                readBtn.querySelector('span').textContent = 'Đang phát...';
+                                try {
+                                    await newsAudio.play();
+                                    readBtn.querySelector('span').textContent = 'Đang phát...';
+                                } catch (playError) {
+                                    console.warn('Auto-play bị chặn bởi trình duyệt:', playError);
+                                    readBtn.querySelector('span').textContent = 'Đã sẵn sàng (Bấm Play)';
+                                }
                             } else {
                                 throw new Error(data.message || 'Lỗi không xác định');
                             }
