@@ -10,10 +10,10 @@ WORKDIR /app
 
 # Cài đặt wget, tải Piper TTS và giải nén
 RUN apt-get update && apt-get install -y wget tar && \
-    wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_linux_x86_64.tar.gz && \
-    tar -xzf piper_linux_x86_64.tar.gz -C /usr/local/bin && \
+    wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz && \
+    tar -xzf piper_amd64.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/piper/piper && \
-    rm piper_linux_x86_64.tar.gz && \
+    rm piper_amd64.tar.gz && \
     apt-get clean
 
 # Tải Model Tiếng Việt (vivos x_low)
