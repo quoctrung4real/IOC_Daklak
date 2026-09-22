@@ -127,20 +127,7 @@ builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
 builder.Services.AddSingleton<VisitorTrackingService>();
 builder.Services.AddSingleton<JsonToSqlMigrationService>();
 builder.Services.AddSingleton<AuthTokenService>();
-builder.Services.AddHttpClient<AzureTextToSpeechService>();
-builder.Services.AddTransient<EspeakTextToSpeechService>();
-builder.Services.AddTransient<ITextToSpeechService>(serviceProvider =>
-{
-    var options = serviceProvider.GetRequiredService<IOptions<TextToSpeechOptions>>().Value;
-    if (string.Equals(options.Provider, "Azure", StringComparison.OrdinalIgnoreCase) &&
-        !string.IsNullOrWhiteSpace(options.AzureKey) &&
-        !string.IsNullOrWhiteSpace(options.AzureRegion))
-    {
-        return serviceProvider.GetRequiredService<AzureTextToSpeechService>();
-    }
-
-    return serviceProvider.GetRequiredService<EspeakTextToSpeechService>();
-});
+builder.Services.AddTransient<ITextToSpeechService, PiperTextToSpeechService>();
 
 builder.Services.AddResponseCompression(options =>
 {

@@ -77,10 +77,12 @@
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <button id="read-news-btn" style="background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; display: none; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                        <i class="fa-solid fa-volume-high" style="color: #0a59ab;"></i> Đọc tin tức
+                        <i class="fa-solid fa-volume-high" style="color: #0a59ab;"></i> <span>Đọc tin tức</span>
                     </button>
                 </div>
             </div>
+            
+            <audio id="news-audio" controls style="display: none; width: 100%; margin-bottom: 20px;"></audio>
 
             <img id="detail-image" class="article-detail-image" style="display: none;" src="" alt="">
 
@@ -163,7 +165,53 @@
                 
                 document.getElementById('detail-meta').style.display = 'flex';
                 const readBtn = document.getElementById('read-news-btn');
-                if(readBtn) readBtn.style.display = 'flex';
+                const newsAudio = document.getElementById('news-audio');
+                if(readBtn) {
+                    readBtn.style.display = 'flex';
+                    readBtn.addEventListener('click', async () => {
+                        const titleText = document.getElementById('detail-title').innerText;
+                        const contentText = document.getElementById('detail-content').innerText;
+                        // Thay thế các dòng xuống dòng bằng dấu chấm để Piper tự động ngắt nghỉ
+                        let formattedContent = contentText.replace(/\n+/g, '. ');
+                        const text = titleText + ". " + formattedContent;
+                        
+                        if (!text || text.trim() === '') {
+                            alert('Chưa có nội dung để đọc.');
+                            return;
+                        }
+                        
+                        try {
+                            readBtn.disabled = true;
+                            readBtn.querySelector('span').textContent = 'Đang tạo audio...';
+                            
+                            const ttsResponse = await fetch(`${API_BASE}/text-to-speech`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text })
+                            });
+
+                            if (!ttsResponse.ok) {
+                                throw new Error('API lỗi: ' + ttsResponse.statusText);
+                            }
+
+                            const data = await ttsResponse.json();
+                            if (data.success && data.audioUrl) {
+                                newsAudio.src = `${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' ? `http://${window.location.hostname || 'localhost'}:5100` : 'https://ioc-daklak.onrender.com')}${data.audioUrl}`;
+                                newsAudio.style.display = 'block';
+                                await newsAudio.play();
+                                readBtn.querySelector('span').textContent = 'Đang phát...';
+                            } else {
+                                throw new Error(data.message || 'Lỗi không xác định');
+                            }
+                        } catch (error) {
+                            console.error('Lỗi TTS:', error);
+                            alert('Có lỗi xảy ra khi tạo giọng nói.');
+                            readBtn.querySelector('span').textContent = 'Đọc tin tức';
+                        } finally {
+                            readBtn.disabled = false;
+                        }
+                    });
+                }
                 document.getElementById('detail-date').innerHTML = `<i class="fa-solid fa-clock"></i> ${post.createdAt}`;
                 if (post.author) {
                     let authorSpan = document.getElementById('detail-author');

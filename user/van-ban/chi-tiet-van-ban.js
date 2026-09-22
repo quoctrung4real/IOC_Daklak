@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 ttsBtn.disabled = true;
                 ttsBtn.querySelector('span').textContent = 'Đang tạo audio...';
-                status.textContent = 'Đang gọi Azure TTS...';
+                status.textContent = 'Đang gọi AI TTS...';
 
                 const ttsResponse = await fetch(`${API_BASE}/text-to-speech`, {
                     method: 'POST',

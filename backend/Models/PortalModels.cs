@@ -161,18 +161,14 @@ public sealed class JwtOptions
 
 public sealed class TextToSpeechOptions
 {
-    public string Provider { get; set; } = "Espeak";
     public string? ExecutablePath { get; set; }
-    public string ExecutableName { get; set; } = "espeak-ng";
+    public string ExecutableName { get; set; } = "piper";
+    public string? ModelPath { get; set; } = "/app/tts_models/vi_VN-vivos-macaw.onnx";
     public string Voice { get; set; } = "vi";
     public int Speed { get; set; } = 150;
     public int Pitch { get; set; } = 50;
     public int MaxTextLength { get; set; } = 6000;
     public int TimeoutSeconds { get; set; } = 45;
-    public string? AzureKey { get; set; }
-    public string? AzureRegion { get; set; }
-    public string AzureVoice { get; set; } = "vi-VN-HoaiMyNeural";
-    public string AzureOutputFormat { get; set; } = "audio-24khz-48kbitrate-mono-mp3";
 }
 
 public sealed class TextToSpeechRequestDto
