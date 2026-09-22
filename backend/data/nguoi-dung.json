@@ -2,19 +2,19 @@
   {
     "id": "765b12a1-6473-452c-b666-9e3f5824c92c",
     "username": "admin",
-    "password": "admin123",
+    "password": "PBKDF2$100000$EkHj0aYbKVRMwHD\u002Bdz/q7A==$dL18SSuWOyI\u002BDqxt83tpJX2VNwdn99Ur8XKcjWq90tA=",
     "role": "Admin",
     "registerDate": "2026-07-09 17:27:51",
     "email": null,
     "dateOfBirth": null,
     "avatarUrl": null,
-    "fullName": "trung",
+    "fullName": "Admin",
     "isActive": true
   },
   {
     "id": "108519bf-325e-4c39-a046-eb4e350d4240",
     "username": "admin1",
-    "password": "admin123",
+    "password": "PBKDF2$100000$O7BiiZyzasxFgxY3SpN1RA==$aleNZ576Cd/FMM9FdXaMNvoy/3Ok6ZfLiUhEBZIdQNA=",
     "role": "Admin",
     "registerDate": "2026-07-10 08:08:28",
     "email": null,
@@ -26,7 +26,7 @@
   {
     "id": "a712458a-96de-4df2-8a5f-80a54fdbc53e",
     "username": "admin2",
-    "password": "admin123",
+    "password": "PBKDF2$100000$pz3tJqp1KaT8perTFulUcw==$8IhRyQtNUpmSLujevHxeStXNFjL5gatr7dERe3hyH1g=",
     "role": "Admin",
     "registerDate": "2026-07-10 08:09:10",
     "email": null,
@@ -36,9 +36,9 @@
     "isActive": true
   },
   {
-    "id": "a59c769c-1070-41dc-9afe-1f6f43d19822",
+    "id": "a59c769c-1070-4df2-8a5f-80a54fdbc53e",
     "username": "testuser",
-    "password": "123",
+    "password": "PBKDF2$100000$dJw3A5TNzL8VYCM0LEQp5A==$2Y1uX4oYAjze15qvlVaQmhMLB5MfzG\u002BQ7JjNjrcs\u002B9s=",
     "role": "User",
     "registerDate": "2026-07-10 08:54:32",
     "email": null,
@@ -57,6 +57,30 @@
     "dateOfBirth": null,
     "avatarUrl": null,
     "fullName": "Test Admin",
+    "isActive": true
+  },
+  {
+    "id": "8a0ace1c-afbe-489b-bfd4-5772bdd35a29",
+    "username": "nguyen2002",
+    "password": "PBKDF2$100000$3JyVTH\u002BdkrryKkc82rGnpw==$W6pVmWtndv8055Zue/q9x48pJDx7tARAP9iD/JdZPAU=",
+    "role": "User",
+    "registerDate": "2026-09-17 15:43:53",
+    "email": null,
+    "dateOfBirth": null,
+    "avatarUrl": null,
+    "fullName": null,
+    "isActive": true
+  },
+  {
+    "id": "0ca43354-ec91-4002-b3af-61f843d75cdd",
+    "username": "nguyennh_skhcn",
+    "password": "PBKDF2$100000$AjxnVTmT2ZIwGSum9v24hQ==$ZcMS1T9z/gYSjRyaexGM9YqU4Jdo1Tl0\u002BVdKCquD9oc=",
+    "role": "User",
+    "registerDate": "2026-09-18 16:18:26",
+    "email": null,
+    "dateOfBirth": null,
+    "avatarUrl": null,
+    "fullName": null,
     "isActive": true
   }
 ]

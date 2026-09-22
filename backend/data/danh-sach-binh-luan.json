@@ -5,9 +5,11 @@
     "username": "admin",
     "content": "ad",
     "likes": 0,
-    "dislikes": 0,
+    "dislikes": 1,
     "likedBy": [],
-    "dislikedBy": [],
+    "dislikedBy": [
+      "nguyen2002"
+    ],
     "avatarUrl": "",
     "createdAt": "2026-07-28 16:41:42"
   }

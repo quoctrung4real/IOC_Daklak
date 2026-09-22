@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var pascalCaseJson = new JsonSerializerOptions { PropertyNamingPolicy = null };
@@ -27,8 +28,29 @@ builder.Services.Configure<UploadOptions>(builder.Configuration.GetSection("Uplo
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<TextToSpeechOptions>(builder.Configuration.GetSection("TextToSpeech"));
 
-var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
-var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() 
+                 ?? new JwtOptions();
+
+var jwtKeyValue = builder.Configuration["Jwt:SigningKey"];
+
+if (string.IsNullOrWhiteSpace(jwtKeyValue))
+{
+    throw new InvalidOperationException(
+        "JWT SigningKey chưa được cấu hình. " +
+        "Vui lòng cấu hình biến môi trường Jwt__SigningKey."
+    );
+}
+
+if (jwtKeyValue.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT SigningKey phải có ít nhất 32 ký tự."
+    );
+}
+
+var jwtKey = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(jwtKeyValue)
+);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -38,29 +60,53 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidIssuer = jwtOptions.Issuer,
+
             ValidateAudience = true,
             ValidAudience = jwtOptions.Audience,
+
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = jwtKey,
+
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-});
-
-builder.Services.AddMemoryCache();
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
+    builder.Services.AddAuthorization(options =>
     {
-        // Cho phép frontend tĩnh gọi API trong giai đoạn phát triển.
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     });
+
+    builder.Services.AddMemoryCache();
+   builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("LoginRateLimit", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("Frontend", policy =>
+        {
+            policy
+                .WithOrigins(
+                    "https://iocdaklak.vn",
+                    "https://www.iocdaklak.vn",
+                    "http://localhost:5100"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
 
 builder.Services.AddSingleton(GetNewsCategories());
 builder.Services.AddSingleton<IPortalDataStore>(serviceProvider =>
@@ -103,37 +149,25 @@ builder.Services.AddResponseCompression(options =>
 
 var app = builder.Build();
 
-try
-{
-    var configuration = app.Services.GetRequiredService<IConfiguration>();
-    if (string.Equals(configuration["DataProvider"], "SqlServer", StringComparison.OrdinalIgnoreCase))
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        if (!string.IsNullOrEmpty(connectionString))
-        {
-            using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
-            connection.Open();
-            using var command = new Microsoft.Data.SqlClient.SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
-                    WHERE TABLE_SCHEMA = 'Gov' AND TABLE_NAME = 'Documents' AND COLUMN_NAME = 'OriginalFileName'
-                )
-                BEGIN
-                    ALTER TABLE Gov.Documents ADD OriginalFileName NVARCHAR(255) NULL;
-                END
-            ", connection);
-            command.ExecuteNonQuery();
-        }
-    }
-}
-catch (Exception ex)
-{
-    app.Logger.LogWarning("Auto-migration failed: {Message}", ex.Message);
-}
-
 app.UseResponseCompression();
-app.UseCors();
+app.UseCors("Frontend");
+app.UseRateLimiter();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/uploads") &&
+        Path.GetExtension(context.Request.Path.Value)
+            .Equals(".svg", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
+
 UseFrontendStaticFiles(app, frontendRoot);
 app.UseMiddleware<VisitorTrackingMiddleware>();
 app.UseAuthentication();
@@ -141,28 +175,21 @@ app.UseAuthorization();
 
 MapFrontendRoutes(app, frontendRoot);
 
-app.MapGet("/api", (IConfiguration configuration) =>
+app.MapGet("/api", () =>
 {
     return Results.Json(new
     {
         success = true,
-        service = "IOC Daklak Backend API",
-        environment = app.Environment.EnvironmentName,
-        dataProvider = configuration["DataProvider"] ?? "Json",
-        health = "/api/health",
-        apiBase = "/api"
+        status = "OK"
     });
 });
 
-app.MapGet("/api/health", (IConfiguration configuration) =>
+app.MapGet("/api/health", () =>
 {
     return Results.Json(new
     {
         success = true,
-        status = "Healthy",
-        service = "IOC Daklak Backend API",
-        dataProvider = configuration["DataProvider"] ?? "Json",
-        checkedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+        status = "Healthy"
     });
 });
 
@@ -419,18 +446,131 @@ app.MapPost("/api/upload", async (
     }
 
     var file = context.Request.Form.Files[0];
-    var options = uploadOptions.Value;
-    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+var options = uploadOptions.Value;
 
-    if (!options.AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
-    {
-        return Results.BadRequest(new { success = false, message = "Định dạng file không được hỗ trợ." });
-    }
+var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-    if (file.Length <= 0 || file.Length > options.MaxFileSizeBytes)
+if (extension == ".svg")
+{
+    return Results.BadRequest(new
     {
-        return Results.BadRequest(new { success = false, message = "Dung lượng file không hợp lệ." });
-    }
+        success = false,
+        message = "Không cho phép tải lên file SVG."
+    });
+}
+
+if (!options.AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+{
+    return Results.BadRequest(new
+    {
+        success = false,
+        message = "Định dạng file không được hỗ trợ."
+    });
+}
+
+if (file.Length <= 0 || file.Length > options.MaxFileSizeBytes)
+{
+    return Results.BadRequest(new
+    {
+        success = false,
+        message = "Dung lượng file không hợp lệ."
+    });
+}
+
+// Kiểm tra nội dung thực tế của file bằng magic bytes.
+// Không chỉ tin vào phần mở rộng do người dùng gửi lên.
+await using var validationStream = file.OpenReadStream();
+
+var header = new byte[16];
+
+var bytesRead = await validationStream.ReadAsync(
+    header.AsMemory(0, header.Length),
+    cancellationToken);
+
+bool validSignature = extension switch
+{
+    ".jpg" or ".jpeg" =>
+        bytesRead >= 3 &&
+        header[0] == 0xFF &&
+        header[1] == 0xD8 &&
+        header[2] == 0xFF,
+
+    ".png" =>
+        bytesRead >= 8 &&
+        header[0] == 0x89 &&
+        header[1] == 0x50 &&
+        header[2] == 0x4E &&
+        header[3] == 0x47 &&
+        header[4] == 0x0D &&
+        header[5] == 0x0A &&
+        header[6] == 0x1A &&
+        header[7] == 0x0A,
+
+    ".gif" =>
+        bytesRead >= 6 &&
+        header[0] == 'G' &&
+        header[1] == 'I' &&
+        header[2] == 'F' &&
+        header[3] == '8' &&
+        (header[4] == '7' || header[4] == '9') &&
+        header[5] == 'a',
+
+    ".webp" =>
+        bytesRead >= 12 &&
+        header[0] == 'R' &&
+        header[1] == 'I' &&
+        header[2] == 'F' &&
+        header[3] == 'F' &&
+        header[8] == 'W' &&
+        header[9] == 'E' &&
+        header[10] == 'B' &&
+        header[11] == 'P',
+
+    ".pdf" =>
+        bytesRead >= 5 &&
+        header[0] == '%' &&
+        header[1] == 'P' &&
+        header[2] == 'D' &&
+        header[3] == 'F' &&
+        header[4] == '-',
+
+    ".zip" or ".docx" or ".xlsx" or ".pptx" =>
+        bytesRead >= 4 &&
+        header[0] == 0x50 &&
+        header[1] == 0x4B &&
+        (header[2] == 0x03 || header[2] == 0x05 || header[2] == 0x07) &&
+        (header[3] == 0x04 || header[3] == 0x06 || header[3] == 0x08),
+
+    ".rar" =>
+        bytesRead >= 7 &&
+        header[0] == 0x52 &&
+        header[1] == 0x61 &&
+        header[2] == 0x72 &&
+        header[3] == 0x21 &&
+        header[4] == 0x1A &&
+        header[5] == 0x07,
+
+    ".7z" =>
+        bytesRead >= 6 &&
+        header[0] == 0x37 &&
+        header[1] == 0x7A &&
+        header[2] == 0xBC &&
+        header[3] == 0xAF &&
+        header[4] == 0x27 &&
+        header[5] == 0x1C,
+
+    // SVG sẽ xử lý riêng ở HI-05.
+    _ => true
+};
+
+if (!validSignature)
+{
+    return Results.BadRequest(new
+    {
+        success = false,
+        message = "Nội dung file không khớp với định dạng đã khai báo."
+    });
+}
 
     var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
     var uploadsDir = Path.Combine(webRootPath, "uploads");
@@ -549,13 +689,43 @@ app.MapGet("/api/nguoi-dung", async (IPortalDataStore store, CancellationToken c
     return Results.Json(await store.GetUsersAsync(cancellationToken));
 }).RequireAuthorization("AdminOnly");
 
-app.MapGet("/api/nguoi-dung/{username}", async (string username, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapGet("/api/nguoi-dung/{username}", async (
+    string username,
+    IPortalDataStore store,
+    ClaimsPrincipal principal,
+    CancellationToken cancellationToken) =>
 {
+    var currentUsername = principal.Identity?.Name;
+    var isAdmin = principal.IsInRole("Admin");
+
+    if (string.IsNullOrWhiteSpace(currentUsername))
+    {
+        return Results.Unauthorized();
+    }
+
+    // User thường chỉ được xem thông tin của chính mình.
+    // Admin mới được phép xem thông tin người dùng khác.
+    if (!isAdmin &&
+        !string.Equals(currentUsername, username, StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.Forbid();
+    }
+
     var user = await store.GetUserAsync(username, cancellationToken);
+
     return user is null
-        ? (IResult)Results.NotFound(new { success = false, message = "Không tìm thấy người dùng." })
-        : Results.Json(new { success = true, user });
-});
+        ? (IResult)Results.NotFound(new
+        {
+            success = false,
+            message = "Không tìm thấy người dùng."
+        })
+        : Results.Json(new
+        {
+            success = true,
+            user
+        });
+})
+.RequireAuthorization();
 
 app.MapPut("/api/nguoi-dung/{username}", async (string username, UserDto payload, IPortalDataStore store, ClaimsPrincipal user, CancellationToken cancellationToken) =>
 {
@@ -574,7 +744,11 @@ app.MapPut("/api/nguoi-dung/{username}", async (string username, UserDto payload
 
 app.MapPost("/api/register", async (UserDto payload, IPortalDataStore store, AuthTokenService tokenService, CancellationToken cancellationToken) =>
 {
+    // Người dùng tự đăng ký không được phép tự chọn quyền
+    payload.Role = "User";
+
     var result = await store.RegisterAsync(payload, cancellationToken);
+
     return result.Success
         ? (IResult)Results.Json(tokenService.CreateAuthResponse(result.User!, result.Message))
         : Results.BadRequest(new { success = false, message = result.Message });
@@ -591,7 +765,8 @@ app.MapPost("/api/login", async (UserDto payload, IPortalDataStore store, AuthTo
     return user is null
         ? (IResult)Results.Json(new { success = false, message = "Sai tên đăng nhập hoặc mật khẩu." }, statusCode: StatusCodes.Status401Unauthorized)
         : Results.Json(tokenService.CreateAuthResponse(user, "Đăng nhập thành công."));
-});
+})
+.RequireRateLimiting("LoginRateLimit");
 
 app.MapGet("/api/binh-luan", async (string pageId, IPortalDataStore store, CancellationToken cancellationToken) =>
 {
@@ -599,35 +774,124 @@ app.MapGet("/api/binh-luan", async (string pageId, IPortalDataStore store, Cance
     return Results.Json(await store.GetCommentsAsync(pageId, cancellationToken), pascalCaseJson);
 });
 
-app.MapPost("/api/binh-luan", async (CommentDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapPost("/api/binh-luan", async (
+    CommentDto payload,
+    ClaimsPrincipal user,
+    IPortalDataStore store,
+    CancellationToken cancellationToken) =>
 {
+    var username = user.Identity?.Name;
+
+    if (string.IsNullOrWhiteSpace(username))
+        return Results.Unauthorized();
+
+    // Không tin Username do frontend gửi lên
+    payload.Username = username;
+
     var comment = await store.AddCommentAsync(payload, cancellationToken);
-    return Results.Json(new { success = true, message = "Đã gửi bình luận.", comment });
-});
 
-app.MapPost("/api/binh-luan/{id}/like", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string? username, IPortalDataStore store, CancellationToken cancellationToken) =>
+    return Results.Json(new
+    {
+        success = true,
+        message = "Đã gửi bình luận.",
+        comment
+    });
+})
+.RequireAuthorization();
+
+app.MapPost("/api/binh-luan/{id}/like", async (
+    string id,
+    ClaimsPrincipal user,
+    IPortalDataStore store,
+    CancellationToken cancellationToken) =>
 {
-    var result = await store.VoteCommentAsync(id, username ?? string.Empty, isLike: true, cancellationToken);
+    var username = user.Identity?.Name;
+
+    if (string.IsNullOrWhiteSpace(username))
+        return Results.Unauthorized();
+
+    var result = await store.VoteCommentAsync(
+        id,
+        username,
+        isLike: true,
+        cancellationToken);
+
     return result is null
-        ? (IResult)Results.NotFound(new { success = false, message = "Không tìm thấy bình luận." })
-        : Results.Json(new { success = true, likes = result.Value.count, toggled = result.Value.toggled });
-});
+        ? (IResult)Results.NotFound(new
+        {
+            success = false,
+            message = "Không tìm thấy bình luận."
+        })
+        : Results.Json(new
+        {
+            success = true,
+            likes = result.Value.count,
+            toggled = result.Value.toggled
+        });
+})
+.RequireAuthorization();
 
-app.MapPost("/api/binh-luan/{id}/dislike", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string? username, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapPost("/api/binh-luan/{id}/dislike", async (
+    string id,
+    ClaimsPrincipal user,
+    IPortalDataStore store,
+    CancellationToken cancellationToken) =>
 {
-    var result = await store.VoteCommentAsync(id, username ?? string.Empty, isLike: false, cancellationToken);
+    var username = user.Identity?.Name;
+
+    if (string.IsNullOrWhiteSpace(username))
+        return Results.Unauthorized();
+
+    var result = await store.VoteCommentAsync(
+        id,
+        username,
+        isLike: false,
+        cancellationToken);
+
     return result is null
-        ? (IResult)Results.NotFound(new { success = false, message = "Không tìm thấy bình luận." })
-        : Results.Json(new { success = true, dislikes = result.Value.count, toggled = result.Value.toggled });
-});
+        ? (IResult)Results.NotFound(new
+        {
+            success = false,
+            message = "Không tìm thấy bình luận."
+        })
+        : Results.Json(new
+        {
+            success = true,
+            dislikes = result.Value.count,
+            toggled = result.Value.toggled
+        });
+})
+.RequireAuthorization();
 
-app.MapDelete("/api/binh-luan/{id}", async (string id, [Microsoft.AspNetCore.Mvc.FromQuery] string username, IPortalDataStore store, CancellationToken cancellationToken) =>
+app.MapDelete("/api/binh-luan/{id}", async (
+    string id,
+    ClaimsPrincipal user,
+    IPortalDataStore store,
+    CancellationToken cancellationToken) =>
 {
-    var result = await store.DeleteCommentAsync(id, username ?? string.Empty, cancellationToken);
+    var username = user.Identity?.Name;
+
+    if (string.IsNullOrWhiteSpace(username))
+        return Results.Unauthorized();
+
+    var result = await store.DeleteCommentAsync(
+        id,
+        username,
+        cancellationToken);
+
     return result.Success
-        ? (IResult)Results.Json(new { success = true, message = result.Message })
-        : Results.BadRequest(new { success = false, message = result.Message });
-});
+        ? (IResult)Results.Json(new
+        {
+            success = true,
+            message = result.Message
+        })
+        : Results.BadRequest(new
+        {
+            success = false,
+            message = result.Message
+        });
+})
+.RequireAuthorization();
 
 app.MapPost("/api/admin/nguoi-dung", async (UserDto payload, IPortalDataStore store, CancellationToken cancellationToken) =>
 {

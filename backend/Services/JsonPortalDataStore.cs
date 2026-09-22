@@ -8,6 +8,7 @@ namespace Backend.Services;
 
 public sealed class JsonPortalDataStore : IPortalDataStore
 {
+    
     private readonly string _dataDir;
     private readonly string _webRootPath;
     private readonly IMemoryCache _cache;
@@ -165,9 +166,16 @@ public sealed class JsonPortalDataStore : IPortalDataStore
             return (false, "Tên đăng nhập đã tồn tại.", null);
         }
 
+        if (string.IsNullOrWhiteSpace(user.Password))
+{
+    return (false, "Mật khẩu là bắt buộc.", null);
+}
+
+user.Role = "User";
+
         user.Id = Guid.NewGuid().ToString();
         user.RegisterDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        user.Password = PasswordService.HashPassword(user.Password ?? string.Empty);
+        user.Password = PasswordService.HashPassword(user.Password);
         user.Role = AuthTokenService.NormalizeRole(user.Role);
         user.IsActive = true;
         users.Add(user);
@@ -212,10 +220,18 @@ public sealed class JsonPortalDataStore : IPortalDataStore
 
             user.Id = Guid.NewGuid().ToString();
             user.RegisterDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            user.Password = PasswordService.HashPassword(string.IsNullOrWhiteSpace(user.Password) ? "123456" : user.Password);
+
+            if (string.IsNullOrWhiteSpace(user.Password))
+            {
+             return (false, "Mật khẩu là bắt buộc khi tạo tài khoản.");
+            }
+
+            user.Password = PasswordService.HashPassword(user.Password);
             user.Role = AuthTokenService.NormalizeRole(user.Role);
+
             users.Add(user);
             await WriteUsersAsync(users, cancellationToken);
+
             return (true, "Thêm tài khoản thành công.");
         }
 

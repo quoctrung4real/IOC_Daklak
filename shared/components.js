@@ -35,7 +35,7 @@ const commonComponents = {
                         <i class="fa-solid fa-bars"></i>
                     </button>
                     
-                    <a href="#" class="nav-small-logo">
+                    <a href="#" class="nav-small-logo" aria-label="Trang chủ IOC Đắk Lắk">
                         <svg viewBox="0 0 60 60" width="50" height="50">
                             <circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.6)"
                                 stroke-width="2" />

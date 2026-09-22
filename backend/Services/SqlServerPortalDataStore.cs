@@ -284,7 +284,13 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
             return (false, "Tên đăng nhập đã tồn tại.", null);
         }
 
-        await InsertUserAsync(connection, user, string.IsNullOrWhiteSpace(user.Password) ? "123456" : user.Password, cancellationToken);
+        if (string.IsNullOrWhiteSpace(user.Password))
+        {
+            return (false, "Mật khẩu là bắt buộc.", null);
+        }
+
+        user.Role = "User";
+        await InsertUserAsync(connection, user, user.Password, cancellationToken);
         var saved = await GetUserAsync(user.Username!, cancellationToken);
         return (true, "Đăng ký thành công.", saved);
     }
@@ -329,7 +335,12 @@ public sealed class SqlServerPortalDataStore : IPortalDataStore
                 return (false, "Tên đăng nhập đã tồn tại.");
             }
 
-            await InsertUserAsync(connection, user, string.IsNullOrWhiteSpace(user.Password) ? "123456" : user.Password, cancellationToken);
+            if (string.IsNullOrWhiteSpace(user.Password))
+            {
+                return (false, "Mật khẩu là bắt buộc khi tạo tài khoản.");
+            }
+
+            await InsertUserAsync(connection, user, user.Password, cancellationToken);
             return (true, "Thêm tài khoản thành công.");
         }
 
