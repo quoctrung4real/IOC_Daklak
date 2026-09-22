@@ -121,14 +121,16 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
             await process.StandardInput.WriteAsync(text);
             process.StandardInput.Close();
 
+            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
             var exited = await WaitForExitAsync(process, TimeSpan.FromSeconds(_options.TimeoutSeconds), cancellationToken);
-            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
 
             if (!exited)
             {
                 TryKill(process);
                 return TextToSpeechResponseDto.Fail("Piper xu ly qua thoi gian cho phep.");
             }
+
+            var error = await errorTask;
 
             if (process.ExitCode != 0 || !File.Exists(outputPath))
             {
