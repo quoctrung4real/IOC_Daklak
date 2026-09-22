@@ -13,34 +13,27 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<PiperTextToSpeechService> _logger;
     private readonly TextToSpeechOptions _options;
+    private readonly PiperInstallerService _piperInstaller;
 
     public PiperTextToSpeechService(
         IWebHostEnvironment environment,
         IOptions<TextToSpeechOptions> options,
-        ILogger<PiperTextToSpeechService> logger)
+        ILogger<PiperTextToSpeechService> logger,
+        PiperInstallerService piperInstaller)
     {
         _environment = environment;
         _options = options.Value;
         _logger = logger;
+        _piperInstaller = piperInstaller;
     }
 
     public async Task<TextToSpeechResponseDto> SynthesizeAsync(TextToSpeechRequestDto request, CancellationToken cancellationToken)
     {
-        var executablePath = ResolveExecutablePath();
-        if (string.IsNullOrWhiteSpace(executablePath))
-        {
-            return TextToSpeechResponseDto.Fail("Khong tim thay Piper executable. Kiem tra cau hinh TextToSpeech:ExecutablePath.");
-        }
+        var (executablePath, modelPath) = await _piperInstaller.EnsurePiperInstalledAsync(_environment.ContentRootPath);
 
-        if (string.IsNullOrWhiteSpace(_options.ModelPath))
+        if (string.IsNullOrWhiteSpace(executablePath) || string.IsNullOrWhiteSpace(modelPath))
         {
-             return TextToSpeechResponseDto.Fail("Chua cau hinh Piper ModelPath.");
-        }
-
-        var modelPath = _options.ModelPath;
-        if (!Path.IsPathRooted(modelPath) && !string.IsNullOrWhiteSpace(modelPath))
-        {
-            modelPath = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, modelPath));
+            return TextToSpeechResponseDto.Fail("Không thể tải và tự động cài đặt Piper TTS. Vui lòng kiểm tra lại kết nối mạng hoặc cấp quyền ghi thư mục.");
         }
 
         var text = NormalizeText(request.Text);
@@ -59,7 +52,7 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
         var pitch = request.Pitch ?? _options.Pitch;
         
         // Include ModelPath in hash to invalidate cache if model changes
-        var hash = CreateHash($"{_options.ModelPath}|{voice}|{speed}|{pitch}|{text}");
+        var hash = CreateHash($"{modelPath}|{voice}|{speed}|{pitch}|{text}");
 
         var webRootPath = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
         var outputDirectory = Path.Combine(webRootPath, "uploads", "tts");
@@ -87,6 +80,14 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
                 CreateNoWindow = true,
                 StandardInputEncoding = Encoding.UTF8
             };
+
+            // Khắc phục lỗi thiếu thư viện động (dylib/so) trên MacOS và Linux
+            var execDir = Path.GetDirectoryName(executablePath);
+            if (!string.IsNullOrWhiteSpace(execDir))
+            {
+                startInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = $"{execDir}:/opt/homebrew/lib:/usr/local/lib";
+                startInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = execDir;
+            }
 
             if (isBashScript)
             {
@@ -132,7 +133,7 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
             if (process.ExitCode != 0 || !File.Exists(outputPath))
             {
                 _logger.LogWarning("Piper failed with code {ExitCode}: {Error}", process.ExitCode, error);
-                return TextToSpeechResponseDto.Fail("Piper tao audio that bai.");
+                return TextToSpeechResponseDto.Fail($"Piper tao audio that bai. Exit Code: {process.ExitCode}. Loi: {error.Truncate(200)}");
             }
 
             return TextToSpeechResponseDto.Ok(audioUrl, voice, text.Length, cached: false);
@@ -328,5 +329,14 @@ public sealed class PiperTextToSpeechService : ITextToSpeechService
         {
             // Best effort cleanup.
         }
+    }
+}
+
+public static class StringExtensions
+{
+    public static string Truncate(this string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value)) return value;
+        return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
     }
 }

@@ -1,0 +1,6 @@
+.git\
+.gitignore
+build_and_package.bat
+build_and_package.sh
+exclude_list.txt
+*.zip

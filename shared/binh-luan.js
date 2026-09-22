@@ -14,6 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let allComments = [];
 
     // =========================================================
+    // XSS PROTECTION
+    // =========================================================
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // =========================================================
     // API BASE
     // =========================================================
 
@@ -312,16 +326,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="comment-meta">
                         <span class="comment-author">
-                            ${c.Username || ''}
+                            ${escapeHtml(c.Username || '')}
                         </span>
 
                         <span class="comment-date">
-                            ${c.CreatedAt || ''}
+                            ${escapeHtml(c.CreatedAt || '')}
                         </span>
                     </div>
 
                     <div class="comment-text">
-                        ${(c.Content || '').replace(/\n/g, '<br>')}
+                        ${escapeHtml(c.Content || '').replace(/\n/g, '<br>')}
                     </div>
 
                     <div class="comment-actions">
